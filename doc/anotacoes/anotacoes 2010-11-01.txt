@@ -1,0 +1,54 @@
+
+Links para Estudo
+ - http://docs.python.org/
+ - http://docs.djangoproject.com/en/1.2/
+ - http://diveintopython.org/
+ - http://thisweekindjango.com/screencasts/
+ - http://showmedo.com/videotutorials/django
+ - http://showmedo.com/videotutorials/python
+
+Treinamento
+ + workshops e palestras
+  ++ ts: python para iniciantes [Adriano]
+  ? ts: python orientado a objetos
+  ? ts: python com django
+  ? ts: css + html seguindo padrões web
+  ? ts: trabalhando com equipes distribuídas + redmine [Guilherme?]
+  ? ts: versionamento de código com git (svn?) [Guilherme?]
+  ? ts: introdução ao linux [Davison?]
+
+Interface (design/interação)
+ + wireframe
+  + ts: terminar wireframe da página de impressão [Caio]
+ - conhecimento: fluxo de trabalho da quinta, ferramenta de criação de wireframes
+
+Interface (codificação)
+ + protótipos em html
+  ++ ts: procurar e propor templates [Luis, Caio]
+  + ts: fazer a tela 1 (busca por paciente)
+  + ts: fazer a tela 2 (busca por paciente + confirmação de escolha)
+  + ts: fazer a tela 3 (cadastro de paciente)
+  + ts: fazer a tela 4 (impressão da lista de pacientes)
+ - conhecimento: html, css
+
+Interface (interação)
+ + ts: ajax na busca por pacientes [Adriano]
+ - conhecimento: html, javascript, jquery
+
+Programação
+ ++ ts: estudar python [Guilherme, Caio, Luís, Igor]
+ + ts: estudar django [Adriano]
+ ? ts: propor organização do projeto [Adriano]
+ - conhecimento: python, django, programação para internet
+
+Banco de Dados
+ + Diagrama
+  ++ ts: propor estrutura para pacientes e freqüência [Guilherme]
+ + Dados
+  + ts: melhorar tabela excel [Guilherme]
+  + ts: de excel para txt [Guilherme, Igor]
+ + Script
+  + ts: tratar dados vindos do txt (leitura e parsing do arquivo) [Igor]
+  + ts: salvar dados tratados no banco de dados mysql [Igor, Guilherme]
+ - conhecimento: banco de dados, mysql, python, excel
+
