@@ -1,18 +1,20 @@
 # Django settings for iluminare project.
 
+ILUMINARE_ROOT="/Users/adrianomelo/git/iluminare/src/"
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-    # ('Your Name', 'your_email@domain.com'),
+    ('Adriano Melo', 'iluminare@adrianomelo.com'),
 )
 
 MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': '',                      # Or path to database file if using sqlite3.
+        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': ILUMINARE_ROOT + 'db/database.db',                      # Or path to database file if using sqlite3.
         'USER': '',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
@@ -31,7 +33,7 @@ TIME_ZONE = 'America/Chicago'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'pt-br'
 
 SITE_ID = 1
 
@@ -58,7 +60,7 @@ MEDIA_URL = ''
 ADMIN_MEDIA_PREFIX = '/media/'
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = '@dhz30x0xu&4-vyo+z0x7&z5-b#d@=&m4*2jcmkjln)lj)i#e6'
+SECRET_KEY = '@dhz30x0xu&4-vyo+z0x7&z5-b#d@=em4*2jcmkjln)lj)i#e6'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -78,6 +80,7 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'iluminare.urls'
 
 TEMPLATE_DIRS = (
+    ILUMINARE_ROOT + "templates"
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
@@ -90,5 +93,5 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     # Uncomment the next line to enable the admin:
-    # 'django.contrib.admin',
+    'django.contrib.admin',
 )
