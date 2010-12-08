@@ -14,4 +14,11 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     (r'^admin/', include(admin.site.urls)),
+
+    # a primeira pagina do site e a primeira pagina no madulo 'entrada'
+    (r'^$', 'iluminare.entrada.views.index'),
+
+    # o app entrada tera as urls administradas em entrada/urls.py
+    (r'^entrada/', include('iluminare.entrada.urls'))    
+    #(r'^entrada/', 'iluminare.entrada.views.index') 
 )
