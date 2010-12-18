@@ -1,5 +1,6 @@
-from entrada.models import Pessoa, Presenca
+from entrada.models import *
 from django.contrib import admin
 
-admin.site.register(Pessoa)
-admin.site.register(Presenca)
+admin.site.register(Paciente)
+admin.site.register(Atendimento)
+admin.site.register(Tratamento)
