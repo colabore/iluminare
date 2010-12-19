@@ -1,3 +1,22 @@
+{% extends "index.html" %}
 
-hi!
-
+{% block conteudo %}
+<div class="lista-pessoas"> 
+    <table>
+        <thead>
+            <th>Nome</th>
+            <th>Sala</th>
+            <th>Atendimentos</th>
+            <th>Hoje</th>
+        </thead>
+        <tbody>
+        {% for paciente in pacientes %}
+            <tr>
+                <td>{{paciente.nome}}</td>
+                <td>{{paciente.salas}}</td>
+                <td>{{paciente.atendimentos}}</td>
+        {% endfor %}
+        </tbody>
+    <table>
+</div>
+{% endblock %}
