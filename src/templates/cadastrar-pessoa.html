@@ -12,7 +12,7 @@
 				<img src="media/calendar.jpg" alt="calendar" title="calendar"/>
 			</span>
 			<select>
-				{% for sala in salas %}
+				{% for sala in salas %} <!--TODO: model sala. Caso exista persistencia -->
 				<option>{{"sala " + sala.id}}</option>
 				{% endfor %}
 			</select>
