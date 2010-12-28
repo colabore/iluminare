@@ -1,4 +1,4 @@
-from entrada.models import *
+from iluminare.entrada.models import *
 from django.contrib import admin
 
 admin.site.register(Paciente)
