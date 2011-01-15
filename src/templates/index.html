@@ -2,11 +2,30 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
     <head>
-        <link rel="stylesheet" href="static/css/style.css" />
+        <!--<link rel="stylesheet" href="static/css/style.css" />-->
         <title>{% block title %}Projeto Iluminare{% endblock %}</title>
+		<script type="text/javascript" src="static/js/jquery-1.4.3.min.js"></script>
+		<script type="text/javascript">
+			$(document).ready(function(){
+				$("#q").keyup(function(key){
+					var nome = $(this).val();
+					$("#conteudo").load('/search/' + nome);
+				})
+			})
+			function seleciona_paciente(id) {
+				alert(id);
+			}
+		</script>
+		<link href="/static/css/reset.css" media="screen" rel="stylesheet" type="text/css" />
+		<link href="/static/css/pintado.css" media="screen" rel="stylesheet" type="text/css" />
     </head>
     <body>
         <div id="iluminare">
+			<div id="search">
+				<form id="form-search">
+					<input type="text" id="q" value="nome do paciente.."></input>
+				</form>
+			</div>
             <div id="conteudo">
             {% block conteudo %}
                 <p>Lista de pessoas...</p>

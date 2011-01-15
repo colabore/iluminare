@@ -2,9 +2,13 @@
 from django.shortcuts import render_to_response
 from iluminare.entrada.models import Paciente
 
-def index (request):
+def ajaxlistarpessoas (request, nome):
     lista = []
-    pacientes = Paciente.objects.all()[:10]
+
+    if request.method == 'GET':
+        pacientes = Paciente.objects.filter(nome__startswith=nome)
+    else:
+        pacientes = Paciente.objects.all()[:10]
 
     for paciente in pacientes:
         atendimentos = paciente.atendimento_set.all()
@@ -21,7 +25,7 @@ def index (request):
 
         lista.append(dic)
     
-    return render_to_response ('listar-pessoas.html', {'pacientes':lista})
+    return render_to_response ('ajax-listar-pessoas.html', {'pacientes':lista})
 
-def listar_pessoas(request):
-    return render_to_response ('listar-pessoas.html')    
+def index(request):
+    return render_to_response ('index.html')    

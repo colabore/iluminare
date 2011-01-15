@@ -1,6 +1,3 @@
-{% extends "index.html" %}
-
-{% block conteudo %}
 <div class="lista-pessoas"> 
     <table>
         <thead>
@@ -12,11 +9,11 @@
         <tbody>
         {% for paciente in pacientes %}
             <tr>
-                <td>{{paciente.nome}}</td>
+                <td><a href="javascript:seleciona_paciente({{paciente.id}})">{{paciente.nome}}</a></td>
                 <td>{{paciente.salas}}</td>
                 <td>{{paciente.atendimentos}}</td>
+                <td>?</td>
         {% endfor %}
         </tbody>
     <table>
 </div>
-{% endblock %}

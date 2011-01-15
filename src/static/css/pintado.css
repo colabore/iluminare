@@ -1,0 +1,47 @@
+body {
+	background: url(/static/img/pintado-fundo.jpg) #b39a6a;
+}
+
+#iluminare {
+	margin: 0px auto;
+	width: 960px;
+	color: #4c4c4b;
+	font-family: Arial;
+}
+
+#search {
+	margin: 0px auto;
+	width: 350px;
+	height: 100px;
+	background: url(/static/img/pintado-search.png) no-repeat center;
+}
+#search {
+	font-size: 20px;
+}
+#search #q {
+	padding-top:60px;
+	padding-left:20px;
+	font-size: 20px;
+	background: none;
+	border: none;
+}
+#conteudo {
+	margin: 0px auto;
+	width: 660px;
+	height: 359px;
+	border: 1px solid #5c5c5c;
+}
+#conteudo a {
+	color: #7BA29E;
+}
+#conteudo th {
+	padding: 10px 0px 0px 10px;
+	text-align: left;
+	height: 24px;
+}
+#conteudo td {
+	vertical-align: middle;
+	height: 35px;
+	width: 660px;
+	background: url(/static/img/pintado-fundo-tabela-linha.png) no-repeat;
+}

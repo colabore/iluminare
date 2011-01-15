@@ -1,4 +1,5 @@
 from django.conf.urls.defaults import *
+from django.conf import settings
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -17,6 +18,8 @@ urlpatterns = patterns('',
 
     # a primeira pagina do site e a primeira pagina no madulo 'entrada'
     (r'^$', 'iluminare.entrada.views.index'),
+    (r'^search/(?P<nome>\w+)$', 'iluminare.entrada.views.ajaxlistarpessoas'),
+    (r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root':settings.ILUMINARE_ROOT + "static"}),
 
     # o app entrada tera as urls administradas em entrada/urls.py
     (r'^entrada/', include('iluminare.entrada.urls'))    
