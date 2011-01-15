@@ -4,8 +4,8 @@ from iluminare.entrada.models import Paciente
 
 def ajaxlistarpessoas (request, nome):
     lista = []
-
-    if request.method == 'GET':
+    print nome
+    if request.method == 'GET' and nome != '':
         pacientes = Paciente.objects.filter(nome__istartswith=nome)
     else:
         pacientes = Paciente.objects.all()[:10]
