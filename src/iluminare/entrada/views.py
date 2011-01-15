@@ -6,7 +6,7 @@ def ajaxlistarpessoas (request, nome):
     lista = []
 
     if request.method == 'GET':
-        pacientes = Paciente.objects.filter(nome__startswith=nome)
+        pacientes = Paciente.objects.filter(nome__istartswith=nome)
     else:
         pacientes = Paciente.objects.all()[:10]
 
