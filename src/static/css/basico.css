@@ -1,0 +1,28 @@
+#iluminare {
+	width: 960px;
+	margin: 0px auto;
+	font-family:arial;
+}
+#search {
+	width: 50%;
+	margin: 0px auto;
+	padding:20px 0px 20px;
+}
+#search #q {
+	width:100%;
+	font-size:25px;
+}
+#conteudo {
+	font-size: 23px;
+}
+#conteudo table {
+	width:100%;
+	border: 1px solid #000;
+}
+#conteudo table td {
+	padding:4px;
+	border: 1px solid #555;
+}
+#conteudo table th {
+	padding: 6px;
+}
