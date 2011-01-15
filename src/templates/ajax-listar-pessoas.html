@@ -9,7 +9,7 @@
         <tbody>
         {% for paciente in pacientes %}
             <tr>
-                <td><a href="javascript:seleciona_paciente({{paciente.id}})">{{paciente.nome}}</a></td>
+                <td><a href="javascript:seleciona_paciente({{paciente.id}}, {{paciente.tratamento_id}})">{{paciente.nome}}</a></td>
                 <td>{{paciente.salas}}</td>
                 <td>{{paciente.atendimentos}}</td>
                 <td>?</td>

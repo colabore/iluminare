@@ -4,20 +4,25 @@
     <head>
         <!--<link rel="stylesheet" href="static/css/style.css" />-->
         <title>{% block title %}Projeto Iluminare{% endblock %}</title>
-		<script type="text/javascript" src="static/js/jquery-1.4.3.min.js"></script>
+		<script type="text/javascript" src="static/js/jquery-1.4.4.min.js"></script>
+		<script type="text/javascript" src="static/js/jquery-ui-1.8.8.custom.min.js"></script>
 		<script type="text/javascript">
 			$(document).ready(function(){
 				$("#q").keyup(function(key){
 					var nome = $(this).val();
-					$("#conteudo").load('/search/' + nome);
+					$("#conteudo").load('/entrada/search/' + nome);
 				})
 			})
-			function seleciona_paciente(id) {
-				alert(id);
+
+			function seleciona_paciente(paciente_id, tratamento_id) {
+				$("#dialog").load('/entrada/dialog/detalhe/' + paciente_id + '/' + tratamento_id);
+				var nome = $("#nome-sala h1").text();
+				$("#dialog").dialog({'title': 'Detalhe do paciênte ' + nome,'height':300, 'width':400, show: true});
 			}
 		</script>
 		<link href="/static/css/reset.css" media="screen" rel="stylesheet" type="text/css" />
 		<link href="/static/css/basico.css" media="screen" rel="stylesheet" type="text/css" />
+		<link href="/static/css/ui-lightness/jquery-ui-1.8.8.custom.css" media="screen" rel="stylesheet" type="text/css" />
     </head>
     <body>
         <div id="iluminare">
@@ -31,6 +36,7 @@
                 <p>Lista de pessoas...</p>
             {% endblock %}
             </div>
+			<div id="dialog"></div>
         </div>
     </body>
 </html>
