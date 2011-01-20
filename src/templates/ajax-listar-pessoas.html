@@ -2,6 +2,7 @@
     <table>
         <thead>
             <th>Nome</th>
+			<th>Data de Nascimento</th>
             <th>Tratamento</th>
             <th>Atendimentos</th>
             <th>Hoje</th>
@@ -10,9 +11,10 @@
         {% for paciente in pacientes %}
             <tr>
                 <td><a href="javascript:seleciona_paciente({{paciente.id}}, {{paciente.tratamento_id}})">{{paciente.nome}}</a></td>
+                <td>{{paciente.data_nascimento}}</td>
                 <td>{{paciente.salas}}</td>
                 <td>{{paciente.atendimentos}}</td>
-                <td>?</td>
+                <td>{{paciente.hoje}}</td>
         {% endfor %}
         </tbody>
     </table>

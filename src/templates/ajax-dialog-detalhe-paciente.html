@@ -5,7 +5,11 @@
 	</div>
 	<div id="redirecionar">
 		<p>Redirecionar: 
-			<select> </select>
+			<select>
+			{% for tratamento in tratamentos %}
+				<option value="{{tratamento.id}})">{{tratamento.display}}</option>
+			{% endfor %}
+			</select>
 		</p>
 	</div>
 	<div id="obs-prioritario">
