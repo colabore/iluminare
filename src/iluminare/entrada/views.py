@@ -3,13 +3,20 @@
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
 from iluminare.entrada.models import *
-import datetime
+import datetime, re
 
 def ajaxlistarpessoas (request, nome):
     lista = []
     print nome
     if request.method == 'GET' and nome != '':
-        pacientes = Paciente.objects.filter(nome__istartswith=nome)
+        data = re.findall('([0-9]{1,2})-([0-9]{1,2})-([0-9]{2,4})', nome)
+        if data:
+            data_nascimento = data[0]
+            data_nascimento = "%s-%s-%s" % (data_nascimento[2], data_nascimento[1], data_nascimento[0])
+            pacientes = Paciente.objects.filter(data_nascimento__startswith=data_nascimento)
+        else:
+            pacientes = Paciente.objects.filter(nome__istartswith=nome)
+        
     else:
         pacientes = Paciente.objects.all()[:10]
 
