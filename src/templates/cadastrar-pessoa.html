@@ -1,0 +1,25 @@
+{% extends "index.html" %}
+
+{% block conteudo %}
+<div class="cadastro-pessoa">
+	<form action="#" method="post">
+		<fieldset>
+			<label for="nome">nome: </label>
+			<input type="text" id="nome-paciente" name="nome" value="Digite o nome"/>
+			<label for="data-nascimento"> data de nascimento: </label>
+			<input type="text" id="data-nascimento" name="data-nascimento" value="  /  /  " />
+			<span id="calendar">
+				<img src="media/calendar.jpg" alt="calendar" title="calendar"/>
+			</span>
+			<select>
+				{% for sala in salas %} <!--TODO: model sala. Caso exista persistencia -->
+				<option>{{"sala " + sala.id}}</option>
+				{% endfor %}
+			</select>
+			<label for="observacao">observacao:</label>
+			<input type="text" id="observacao-pessoa" name="observacao" value="digite uma observacao acerca do paciente" />
+			<input type="submit" id="salvar-paciente" value="Salvar" />
+		</fieldset>
+	</form>
+</div>
+{% endblock %}
