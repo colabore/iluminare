@@ -1,22 +1,22 @@
 Wireframes
- - tela de impressão da listagem dos pacientes a serem atendidos (w1)
+ - tela de impress√£o da listagem dos pacientes a serem atendidos (w1)
  - tela para confirmar a lista de atendimentos realizados no dia (w2)
  - tela de agendamento de um tratamento (w3)
  - tela de cadastro de tratamento (w4)
  - tela de cadastro de paciente (w5)
 
-Codificação (html)
- - codificação da tela w1
- - codificação da tela w2
- - codificação da tela w3
- - codificação da tela w4
- - codificação da tela w5
+Codifica√ß√£o (html)
+ - codifica√ß√£o da tela w1
+ - codifica√ß√£o da tela w2
+ - codifica√ß√£o da tela w3
+ - codifica√ß√£o da tela w4
+ - codifica√ß√£o da tela w5
 
 Design (arte, css)
- - criar uma folha de estilos que se adeque às telas codificadas
+ - criar uma folha de estilos que se adeque √†s telas codificadas
 
-Programação
- - gravar dados recebidos ao confirmar presença do paciente
+Programa√ß√£o
+ - gravar dados recebidos ao confirmar presen√ßa do paciente
  - tela w1 para gerar a lista parcial ou completa de atendimentos a serem realizados em uma sala
  - tela w2 com um checkbox para cada atendimento cadastrado no dia (ao marcar o checkbox, confirma que o paciente foi realmente atendido)
  - tela w3
@@ -27,12 +27,12 @@ Base de dados
  - Inserir os dados de atendimento realizados em 2010 no novo sistema
 
 Detalhes das atividades
-	w1: ao confirmar a presença de um paciente na primeira tela do sistema, esses pacientes vão ter que ser impressos em uma lista para que eles possam ser chamados pelo nome ou por uma Senha para que o atendimento a ele seja realizado.
+	w1: ao confirmar a presen√ßa de um paciente na primeira tela do sistema, esses pacientes v√£o ter que ser impressos em uma lista para que eles possam ser chamados pelo nome ou por uma Senha para que o atendimento a ele seja realizado.
 
-Esses listas devem ser geradas progressivamente a medida que as pessoas vão chegando e aja uma necessidade de mais nomes para atendimento.
+Esses listas devem ser geradas progressivamente a medida que as pessoas v√£o chegando e aja uma necessidade de mais nomes para atendimento.
 
-A cada X pessoas que completam uma folha, a folha pode ser impressa. A tela deve cobrir o caso de fazer a impressão incompleta também.  
+A cada X pessoas que completam uma folha, a folha pode ser impressa. A tela deve cobrir o caso de fazer a impress√£o incompleta tamb√©m.  
 
-	w2: às vezes o paciente não espera para ser atendido e vai para casa. essa tela confirma que o atendimento foi realizado. Essa confirmação é feita ao final de um dia de trabalho.
+	w2: √†s vezes o paciente n√£o espera para ser atendido e vai para casa. essa tela confirma que o atendimento foi realizado. Essa confirma√ß√£o √© feita ao final de um dia de trabalho.
 
 
