@@ -4,8 +4,9 @@
     <head>
         <!--<link rel="stylesheet" href="static/css/style.css" />-->
         <title>{% block title %}Projeto Iluminare{% endblock %}</title>
-		<script type="text/javascript" src="static/js/jquery-1.4.4.min.js"></script>
-		<script type="text/javascript" src="static/js/jquery-ui-1.8.8.custom.min.js"></script>
+		<script type="text/javascript" src="/static/js/jquery-1.4.4.min.js"></script>
+		<script type="text/javascript" src="/static/js/jquery.mousewheel-3.0.4.pack.js"></script>
+		<script type="text/javascript" src="/static/js/jquery.fancybox-1.3.4.pack.js"></script>
 		<script type="text/javascript">
 			$(document).ready(function(){
 				$("#q").keyup(function(key){
@@ -18,15 +19,19 @@
 			function seleciona_paciente(paciente_id, tratamento_id) {
 				$.get('/entrada/dialog/detalhe/' + paciente_id + '/' + tratamento_id, 
 					function (data) {
-						$("#dialog").html(data);
-						var nome = $("#nome-sala h1").text();
-						$("#dialog").dialog({'title': 'Detalhe do paciênte ' + nome,'height':300, 'width':400, show: true});
+						$.fancybox(
+							data,
+							{
+								'transitionIn':		'elastic',
+								'transitionOut':	'elastic'
+							}
+						);
 				})
 			}
 		</script>
 		<link href="/static/css/reset.css" media="screen" rel="stylesheet" type="text/css" />
 		<link href="/static/css/basico.css" media="screen" rel="stylesheet" type="text/css" />
-		<link href="/static/css/ui-lightness/jquery-ui-1.8.8.custom.css" media="screen" rel="stylesheet" type="text/css" />
+		<link href="/static/css/jquery.fancybox-1.3.4.css" media="screen" rel="stylesheet" type="text/css" />
     </head>
     <body>
         <div id="iluminare">
@@ -40,7 +45,6 @@
                 <p>Lista de pessoas...</p>
             {% endblock %}
             </div>
-			<div id="dialog"></div>
         </div>
     </body>
 </html>

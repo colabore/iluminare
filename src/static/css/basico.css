@@ -26,3 +26,7 @@
 #conteudo table th {
 	padding: 6px;
 }
+#dialog {
+	width: 400px;
+	height: 300px;
+}
