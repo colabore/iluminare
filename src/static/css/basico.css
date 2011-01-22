@@ -12,21 +12,32 @@
 	width:100%;
 	font-size:25px;
 }
-#conteudo {
+#lista-pessoas {
 	font-size: 23px;
 }
-#conteudo table {
+#lista-pessoas table {
 	width:100%;
 	border: 1px solid #000;
 }
-#conteudo table td {
+#lista-pessoas table td {
 	padding:4px;
 	border: 1px solid #555;
 }
-#conteudo table th {
+#lista-pessoas table th {
 	padding: 6px;
+}
+#lista-pessoas table span {
+	font-size:16px;
 }
 #dialog {
 	width: 400px;
 	height: 300px;
+}
+#detalhe-paciente {
+	font-size: 20px;
+	font-family: arial;
+}
+#detalhe-paciente textarea {
+	width:70%;
+	height: 50px;
 }
