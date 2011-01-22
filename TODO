@@ -1,3 +1,6 @@
+BUGS
+ - ao procurar um nome. quando digita-se muito rápido, ela nao se comporta muito bem (digite rapido um nome depois apague rápido)
+
 Wireframes
  - tela de impressão da listagem dos pacientes a serem atendidos (w1)
  - tela para confirmar a lista de atendimentos realizados no dia (w2)
