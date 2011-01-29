@@ -29,13 +29,14 @@ Programação
 Base de dados
  - Inserir os dados de atendimento realizados em 2010 no novo sistema
  
- - Pendencias no código models.py : Checar a possibilidade de alterar o formato dos dias da semana no tratamento para tipo inteiro; Definir os campos que podem ser nulos; 
+iluminare.entrada.models.py
+ - Checar a possibilidade de alterar o formato dos dias da semana no tratamento para tipo inteiro; 
+ - Definir os campos que podem ser nulos; 
 
 Detalhes das atividades
 	w1: ao confirmar a presença de um paciente na primeira tela do sistema, esses pacientes vão ter que ser impressos em uma lista para que eles possam ser chamados pelo nome ou por uma Senha para que o atendimento a ele seja realizado.
 Esses listas devem ser geradas progressivamente a medida que as pessoas vão chegando e aja uma necessidade de mais nomes para atendimento.
 A cada X pessoas que completam uma folha, a folha pode ser impressa. A tela deve cobrir o caso de fazer a impressão incompleta também.  
-
 	w2: às vezes o paciente não espera para ser atendido e vai para casa. essa tela confirma que o atendimento foi realizado. Essa confirmação é feita ao final de um dia de trabalho.
 
 
