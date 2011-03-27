@@ -17,10 +17,13 @@ urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls)),
 
     # a primeira pagina do site e a primeira pagina no madulo 'entrada'
-    (r'^$', 'iluminare.entrada.views.index'),
+    (r'^$', 'iluminare.limbo.views.index'),
     (r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root':settings.ILUMINARE_ROOT + "static"}),
 
     # o app entrada tera as urls administradas em entrada/urls.py
-    (r'^entrada/', include('iluminare.entrada.urls'))    
-    #(r'^entrada/', 'iluminare.entrada.views.index') 
+    (r'^paciente/', include('iluminare.paciente.urls')),
+    (r'^trabalhador/', include('iluminare.trabalhador.urls')),
+    (r'^limbo/', include('iluminare.limbo.urls')),
+    (r'^relatorio/', include('iluminare.relatorio.urls')),
+    (r'^atendimento/', include('iluminare.atendimento.urls')),
 )

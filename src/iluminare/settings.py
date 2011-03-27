@@ -98,5 +98,10 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
-    'iluminare.entrada'
+    'iluminare.paciente',
+	'iluminare.limbo',
+	'iluminare.trabalhador',
+	'iluminare.relatorio',
+	'iluminare.database',
+	'iluminare.atendimento'
 )
