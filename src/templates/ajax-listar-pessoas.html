@@ -3,16 +3,23 @@
         <thead>
             <th>Nome</th>
             <th>Tratamento</th>
-            <th>Atendimentos</th>
-            <th>Hoje</th>
+            <th>Atendimento</th>
+            <th>Agenda</th>
+            <th>Data Nasc.</th>
+            <th>Último Trat.</th>
+            <th>Check-in</th>
         </thead>
         <tbody>
         {% for paciente in pacientes %}
             <tr>
-                <td><a href="javascript:seleciona_paciente({{paciente.id}}, {{paciente.tratamento_id}})">{{paciente.nome}}</a> <span>({{paciente.data_nascimento}})</span></td>
+                <td><a href="javascript:seleciona_paciente({{paciente.id}}, {{paciente.tratamento_id}})">{{paciente.nome}}</a></td>
                 <td>{{paciente.salas}}</td>
+                <td></td> <!-- Agenda -->
                 <td>{{paciente.atendimentos}}</td>
-                <td>{{paciente.hoje}}</td>
+                <td>{{paciente.data_nascimento}}</td>
+                <td></td><!-- Ultimo Trat.-->
+				<td><a href="#"><img alt="" src="../static/img/checkin.png" /></a></td>
+			</tr>
         {% endfor %}
         </tbody>
     </table>
