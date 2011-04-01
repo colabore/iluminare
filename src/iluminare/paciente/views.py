@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
-from iluminare.database.models import *
+from iluminare.paciente.models import *
+from iluminare.atendimento.models import *
 import datetime, re
 
 def ajaxlistarpessoas (request, nome):
