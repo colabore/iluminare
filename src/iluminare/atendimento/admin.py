@@ -1,4 +1,3 @@
-from iluminare.paciente.models import *
 from iluminare.atendimento.models import *
 from django.contrib import admin
 
