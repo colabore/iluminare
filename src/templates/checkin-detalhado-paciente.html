@@ -1,0 +1,22 @@
+<div id="div-checkin-detalhado">
+	<form method="post" id="form-checkin-detalhado">
+		<div id="div-dados-paciente">
+			<h3 id="nome">{{paciente.nome}}</h3>
+			<font>{{paciente.sala}} [Qtd de tratamentos]</font>
+			<p id="prioridade">{{paciente.prioridade}}</p><!-- mostrar caso prioridade -->
+			<label for="senha">Senha:</senha>
+			<input type="password" id="senha" name="senha" />
+		</div><!-- end dados paciente -->
+		<div id="div-redirecinar">
+			<p>Redirecionar:
+				<select>
+				{% for tratamento in tratamentos %}
+					<option value="{{tratamento.id}})">{{tratamento.display}}</option>
+				{% endfor %}	
+				</select>
+			</p>
+		</div><!-- end redirecinar -->
+		<input type="submit" value="OK" id="btn-ok"/>
+		<input type="button" value="Cancela" id="btn-cancela"/>
+	</form>
+</div>

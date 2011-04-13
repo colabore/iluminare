@@ -52,41 +52,33 @@ text-decoration: none;
 
 #navlist li a:link { color: #448; }
 #navlist li a:visited { color: #667; }
-
-#navlist li a:hover
-{
+#navlist li a:hover {
 color: #FFF;
 background-color: #D3E3B5;
 }
-
 #content {
 	margin: 0px auto;
 	margin-bottom: 40px;
 	position: relative;
 	font-family: Arial;
 }
-
 #search-box {
 	margin: 0px auto;
 	margin-top: 30px;
-
 	width: 350px;
 	height: 50px;
 	position: relative;
 }
-
 #search-box button {
 	height: 25px;
 	position: relative;	
 	float: left;
 }
-
 #form-search {
 	background-color: none;
 	margin-right: 10px;
 	float: left;	
 }
-
 .textInput {
 	margin: 0px auto;	
 	color: #333333;
@@ -95,17 +87,15 @@ background-color: #D3E3B5;
 	font-size: 1.2em;
 	float: left;
 }
-
 #search-results {
 	margin: 0px auto;
 	width: 660px;
 	height: 300px;
 	border: 1px solid #e8e;
 }
-
 #footer {
-	margin: 0px auto
-
+	margin: 0px auto;
 	height: 100px;
 	background-color: #3AA;
 }
+
