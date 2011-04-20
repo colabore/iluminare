@@ -1,6 +1,23 @@
 
 #-*- coding: utf-8 -*-
 
+
+"""
+Este módulo implementa a carga inicial da base de dados do Iluminare.
+
+Os PARAMETROS de entrada para a realizacão da carga são os arquivos no formato CSV, gerados a partir dos dados originais em XLS.
+Cada arquivo CSV traz uma lista com os nomes dos pacientes e a presenca de cada um deles nos dias de tratamento. 
+Temos um arquivo por sala de tratamento para cada 2 meses. Por exemplo, para a sala 5 em 2010, temos fev-mar, abr-mai, jun-jul, ago-set, out-nov e dez. Lembrar que não temos atividades em janeiro.
+Para 2011, já temos fev-mar, abr-mai. 8 arquivos para cada sala. Como temos 5 salas de tratamento, teremos 40 arquivos como entrada.
+O formato padrão para os arquivos é:
+QL_<sala>_<ano>_<mes>.csv - onde mês representa, um bimestre ou dez.
+Exemplo:
+QL_sala5_2010_fev-mar.csv
+QL_sala2_2010_dez.csv
+
+"""
+
+
 import MySQLdb
 
 # PARÂMETROS
@@ -38,7 +55,7 @@ def lista_nomes(nome_arquivo):
     return lista
 
 # Retorna o nome da pessoa com a primeira letra maiúscula
-# Excessão para palavras com 1 letra, 'da' e 'de'.
+# Excecão para palavras com 1 letra, 'da' e 'de'.
 # Evita que tenhamos João Da Silva ou João E Silva
 def letra_maiuscula(nome):
     if len(nome) == 1:
