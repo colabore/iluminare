@@ -50,7 +50,7 @@ class InstanciaTratamento(models.Model):
     observacoes			= models.TextField(blank = True, null = True)
 
     def __unicode__(self):
-		return "%s em %s" % (self.tratamento)
+		return "%s em %s" % (self.tratamento, self.data)
 		
 class AgendaTratamento(models.Model):
     paciente		= models.ForeignKey(Paciente, null = False, blank = False)
