@@ -1,5 +1,5 @@
 from django.contrib import admin
-from iluminare.trabalhador.models import *
+from iluminare.voluntario.models import *
 
 admin.site.register(Trabalho)
 admin.site.register(Funcao)

@@ -22,7 +22,7 @@ urlpatterns = patterns('',
 
     # o app entrada tera as urls administradas em entrada/urls.py
     (r'^paciente/', include('iluminare.paciente.urls')),
-    (r'^trabalhador/', include('iluminare.trabalhador.urls')),
+    (r'^voluntario/', include('iluminare.voluntario.urls')),
     (r'^limbo/', include('iluminare.limbo.urls')),
     (r'^relatorio/', include('iluminare.relatorio.urls')),
     (r'^atendimento/', include('iluminare.atendimento.urls')),

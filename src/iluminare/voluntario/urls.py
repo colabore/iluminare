@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import * 
 
-urlpatterns = patterns('iluminare.trabalhador.views',
+urlpatterns = patterns('iluminare.voluntario.views',
     (r'^$', 'index'),
 )
 
