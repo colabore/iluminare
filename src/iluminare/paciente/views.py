@@ -22,25 +22,25 @@ def ajaxlistarpessoas (request, nome):
 
     for paciente in pacientes:
         atendimentos = paciente.atendimento_set.all()
-        at_anteriores = [a.hora_chegada.strftime("%d/%m") for a in atendimentos if a.atendido]
+        at_anteriores = [a.hora_de_chegada.strftime("%d/%m") for a in atendimentos if a.atendido and a.hora_de_chegada]
        
         hoje = False
         for atendimento in atendimentos:
-            chegada = atendimento.hora_chegada
+            chegada = atendimento.hora_de_chegada
             chegada = (chegada.year, chegada.month, chegada.day)
             agora = datetime.datetime.now()
             agora = (agora.year, agora.month, agora.day)
             if chegada == agora:
                 hoje = True
 
-        tratamentos = paciente.tratamentoemandamento_set.all()
+        tratamentos = paciente.tratamentopaciente_set.all()
         salas = ["%s (%s)" % (t.tratamento.sala, t.tratamento.get_dia_display())  for t in tratamentos]
 
         dic = {
 			'tratamento_id': tratamentos and tratamentos[0].tratamento.id or 0,
 			'id':paciente.id,
             'nome':paciente.nome,
-			'data_nascimento':paciente.data_nascimento.strftime("%d/%m/%Y"),
+			'data_nascimento':paciente.data_nascimento and paciente.data_nascimento.strftime("%d/%m/%Y") or '',
             'atendimentos': ", ".join(at_anteriores),
             'salas': ",".join(salas),
 			'hoje': hoje and '\o/' or ':('
