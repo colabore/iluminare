@@ -99,7 +99,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'iluminare.paciente',
 	'iluminare.limbo',
-	'iluminare.trabalhador',
+	'iluminare.voluntario',
 	'iluminare.relatorio',
 	'iluminare.atendimento',
 	'iluminare.tratamento'
