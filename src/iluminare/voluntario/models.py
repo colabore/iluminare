@@ -14,7 +14,7 @@ class Trabalho(models.Model):
     hora_final      = models.TimeField('horario final do expediente', null=True, blank=True)
 
     def __unicode__(self):
-		return "%s: %s (%s - %s)" % (self.funcao, self.colaborador, self.hora_inicio, self.hora_final)
+		return "%s: %s - %s (%s - %s)" % (self.funcao.descricao, self.voluntario.paciente.nome, self. data, self.hora_inicio, self.hora_final)
 
 class Funcao(models.Model):
     descricao       = models.TextField(null = False, blank = False)
@@ -35,14 +35,14 @@ class Voluntario(models.Model):
     
     
     def __unicode__(self):
-		return "%s atividade: %s" % (self.paciente, self.tipo) 
+		return "%s atividade: %s" % (self.paciente.nome, self.tipo) 
 
 class FuncaoVoluntario(models.Model):
     funcao          = models.ForeignKey("Funcao")
     voluntario      = models.ForeignKey("Voluntario")
 
     def __unicode__(self):
-    	return "%s : %s" % (self.funcao, self.colaborador)
+    	return "%s : %s" % (self.funcao.descricao, self.voluntario.paciente.nome)
 
 class AgendaTrabalho(models.Model):
     voluntario		= models.ForeignKey(Voluntario, null = False, blank = False)
@@ -51,5 +51,5 @@ class AgendaTrabalho(models.Model):
     hora_saida		= models.TimeField(null = True, blank = True)
 
     def __unicode__(self):
-        return "%s %s" % (self.voluntario)
+        return "%s - data: %s" % (self.voluntario.paciente.nome, self.data)
 

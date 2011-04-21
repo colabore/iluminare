@@ -26,7 +26,7 @@ class Paciente(models.Model):
     def __unicode__(self):
         return self.nome
         
-class TipoPrioridade(models.Model):
+class DetalhePrioridade(models.Model):
     paciente                = models.ForeignKey(Paciente, null = False, blank = False)
 
     gravida                 = models.BooleanField(blank = True)
@@ -34,4 +34,8 @@ class TipoPrioridade(models.Model):
     lactante                = models.BooleanField(blank = True)
     data_inicio_amamentacao = models.DateField(blank = True, null = True)
     crianca                 = models.BooleanField(blank = True) 
+
+    # ajustar
+    def __unicode__(self):
+        return self.paciente.nome
 
