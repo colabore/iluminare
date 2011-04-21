@@ -42,7 +42,7 @@ class TratamentoPaciente(models.Model):
         return "%s %s (%s - %s)" % (self.paciente.nome, self.tratamento, self.data_inicio, self.data_fim)
 
 class InstanciaTratamento(models.Model):
-    tratamento			= models.ForeignKey(TratamentoPaciente, null = False, blank = False)
+    tratamento			= models.ForeignKey(Tratamento, null = False, blank = False)
     
     data                = models.DateField(null = False, blank = False)    
     medico_espiritual 	= models.CharField(max_length = 45, blank = True, null = True)
