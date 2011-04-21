@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-#-*- coding:utf-8 -*-
+# coding: utf-8
 
 from django.db import models
 from iluminare.paciente.models import Paciente
 from iluminare.atendimento.models import Tratamento
-
 
 class Trabalho(models.Model):
     funcao	        = models.ForeignKey("Funcao")
@@ -38,15 +37,14 @@ class Voluntario(models.Model):
     def __unicode__(self):
 		return "%s atividade: %s" % (self.paciente, self.tipo) 
 
-class Funcao_Voluntario(models.Model):
+class FuncaoVoluntario(models.Model):
     funcao          = models.ForeignKey("Funcao")
     voluntario      = models.ForeignKey("Voluntario")
 
     def __unicode__(self):
     	return "%s : %s" % (self.funcao, self.colaborador)
 
-class Agenda_Trabalho(models.Model):
-
+class AgendaTrabalho(models.Model):
     voluntario		= models.ForeignKey(Voluntario, null = False, blank = False)
     data            = models.DateField(null = False, blank = False)    
     hora_chegada	= models.TimeField(null = True, blank = True)

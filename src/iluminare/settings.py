@@ -101,5 +101,6 @@ INSTALLED_APPS = (
 	'iluminare.limbo',
 	'iluminare.trabalhador',
 	'iluminare.relatorio',
-	'iluminare.atendimento'
+	'iluminare.atendimento',
+	'iluminare.tratamento'
 )

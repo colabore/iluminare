@@ -4,8 +4,14 @@
 from django.db import models
 
 class Paciente(models.Model):
-    SEXO = ( ('M','Masculino'), ('F','Feminino'))
-    FREQUENCIA = (('S','Semanal'), ('Q','Quinzenal'), ('M','Mensal'))
+    SEXO = (
+		('M','Masculino'), 
+		('F','Feminino'))
+
+    FREQUENCIA = (
+		('S','Semanal'), 
+		('Q','Quinzenal'), 
+		('M','Mensal'))
     	
     nome                = models.CharField(max_length=100, blank = False, null = False)
     data_nascimento     = models.DateField(blank = True, null = True)    
@@ -20,8 +26,7 @@ class Paciente(models.Model):
     def __unicode__(self):
         return self.nome
         
-class Tipo_Prioridade(models.Model):
-    
+class TipoPrioridade(models.Model):
     paciente                = models.ForeignKey(Paciente, null = False, blank = False)
 
     gravida                 = models.BooleanField(blank = True)
