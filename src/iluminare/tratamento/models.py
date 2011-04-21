@@ -23,7 +23,7 @@ class Tratamento(models.Model):
     max_agendamentos    = models.IntegerField(null = True, blank = True)
 
     def __unicode__(self):
-        return "%s dia %s" % (self.descricao_basica, self.dia_semana)
+	return "%s dia %s" % (self.descricao_basica, self.dia_semana)
 
 class Sala(models.Model):
     descricao   = models.CharField(max_length = 45, blank = False, null = False)
@@ -59,5 +59,5 @@ class AgendaTratamento(models.Model):
     data            = models.DateField(null = True, blank = True)
     
     def __unicode__(self):
-        return "%s %s %s" % (self.paciente, self.tratamento)
+        return "%s %s %s" % (self.paciente, self.tratamento, self.data)
 
