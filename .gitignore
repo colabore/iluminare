@@ -2,3 +2,4 @@
 *pyc*
 *~
 *.bak
+*src/db/database.db

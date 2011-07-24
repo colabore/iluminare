@@ -17,23 +17,31 @@ class Paciente(models.Model):
     data_nascimento     = models.DateField(blank = True, null = True)    
     sexo 	        	= models.CharField(max_length=1, choices = SEXO , null= True, blank = True)    
     email               = models.EmailField(max_length=100, null=True, blank=True)    
-    prioridade          = models.BooleanField(blank = True)     
-    frequencia			= models.CharField(max_length= 1, choices = FREQUENCIA, null=True, blank=True)
+    prioridade          = models.BooleanField(null=True, blank=True)     
+    frequencia			= models.CharField(max_length=1, choices = FREQUENCIA, null=True, blank=True)
     obeservacao         = models.TextField(null=True, blank=True)    
     saude               = models.TextField(null=True, blank=True)    	
     acompanhante        = models.ForeignKey('self', null=True, blank=True)
    
-    def __unicode__(self):
+	# Não incluidos na primeira versão
+    # Telefones, endereço, hora nascimento, local_nascimento, escolaridade
+	# estado civil, profissao, tem ficha, detalhe ficha
+
+	def __unicode__(self):
         return self.nome
         
 class DetalhePrioridade(models.Model):
     paciente                = models.ForeignKey(Paciente, null = False, blank = False)
 
-    gravida                 = models.BooleanField(blank = True)
+    gravida                 = models.BooleanField(blank = True, null = True)
     data_inicio_gravidez    = models.DateField(blank = True, null = True)
-    lactante                = models.BooleanField(blank = True)
+    
+	lactante                = models.BooleanField(blank = True, null = True)
     data_inicio_amamentacao = models.DateField(blank = True, null = True)
-    crianca                 = models.BooleanField(blank = True) 
+    
+	crianca                 = models.BooleanField(blank = True, null = True) 
+	
+	baixa_imunidade			= models.BooleanField(blank=True, null=True)
 
     # ajustar
     def __unicode__(self):
