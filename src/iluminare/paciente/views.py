@@ -3,55 +3,26 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponse
 from iluminare.paciente.models import *
 from iluminare.atendimento.models import *
-import datetime, re
+from iluminare.tratamento.models import *
+
+import iluminare.paciente.logic as paciente_logic
+import datetime
 
 def ajaxlistarpessoas (request, nome):
-    lista = []
-    print nome
+    pacientes = None
+
     if request.method == 'GET' and nome != '':
-        data = re.findall('([0-9]{2})([0-9]{2})([0-9]{4})', nome)
-        if data:
-            data_nascimento = data[0]
-            data_nascimento = "%s-%s-%s" % (data_nascimento[2], data_nascimento[1], data_nascimento[0])
-            pacientes = Paciente.objects.filter(data_nascimento__startswith=data_nascimento)
-        else:
-            pacientes = Paciente.objects.filter(nome__istartswith=nome)
+        pacientes = paciente_logic.search(nome)
         
-    else:
+    if not pacientes:
         pacientes = Paciente.objects.all()[:10]
 
-    for paciente in pacientes:
-        atendimentos = paciente.atendimento_set.all()
-        at_anteriores = [a.hora_de_chegada.strftime("%d/%m") for a in atendimentos if a.atendido and a.hora_de_chegada]
-       
-        hoje = False
-        for atendimento in atendimentos:
-            chegada = atendimento.hora_de_chegada
-            chegada = (chegada.year, chegada.month, chegada.day)
-            agora = datetime.datetime.now()
-            agora = (agora.year, agora.month, agora.day)
-            if chegada == agora:
-                hoje = True
+    lista = paciente_logic.format_table(pacientes)
 
-        tratamentos = paciente.tratamentopaciente_set.all()
-        salas = ["%s (%s)" % (t.tratamento.sala, t.tratamento.get_dia_display())  for t in tratamentos]
-
-        dic = {
-			'tratamento_id': tratamentos and tratamentos[0].tratamento.id or 0,
-			'id':paciente.id,
-            'nome':paciente.nome,
-			'data_nascimento':paciente.data_nascimento and paciente.data_nascimento.strftime("%d/%m/%Y") or '',
-            'atendimentos': ", ".join(at_anteriores),
-            'salas': ",".join(salas),
-			'hoje': hoje and '\o/' or ':('
-        }
-
-        lista.append(dic)
-    
     return render_to_response ('ajax-listar-pessoas.html', {'pacientes':lista})
 
 def dialog_detalhe(request, paciente_id, tratamento_id):
-    lista = TratamentoEmAndamento.objects.filter(tratamento__id=tratamento_id, paciente__id=paciente_id)
+    lista = TratamentoPaciente.objects.filter(tratamento__id=tratamento_id, paciente__id=paciente_id)
     
     if not lista:
         return HttpResponse ("O tratamento do paciente não está cadastrado")
