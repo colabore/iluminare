@@ -1,8 +1,11 @@
 $(document).ready(function(){
     function bindclickpacientes(){
         $("#iluminare #tabela-pacientes a").click(function(){
-            var paciente_tratamento = $(this).attr('id');
-            alert(paciente_tratamento);
+            var paciente = $(this).attr('id');
+            $.get('/paciente/consultar/' + paciente,
+                function (data){
+                    $.fancybox(data, {'transitionIn':'elastic', 'transitionOut':'elastic'});
+                });
         });
     }
 
