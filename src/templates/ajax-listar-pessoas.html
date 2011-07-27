@@ -9,9 +9,9 @@
             <th>Último Trat.</th>
             <th>Check-in</th>
         </thead>
-        <tbody>
+        <tbody id="tabela-pacientes">
         {% for paciente in pacientes %}
-            <tr id="tabela-pacientes">
+            <tr>
                 <td><a href="#" id="{{paciente.id}}/3">{{paciente.nome}}</a></td>
                 <td>{{paciente.salas}}</td>
                 <td>[Agenda]</td> <!-- Agenda -->

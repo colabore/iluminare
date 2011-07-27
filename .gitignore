@@ -2,4 +2,4 @@
 *pyc*
 *~
 *.bak
-*src/db/database.db
+src/db/database.db

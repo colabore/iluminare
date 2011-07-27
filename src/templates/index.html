@@ -4,33 +4,10 @@
     <head>
         <!--<link rel="stylesheet" href="static/css/style.css" />-->
         <title>{% block title %}Projeto Iluminare{% endblock %}</title>
-		<script type="text/javascript" src="/static/js/jquery-1.4.4.min.js"></script>
+		<script type="text/javascript" src="/static/js/jquery-1.6.2.min.js"></script>
 		<script type="text/javascript" src="/static/js/jquery.mousewheel-3.0.4.pack.js"></script>
 		<script type="text/javascript" src="/static/js/jquery.fancybox-1.3.4.pack.js"></script>
-		<script type="text/javascript">
-			$(document).ready(function(){
-                $("#q-paciente").keyup(function(key){
-					var nome = $(this).val();
-					$("#search-results").load('/paciente/search/' + encodeURIComponent(nome));
-				})
-				
-                $("#lista-pessoas").click(function(handler){
-                    alert('oi')
-                    var h_id = handler.attr('id');
-                    alert(h_id);
-                    /*$.get('/paciente/dialog/detalhe/' + h_id, 
-					    function (data) {
-						    $.fancybox(
-							    data, {
-								    'transitionIn': 'elastic',
-								    'transitionOut': 'elastic'
-							    }
-						    );
-					    };
-                    );*/
-                });
-            });
-        </script>
+		<script type="text/javascript" src="/static/js/iluminare.js"></script>
 		<link href="/static/css/reset.css" media="screen" rel="stylesheet" type="text/css" />
 		<link href="/static/css/quinta.css" media="screen" rel="stylesheet" type="text/css" />
 		<link href="/static/css/quinta-formato.css" media="screen" rel="stylesheet" type="text/css" />
