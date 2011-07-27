@@ -2,6 +2,62 @@
 from iluminare.paciente.models import *
 import re, datetime
 
+
+def consultar_paciente(codigo):
+    dic = {}
+    
+    try:
+        paciente = Paciente.objects.get(id=codigo)
+        dic = {  'profissao': paciente.profissao, 
+                 'nome': paciente.nome,
+                 'telefones': paciente.telefones,
+                 'hora_nascimento': paciente.hora_nascimento, 
+                 'acompanhante_id': paciente.acompanhante_id, 
+                 'local_nascimento': paciente.local_nascimento, 
+                 'data_nascimento': paciente.local_nascimento, 
+                 'sexo': paciente.sexo, 
+                 'email': paciente.email, 
+                 'observacao': paciente.observacao, 
+                 'prioridade': paciente.prioridade, 
+                 'frequencia': paciente.frequencia, 
+                 'detalhe_ficha': paciente.detalhe_ficha, 
+                 'saude': paciente.saude, 
+                 'endereco': paciente.endereco, 
+                 'estado_civil': paciente.estado_civil, 
+                 'escolaridade': paciente.escolaridade, 
+                 'id': paciente.id, 
+                 'tem_ficha': paciente.tem_ficha
+              } 
+
+    except Paciente.DoesNotExist:
+        dic = {}
+        
+    return dic
+    """
+    dic = {  'telefones': paciente.telefones,
+             'hora_nascimento': paciente.hora_nascimento, 
+             'profissao': paciente.profissao, 
+             'nome': paciente.nome, 
+             'acompanhante_id': paciente.acompanhante_id, 
+             'local_nascimento': paciente.local_nascimento, 
+             'data_nascimento': paciente.local_nascimento, 
+             'sexo': paciente.sexo, 
+             'email': paciente.email, 
+             'observacao': paciente.observacao, 
+             'prioridade': paciente.prioridade, 
+             'frequencia': paciente.frequencia, 
+             'detalhe_ficha': paciente.detalhe_ficha, 
+             'saude': paciente.saude, 
+             'endereco': paciente.endereco, 
+             'estado_civil': paciente.estado_civil, 
+             'escolaridade': paciente.escolaridade, 
+             'id': paciente.id, 
+             'tem_ficha': paciente.tem_ficha,
+             'tratamento': paciente.tratamento_id
+             }
+    
+    return dic
+    """
 def search(nome):
     """
         retorno: DataSet (i.e.: Paciente.objects.all()
