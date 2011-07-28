@@ -1,36 +1,50 @@
 # coding: utf-8
 from iluminare.paciente.models import *
+from iluminare.tratamento.models import *
 import re, datetime
+
+class PacienteException(Exception):
+    def __init__(self, msg):
+        self.message = msg
+    
+    def __str__(self):
+        return repr(self.message)
 
 
 def consultar_paciente(codigo):
+    
+    
+    try:
+        codigo = int(codigo)
+    except ValueError:
+        raise PacienteException("Erro: código do paciente inválido: " + codigo)
+
     dic = {}
     
     try:
         paciente = Paciente.objects.get(id=codigo)
-        dic = {  'profissao': paciente.profissao, 
-                 'nome': paciente.nome,
-                 'telefones': paciente.telefones,
-                 'hora_nascimento': paciente.hora_nascimento, 
-                 'acompanhante_id': paciente.acompanhante_id, 
-                 'local_nascimento': paciente.local_nascimento, 
-                 'data_nascimento': paciente.local_nascimento, 
-                 'sexo': paciente.sexo, 
-                 'email': paciente.email, 
-                 'observacao': paciente.observacao, 
-                 'prioridade': paciente.prioridade, 
-                 'frequencia': paciente.frequencia, 
-                 'detalhe_ficha': paciente.detalhe_ficha, 
-                 'saude': paciente.saude, 
-                 'endereco': paciente.endereco, 
-                 'estado_civil': paciente.estado_civil, 
-                 'escolaridade': paciente.escolaridade, 
-                 'id': paciente.id, 
-                 'tem_ficha': paciente.tem_ficha
+        # ainda falta filtrar os tratamentos já encerrados
+        tratamentos_paciente = TratamentoPaciente.objects.filter(paciente=codigo)
+        tratamentos = []
+        for t in tratamentos_paciente:
+            tratamentos.append(t.tratamento)
+        
+        if DetalhePrioridade.objects.filter(paciente=codigo).count() == 1:
+            detalhe_prioridade = DetalhePrioridade.objects.get(paciente=codigo)
+        else:
+            detalhe_prioridade = None
+        
+        
+        dic = {  'paciente': paciente,
+                 'tratamentos': tratamentos,
+                 'detalhe_prioridade': detalhe_prioridade
+                 
               } 
 
     except Paciente.DoesNotExist:
         dic = {}
+    except:
+        raise PacienteException("Erro na função consultar paciente")
         
     return dic
 
