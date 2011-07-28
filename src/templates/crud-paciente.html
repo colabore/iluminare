@@ -4,48 +4,44 @@
 	<form method="post" name="cadastro-paciente" id="form-cadastro-paciente">
 		<table>
 			<tr>
-				<td>
-					<label for="input-name">Nome completo:</label>
-				</td>
-				<td>
-					<input type="text" name="nome" id="input-name" />
-				</td>
+				<td><label for="input-name">Nome completo:</label></td>
+				<td><input type="text" name="nome" id="input-name" /></td>
 			</tr>
 			<tr>
-				<td>
-					<label for="input-data">Data de Nascimento:</label>
-				</td>
-				<td>
-					<input type="text" name="data-nascimento" id="input-data"/>
-				</td>
-				<td>
-					<label>Sexo:</label>
+				<td><label for="input-data">Data de Nascimento:</label></td>
+				<td><input type="text" name="data-nascimento" id="input-data"/></td>
+			</tr>
+            <tr>
+                <td><label>Sexo:</label></td>
+                <td>
 					<input type="radio" name="radio-sexo" id="masc" value="M" /> 
 					<label for="masc">Masculino</label>
 					<input type="radio" name="radio-sexo" id="fem" value="F" /> 
 					<label for="fem">Feminino</label>
 				</td>
 			</tr>
-		</table>
-		<label for="email">E-mail:</label>
-		<input type="text" name="email" id="input-email"/><br/>
-		<table>
+		    <tr>
+                <td><label for="email">E-mail:</label></td>
+		        <td><input type="text" name="email" id="input-email"/></td>
+		    </tr>
 			<tr>
-				<td>
-					<input type="checkbox" name="prioridade" id="check-prioridade"/>
-					<a id="link-prioridade" href="#">Prioridade</a>
-				</td>
-				<td>
-					<label>Tratamento:</label>
+				<td><label for="check-prioridade">Prioridade</label></td>
+				<td><input type="checkbox" name="prioridade" id="check-prioridade"/></td>
+            </tr>
+            <tr>
+                <td><label>Tratamento:</label></td>
+                <td>
 					<select id="select-tratamento">
 					{% for tratamento in tratamentos %}
 						<option id="opcao-{{tratamento.id}}"value="">{{tratamento.descricao_basica}}</option>
 					{% endfor %}
 					</select>
 				</td>
-				<td>
-					<label>Frequência:</label>
-					<select id="select-frequencia">
+            </tr>
+            <tr>
+				<td><label>Frequência:</label></td>
+				<td>	
+                    <select id="select-frequencia">
 						<option id="opcao-1" value="">Diária</option>
 						<option id="opcao-2" value="">Semanal</option>
 						<option id="opcao-3" value="">Mensal</option>
@@ -54,22 +50,16 @@
 				</td>				
 			</tr>
 			<tr>
-				<td>
-					<input type="checkbox" name="tem-ficha" id="check-tem-ficha"/>
-					<label for="check-tem-ficha">Tem ficha?</label>
-				</td>
-			</tr>
-		</table>
-		<table>
-			<tr>
-				<td>
-					<textarea id="area-observacao">Observação</textarea><br/>
-				</td>
+                <td><label for="check-tem-ficha">Tem ficha?</label></td>
+				<td><input type="checkbox" name="tem-ficha" id="check-tem-ficha"/></td>
 			</tr>
 			<tr>
-				<td>
-					<textarea id="area-saude">Saúde</textarea><br/>
-				</td>
+                <td><label for="area-observacao">Observação</label></td>
+				<td><textarea id="area-observacao">Observação</textarea></td>
+			</tr>
+			<tr>
+				<td><label for="area-saude"></label></td>
+			    <td><textarea id="area-saude">Saúde</textarea></td>
 			</tr>
 		</table>
 		<input type="submit" id="confirmar-cadastro" value="OK" />
