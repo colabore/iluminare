@@ -98,4 +98,7 @@ background-color: #D3E3B5;
 	height: 100px;
 	background-color: #3AA;
 }
-
+div .paciente_consulta {
+    width:400px;
+    height:400px;
+}

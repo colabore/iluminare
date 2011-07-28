@@ -1,0 +1,69 @@
+{% extends "base.html"%}
+{% block content %}
+<div id="div-cadastro-paciente">
+	<form method="post" name="cadastro-paciente" id="form-cadastro-paciente">
+		<table>
+			<tr>
+				<td><label for="input-name">Nome completo:</label></td>
+				<td><input type="text" name="nome" id="input-name" /></td>
+			</tr>
+			<tr>
+				<td><label for="input-data">Data de Nascimento:</label></td>
+				<td><input type="text" name="data-nascimento" id="input-data"/></td>
+			</tr>
+            <tr>
+                <td><label>Sexo:</label></td>
+                <td>
+					<input type="radio" name="radio-sexo" id="masc" value="M" /> 
+					<label for="masc">Masculino</label>
+					<input type="radio" name="radio-sexo" id="fem" value="F" /> 
+					<label for="fem">Feminino</label>
+				</td>
+			</tr>
+		    <tr>
+                <td><label for="email">E-mail:</label></td>
+		        <td><input type="text" name="email" id="input-email"/></td>
+		    </tr>
+			<tr>
+				<td><label for="check-prioridade">Prioridade</label></td>
+				<td><input type="checkbox" name="prioridade" id="check-prioridade"/></td>
+            </tr>
+            <tr>
+                <td><label>Tratamento:</label></td>
+                <td>
+					<select id="select-tratamento">
+					{% for tratamento in tratamentos %}
+						<option id="opcao-{{tratamento.id}}"value="">{{tratamento.descricao_basica}}</option>
+					{% endfor %}
+					</select>
+				</td>
+            </tr>
+            <tr>
+				<td><label>Frequência:</label></td>
+				<td>	
+                    <select id="select-frequencia">
+						<option id="opcao-1" value="">Diária</option>
+						<option id="opcao-2" value="">Semanal</option>
+						<option id="opcao-3" value="">Mensal</option>
+						<option id="opcao-4" value="">Anual</option>
+					</select>
+				</td>				
+			</tr>
+			<tr>
+                <td><label for="check-tem-ficha">Tem ficha?</label></td>
+				<td><input type="checkbox" name="tem-ficha" id="check-tem-ficha"/></td>
+			</tr>
+			<tr>
+                <td><label for="area-observacao">Observação</label></td>
+				<td><textarea id="area-observacao">Observação</textarea></td>
+			</tr>
+			<tr>
+				<td><label for="area-saude"></label></td>
+			    <td><textarea id="area-saude">Saúde</textarea></td>
+			</tr>
+		</table>
+		<input type="submit" id="confirmar-cadastro" value="OK" />
+		<input type="button" id="cancela-cadastro" value="Cancela"/>
+	</form>
+</div>
+{% endblock %}

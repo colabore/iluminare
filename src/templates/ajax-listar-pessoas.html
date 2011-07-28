@@ -2,21 +2,21 @@
     <table>
         <thead>
             <th>Nome</th>
+            <th>Data Nasc.</th>
             <th>Tratamento</th>
             <th>Atendimento</th>
             <th>Agenda</th>
-            <th>Data Nasc.</th>
             <th>Último Trat.</th>
             <th>Check-in</th>
         </thead>
-        <tbody>
+        <tbody id="tabela-pacientes">
         {% for paciente in pacientes %}
-            <tr id="tabela-pacientes">
-                <td><a href="#" id="{{paciente.id}}/3">{{paciente.nome}}</a></td>
+            <tr>
+                <td><a href="#" id="{{paciente.id}}">{{paciente.nome}}</a></td>
+                <td>{{paciente.data_nascimento}}</td>
                 <td>{{paciente.salas}}</td>
                 <td>[Agenda]</td> <!-- Agenda -->
                 <td>{{paciente.atendimentos}}</td>
-                <td>{{paciente.data_nascimento}}</td>
                 <td>[Útimo Trat.]</td><!-- Ultimo Trat.-->
 				<td align="center"><a href="#"><img alt="" src="../static/img/checkin.png" /></a></td>
 			</tr>
