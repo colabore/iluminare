@@ -1,32 +1,6 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-    <head>
-        <!--<link rel="stylesheet" href="static/css/style.css" />-->
-        <title>{% block title %}Projeto Iluminare{% endblock %}</title>
-		<script type="text/javascript" src="/static/js/jquery-1.6.2.min.js"></script>
-		<script type="text/javascript" src="/static/js/jquery.mousewheel-3.0.4.pack.js"></script>
-		<script type="text/javascript" src="/static/js/jquery.fancybox-1.3.4.pack.js"></script>
-		<script type="text/javascript" src="/static/js/iluminare.js"></script>
-		<link href="/static/css/reset.css" media="screen" rel="stylesheet" type="text/css" />
-		<link href="/static/css/quinta.css" media="screen" rel="stylesheet" type="text/css" />
-		<link href="/static/css/quinta-formato.css" media="screen" rel="stylesheet" type="text/css" />
-		<link href="/static/css/jquery.fancybox-1.3.4.css" media="screen" rel="stylesheet" type="text/css" />
-</head>	
-<body>
-<div id="iluminare">
-	<div id="header">
-		<img id="logo" src="../static/img/quinta-logo.png" alt="logo quinta" width="280" height="87" />
-		<div id="navcontainer">
-			<ul id="navlist">
-				<li id="active"><a href="#" id="current">Home 1</a></li>
-				<li><a href="#">Cadastro</a></li>
-			</ul>
-		</div>
+{% extends "base.html" %}
 
-	</div>
-
-	<div id="content">
+{% block content %}
 		<div id="search-box">
 			<form id="form-search">
 				<input type="text" id="q-paciente" name="q-paciente" class="textInput" value="nome do paciente.."></input>
@@ -39,11 +13,4 @@
 			<p>Lista de pessoas...</p>
 			{% endblock %}
 		</div>
-	</div>
-
-	<div id="footer">
-		<p>&nbsp; </p>
-	</div>
-</div>
-</body>
-</html>
+{% endblock %}

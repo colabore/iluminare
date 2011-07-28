@@ -8,6 +8,9 @@ from iluminare.tratamento.models import *
 import iluminare.paciente.logic as paciente_logic
 import datetime
 
+def atualizar(request, paciente_id):
+    return render_to_response('crud-paciente.html')
+
 def ajax_consultar_paciente(request, paciente_id):
     try:
         paciente = paciente_logic.consultar_paciente(int(paciente_id))

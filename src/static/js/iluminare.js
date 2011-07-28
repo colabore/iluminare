@@ -1,6 +1,6 @@
 $(document).ready(function(){
     function bindclickpacientes(){
-        $("#iluminare #tabela-pacientes a").click(function(){
+        $("#tabela-pacientes a").click(function(){
             var paciente = $(this).attr('id');
             $.get('/paciente/consultar/' + paciente,
                 function (data){
