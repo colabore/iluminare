@@ -23,6 +23,7 @@ def encaminhar_paciente(paciente_id_par, lista_tratamentos_novos):
     
     """
 
+
     try:
         paciente_id_par = int(paciente_id_par)
     except ValueError:
