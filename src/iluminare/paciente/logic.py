@@ -29,12 +29,11 @@ def consultar_paciente(codigo):
         tratamentos = []
         for t in tratamentos_paciente:
             tratamentos.append(t.tratamento)
-        
-        if DetalhePrioridade.objects.filter(paciente=codigo).count() == 1:
-            detalhe_prioridade = DetalhePrioridade.objects.get(paciente=codigo)
-        else:
-            detalhe_prioridade = None
-        
+
+        try:
+           detalhe_prioridade = DetalhePrioridade.objects.get(paciente=codigo)
+        except DetalhePrioridade.DoesNotExists:
+           detalhe_prioridade = None
         
         dic = {  'paciente': paciente,
                  'tratamentos': tratamentos,
