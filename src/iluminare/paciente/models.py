@@ -48,7 +48,7 @@ class Paciente(models.Model):
     detalhe_ficha           = models.CharField(max_length=200, blank = True, null = True)
     saude                   = models.TextField(null=True, blank=True)    	
     acompanhante            = models.ForeignKey('self', null=True, blank=True)
-    acompanhante_crianca    = models.ForeignKey('self', null=True, blank=True)
+    acompanhante_crianca    = models.ForeignKey('self', null=True, blank=True, related_name='acompanhantecrianca')
 
     def __unicode__(self):
         return self.nome
