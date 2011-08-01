@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
+from django.forms import ModelForm
 from iluminare.paciente.models import *
 from iluminare.atendimento.models import *
 from iluminare.tratamento.models import *
@@ -8,16 +9,29 @@ from iluminare.tratamento.models import *
 import iluminare.paciente.logic as paciente_logic
 import datetime
 
+class PacienteForm(ModelForm):
+    class Meta:
+        model = Paciente
+
 def atualizar(request, paciente_id):
-    return render_to_response('crud-paciente.html')
+    paciente = Paciente.objects.get(pk=paciente_id)
+    
+    if request.method == "POST":
+        form = PacienteForm(request.POST, instance=paciente)
+        paciente_atualizado = form.save()
+
+        return render_to_response('crud-paciente', {'form':form, 'mensagem':"Paciente atualizado com sucesso!"})
+
+    form = PacienteForm(instance=paciente)
+    return render_to_response('crud-paciente.html', {'form':form})
 
 def ajax_consultar_paciente(request, paciente_id):
     try:
-        paciente = paciente_logic.consultar_paciente(int(paciente_id))
-    except:
-        return HttpResponse ("Houve algum erro ao consultar pelo paciente")
+        paciente_dic = paciente_logic.consultar_paciente(int(paciente_id))
+    except paciente_logic.PacienteException as p_exc:
+        return HttpResponse ("Houve algum erro ao consultar pelo paciente (%s)" % p_exc)
 
-    return render_to_response ('ajax-consultar-paciente.html', {'paciente':paciente})
+    return render_to_response ('ajax-consultar-paciente.html', paciente_dic)
 
 def ajaxlistarpessoas (request, nome):
     pacientes = None

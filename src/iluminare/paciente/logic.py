@@ -12,8 +12,6 @@ class PacienteException(Exception):
 
 
 def consultar_paciente(codigo):
-    
-    
     try:
         codigo = int(codigo)
     except ValueError:
@@ -32,19 +30,15 @@ def consultar_paciente(codigo):
 
         try:
            detalhe_prioridade = DetalhePrioridade.objects.get(paciente=codigo)
-        except DetalhePrioridade.DoesNotExists:
+        except DetalhePrioridade.DoesNotExist:
            detalhe_prioridade = None
         
-        dic = {  'paciente': paciente,
-                 'tratamentos': tratamentos,
-                 'detalhe_prioridade': detalhe_prioridade
-                 
-              } 
+        dic = {'paciente': paciente,
+               'tratamentos': tratamentos,
+               'detalhe_prioridade': detalhe_prioridade} 
 
     except Paciente.DoesNotExist:
         dic = {}
-    except:
-        raise PacienteException("Erro na função consultar paciente")
         
     return dic
 

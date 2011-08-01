@@ -2,6 +2,11 @@
 <ul>
     <li>Nome Completo: {{paciente.nome}}</li>
     <li>Prioridade: {{paciente.prioridade}}</li>
+    <li>Tratamento:
+    {% for tratamento in tratamentos %}
+        {{tratamento.descricao_basica}}
+    {% endfor %}
+    </li>
     <li>E-mail: {{paciente.email}}</li>
     <li>Telefones: {{paciente.telefones}}</li>
     <li>Data de Nascimento: {{paciente.data_nascimento}}</li>
