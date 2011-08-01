@@ -12,6 +12,7 @@ import datetime
 class PacienteForm(ModelForm):
     class Meta:
         model = Paciente
+        exclude = ('saude')
 
 def atualizar(request, paciente_id):
     paciente = Paciente.objects.get(pk=paciente_id)
@@ -20,7 +21,7 @@ def atualizar(request, paciente_id):
         form = PacienteForm(request.POST, instance=paciente)
         paciente_atualizado = form.save()
 
-        return render_to_response('crud-paciente', {'form':form, 'mensagem':"Paciente atualizado com sucesso!"})
+        return render_to_response('crud-paciente.html', {'form':form, 'mensagem':"Paciente atualizado com sucesso!"})
 
     form = PacienteForm(instance=paciente)
     return render_to_response('crud-paciente.html', {'form':form})
