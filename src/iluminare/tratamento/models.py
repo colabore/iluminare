@@ -33,12 +33,22 @@ class Tratamento(models.Model):
         return "%s dia %s" % (self.descricao_basica, self.dia_semana)
 
 class TratamentoPaciente(models.Model):
+
+    # talvez seja necessário ajustar esses status mais pra frente.
+    STATUS = ( 
+        ('C', 'Concluído'),
+        ('A', 'Em Andamento'),
+        ('E', 'Encaminhado'), # O paciente foi encaminhado, mas ainda não iniciou o tratamento.
+        ('D', 'Desistiu'),
+        ('T', 'Temporariamente afastado'))
+        
     paciente    = models.ForeignKey(Paciente, null = False, blank = False)
     tratamento  = models.ForeignKey(Tratamento, null = False, blank = False)
 
     data_inicio = models.DateField(null=True, blank=True)
     data_fim    = models.DateField(null=True, blank=True)
 
+    status      = models.CharField(max_length=1, choices = STATUS, null = True, blank = True)	
     def __unicode__(self):
         return "%s %s (%s - %s)" % (self.paciente.nome, self.tratamento, self.data_inicio, self.data_fim)
 

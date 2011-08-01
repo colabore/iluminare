@@ -17,6 +17,7 @@ class Atendimento(models.Model):
     paciente                = models.ForeignKey(Paciente, null = False, blank = False)
     instancia_tratamento    = models.ForeignKey(InstanciaTratamento, null = False, blank = False)
     hora_chegada            = models.TimeField(null = True, blank = True)
+    hora_atendimento        = models.TimeField(null = True, blank = True)
     status                  = models.CharField(max_length=1, choices=STATUS, null= True, blank = True)
     prioridade              = models.BooleanField(blank=True) 
     observacao_prioridade   = models.CharField(max_length = 100, blank = True, null = True)
