@@ -23,8 +23,9 @@ def consultar_paciente(codigo):
     
     try:
         paciente = Paciente.objects.get(id=codigo)
-        # ainda falta filtrar os tratamentos já encerrados
-        tratamentos_paciente = TratamentoPaciente.objects.filter(paciente=codigo)
+        
+        # garante que só venham tratamentos_paciente com data_fim vazias. Isso significa que se tratam de tratamentos ativos para o paciente.
+        tratamentos_paciente = TratamentoPaciente.objects.filter(paciente=codigo, data_fim = None)
         tratamentos = []
         for t in tratamentos_paciente:
             tratamentos.append(t.tratamento)
