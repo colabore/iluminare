@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
-from django.forms import ModelForm
+#from django.forms import ModelForm, CharField, Select, DateField
+from django import forms
 from iluminare.paciente.models import *
 from iluminare.atendimento.models import *
 from iluminare.tratamento.models import *
@@ -9,10 +10,25 @@ from iluminare.tratamento.models import *
 import iluminare.paciente.logic as paciente_logic
 import datetime
 
-class PacienteForm(ModelForm):
+PRIORIDADE_CHOICES = (
+    ('G', 'Grávida'),
+    ('L', 'Lactante'),
+    ('B', 'Baixa Imunidade'),
+    ('C', 'Criança até 12 anos'))
+
+class DetalhePrioridadeForm(forms.ModelForm):
+    class Meta:
+        model = DetalhePrioridade
+
+class PacienteForm(forms.ModelForm):
     class Meta:
         model = Paciente
         exclude = ('saude')
+
+    def save(self):
+        # validacao
+        
+        forms.ModelForm.save(self)
 
 def atualizar(request, paciente_id):
     paciente = Paciente.objects.get(pk=paciente_id)
@@ -24,7 +40,7 @@ def atualizar(request, paciente_id):
         return render_to_response('crud-paciente.html', {'form':form, 'mensagem':"Paciente atualizado com sucesso!"})
 
     form = PacienteForm(instance=paciente)
-    return render_to_response('crud-paciente.html', {'form':form})
+    return render_to_response('crud-paciente.html', {'form':PrioridadeForm()})
 
 def ajax_consultar_paciente(request, paciente_id):
     try:
