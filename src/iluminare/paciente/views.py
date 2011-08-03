@@ -29,6 +29,7 @@ class DetalhePrioridadeForm(forms.ModelForm):
         paciente_logic.validar_detalhe_prioridade(detalhe_prioridade)
         
         detalhe_prioridade.save()
+        self.save_m2m()
 
 
 class PacienteForm(forms.ModelForm):
