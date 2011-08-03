@@ -10,6 +10,20 @@ class PacienteException(Exception):
     def __str__(self):
         return repr(self.message)
 
+def validar_detalhe_prioridade(detalhe_prioridade):
+    """
+        recebe um objeto do tipo detalhe prioridade e faz as modificações nele
+        para que ele seja salvo corretamente.
+        validações
+            - se uma grávida está com data de início da gestação
+            - se é uma lactante, tem que possuir a data início de amamentação 
+    """
+    
+    if detalhe_prioridade is None:
+        raise PacienteException("Problema ao salvar o tipo de prioridade.")
+
+    if detalhe_prioridade.data_inicio_gravidez is None and detalhe_prioridade.gravida is True:
+        raise PacienteException("A grávida precisa da data de inicio da gestacao.")
 
 def consultar_paciente(codigo):
     try:

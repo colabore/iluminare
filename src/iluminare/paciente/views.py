@@ -17,30 +17,58 @@ PRIORIDADE_CHOICES = (
     ('C', 'Criança até 12 anos'))
 
 class DetalhePrioridadeForm(forms.ModelForm):
+    """ formulário para atualizar os detalhes caso o paciente seja prioritário. """
     class Meta:
         model = DetalhePrioridade
+        exclude = ('paciente', )
+
+    def save(self):
+        detalhe_prioridade = forms.ModelForm.save(self, commit=False)
+       
+        # verifica se o objeto detalhe_prioridade está consistente
+        paciente_logic.validar_detalhe_prioridade(detalhe_prioridade)
+        
+        detalhe_prioridade.save()
+
 
 class PacienteForm(forms.ModelForm):
     class Meta:
         model = Paciente
-        exclude = ('saude')
+        exclude = ('saude', )
 
     def save(self):
-        # validacao
-        
         forms.ModelForm.save(self)
 
 def atualizar(request, paciente_id):
     paciente = Paciente.objects.get(pk=paciente_id)
     
+    try:
+        detalhe_prioridade = DetalhePrioridade.objects.get(paciente=paciente)
+    except:
+        # caso o detalhe_prioridade do paciente não exista, será criado.
+        detalhe_prioridade = DetalhePrioridade(paciente=paciente)
+        detalhe_prioridade.save()
+
     if request.method == "POST":
-        form = PacienteForm(request.POST, instance=paciente)
-        paciente_atualizado = form.save()
+        form_paciente = PacienteForm(request.POST, instance=paciente)
+        form_detalhe_prioridade = DetalhePrioridadeForm(request.POST, instance=detalhe_prioridade)
 
-        return render_to_response('crud-paciente.html', {'form':form, 'mensagem':"Paciente atualizado com sucesso!"})
+        try:
+            form_paciente.save()
+            form_detalhe_prioridade.save()
+            msg = "Paciente atualizado com sucesso"
+        except paciente_logic.PacienteException as p_exc:
+            msg = "Houve um erro ao atualizar o paciente (%s)" % p_exc
+        except ValueError as v_exc:
+            msg = "Houve um erro de validação dos dados (%s)" % v_exc
 
-    form = PacienteForm(instance=paciente)
-    return render_to_response('crud-paciente.html', {'form':PrioridadeForm()})
+    else:
+        form_paciente = PacienteForm(instance=paciente)
+        form_detalhe_prioridade = DetalhePrioridadeForm(instance=detalhe_prioridade)
+        
+        msg = ""
+
+    return render_to_response('crud-paciente.html', {'form_paciente':form_paciente, 'form_detalhe_prioridade':form_detalhe_prioridade, 'mensagem':msg})
 
 def ajax_consultar_paciente(request, paciente_id):
     try:

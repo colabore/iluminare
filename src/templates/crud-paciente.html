@@ -1,11 +1,12 @@
 {% extends "base.html"%}
 {% block content %}
 
-<table>
 <form id="crud-paciente" method="POST" action="">
-{{form}}
+<table>
+{{form_paciente}}
+{{form_detalhe_prioridade}}
+</table>
 <input type="submit" />
 </form>
-</table>
 
 {% endblock %}
