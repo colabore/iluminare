@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style type="text/css">
+label {
+    display:none;
+}
+</style>
+
+<form method="POST">
+<table>
+{{confirmacao_atendimentos_form}}
+</table>
+
+<table>
+{{atendimentos.management_form}}
+{% for atendimento in atendimentos.forms %}
+    <tr>
+    {% for coluna in atendimento %}
+        <td>
+        {{coluna}}
+        </td>
+    {% endfor %}
+    </tr>
+{% endfor %}
+</table>
+
+<input type="submit" value="salvar dados" />
+</form>
+
+
+
+{% endblock %}

@@ -3,3 +3,4 @@
 *~
 *.bak
 src/database.db
+*.swp
