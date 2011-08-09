@@ -17,7 +17,7 @@ def exibirAtendimentosPaciente(request, paciente_id):
 		retorno.append({'data':	atendimento.instancia_tratamento.data, 'tratamento': atendimento.instancia_tratamento.tratamento.descricao_basica, 			'hora_chegada': atendimento.hora_chegada, 'observacao': atendimento.observacao, 'msg': ""})
 
 	if not retorno:
-		retorno.append({'data': None, 'tratamento': None, 'hora_chegada': None, 'observacao': None, 'msg': 'Nao foi possível localizar usuario'})
+		retorno.append({'data': None, 'tratamento': None, 'hora_chegada': None, 'observacao': None, 'msg': 'Não foi possível localizar usuário'})
 	
 	return render_to_response('lista-atendimentos.html',{'atendimentos': retorno})	
 	
