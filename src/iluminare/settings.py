@@ -1,6 +1,6 @@
 # Django settings for iluminare project.
 
-ILUMINARE_ROOT="/Users/adrianomelo/git/iluminare/src/"
+ILUMINARE_ROOT="/home/luis/Programming/iluminare/src/"
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
