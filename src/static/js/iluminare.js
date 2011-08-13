@@ -6,7 +6,7 @@ $(document).ready(function(){
             var url = '';
 
             if (classe == 'checkin'){
-                url = '/paciente/checkin/' + paciente;
+                url = '/atendimento/checkin/' + paciente;
             } else {
                 url = '/paciente/consultar/' + paciente;
             }

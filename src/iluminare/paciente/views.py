@@ -71,9 +71,6 @@ def atualizar(request, paciente_id):
 
     return render_to_response('crud-paciente.html', {'form_paciente':form_paciente, 'form_detalhe_prioridade':form_detalhe_prioridade, 'mensagem':msg})
 
-def ajax_checkin_paciente(request, paciente_id):
-    return render_to_response('ajax-checkin-paciente.html')
-
 def ajax_consultar_paciente(request, paciente_id):
     try:
         paciente_dic = paciente_logic.consultar_paciente(int(paciente_id))

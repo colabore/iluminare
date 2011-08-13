@@ -1,10 +1,25 @@
 # -*- coding: utf-8 -*-
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 from iluminare.tratamento.models import Tratamento
 from iluminare.atendimento.models import Atendimento
-from iluminare.paciente.models import DetalhePrioridade
+from iluminare.paciente.models import DetalhePrioridade, Paciente
 from django import forms
 from django.forms.models import modelformset_factory, BaseModelFormSet
+
+class CheckinPacienteForm(forms.ModelForm):
+    class Meta:
+        model = Atendimento
+        exclude = ['observacao', 'status', 'hora_atendimento', 'hora_chegada', 'instancia_tratamento', 'paciente']
+
+def ajax_checkin_paciente(request, paciente_id):
+    paciente = get_object_or_404(Paciente, pk=paciente_id)
+    
+    if request.method == 'POST':
+        pass
+    else:
+        checkin_paciente_form = CheckinPacienteForm()
+
+    return render_to_response('ajax-checkin-paciente.html', {'paciente':paciente, 'form':checkin_paciente_form})
 
 def get_info(paciente):
     info = ""
