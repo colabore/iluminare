@@ -9,6 +9,7 @@ from django import forms
 from django.shortcuts import render_to_response, get_object_or_404
 from django.forms.models import modelformset_factory, BaseModelFormSet
 from django.core.paginator import Paginator
+from django.http import HttpResponse
 
 import datetime
 from operator import itemgetter
@@ -42,7 +43,11 @@ def ajax_checkin_paciente(request, paciente_id):
             prioridade              = checkin_paciente_form.cleaned_data['prioridade']
             observacao_prioridade   = checkin_paciente_form.cleaned_data['observacao_prioridade']
 
-            logic_atendimento.checkin_paciente(tratamento, senha, redirecionar, prioridade, observacao_prioridade)
+            try:
+                logic_atendimento.checkin_paciente(paciente, tratamento, senha, redirecionar, prioridade, observacao_prioridade)
+                return HttpResponse("O checking de %s foi realizado com sucesso" % paciente.nome)
+            except:
+                pass
     else:
         checkin_paciente_form = CheckinPacienteForm()
     
