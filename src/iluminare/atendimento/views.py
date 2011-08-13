@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from iluminare.tratamento.models import Tratamento, InstanciaTratamento
+from iluminare.tratamento.models import Tratamento, InstanciaTratamento, TratamentoPaciente
 from iluminare.atendimento.models import Atendimento
 from iluminare.paciente.models import DetalhePrioridade, Paciente
 import iluminare.atendimento.logic as logic_atendimento
@@ -15,7 +15,7 @@ from operator import itemgetter
 
 class CheckinPacienteForm(forms.ModelForm):
     redirecionar = forms.ModelChoiceField(queryset=Tratamento.objects.all(), required=False)
-    tratamento   = forms.ModelChoiceField(queryset=Tratamento.objects.all(), required=False)
+    tratamento   = forms.ModelChoiceField(queryset=TratamentoPaciente.objects.all(), required=False)
 
     def __init__(self, *args, **kargs):
         super(CheckinPacienteForm, self).__init__(*args, **kargs)
