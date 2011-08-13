@@ -12,8 +12,16 @@ $(document).ready(function(){
             }
             
             var motion = {'transitionIn':'elastic', 'transitionOut':'elastic'};
-            $.get(url,function (data){$.fancybox(data, motion);});
+            $.get(url,function (data){$.fancybox(data, motion);bindfancybox(paciente);});
         });
+    }
+    function bindfancybox(paciente){
+            $("#checkin_submit").click(function(){
+                $.post('/atendimento/checkin/'+paciente, function(data){
+                    $("#paciente_checkin").html(data);
+                    bindfancybox(paciente);
+                });
+            });
     }
 
     $("#q-paciente").keyup(function(key){

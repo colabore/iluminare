@@ -1,16 +1,31 @@
 # -*- coding: utf-8 -*-
-from django.shortcuts import render_to_response, get_object_or_404
 from iluminare.tratamento.models import Tratamento, InstanciaTratamento
 from iluminare.atendimento.models import Atendimento
 from iluminare.paciente.models import DetalhePrioridade, Paciente
 from iluminare.voluntario.models import Voluntario
+import iluminare.atendimento.logic as logic_atendimento
+
 from django import forms
+from django.shortcuts import render_to_response, get_object_or_404
 from django.forms.models import modelformset_factory, BaseModelFormSet
-import datetime
-from operator import itemgetter
 from django.core.paginator import Paginator
 
+import datetime
+from operator import itemgetter
+
 class CheckinPacienteForm(forms.ModelForm):
+    redirecionar = forms.ModelChoiceField(queryset=Tratamento.objects.all(), required=False)
+    tratamento   = forms.ModelChoiceField(queryset=Tratamento.objects.all(), required=False)
+
+    def __init__(self, *args, **kargs):
+        super(CheckinPacienteForm, self).__init__(*args, **kargs)
+        self.fields.keyOrder = ['tratamento', 'senha', 'redirecionar', 'prioridade', 'observacao_prioridade']
+
+    def update_tratamentos(self, paciente):
+        tratamentos = paciente.tratamentopaciente_set.all()
+        self.fields['tratamento'].queryset = tratamentos
+        self.fields['observacao_prioridade'].help_tag = "Observação (prioridade)"
+
     class Meta:
         model = Atendimento
         exclude = ['observacao', 'status', 'hora_atendimento', 'hora_chegada', 'instancia_tratamento', 'paciente']
@@ -19,9 +34,19 @@ def ajax_checkin_paciente(request, paciente_id):
     paciente = get_object_or_404(Paciente, pk=paciente_id)
     
     if request.method == 'POST':
-        pass
+        checkin_paciente_form = CheckinPacienteForm(request.POST)
+        if checkin_paciente_form.is_valid():
+            tratamento              = checkin_paciente_form.cleaned_data['tratamento']
+            senha                   = checkin_paciente_form.cleaned_data['senha']
+            redirecionar            = checkin_paciente_form.cleaned_data['redirecionar']
+            prioridade              = checkin_paciente_form.cleaned_data['prioridade']
+            observacao_prioridade   = checkin_paciente_form.cleaned_data['observacao_prioridade']
+
+            logic_atendimento.checkin_paciente(tratamento, senha, redirecionar, prioridade, observacao_prioridade)
     else:
         checkin_paciente_form = CheckinPacienteForm()
+    
+    checkin_paciente_form.update_tratamentos(paciente)
 
     return render_to_response('ajax-checkin-paciente.html', {'paciente':paciente, 'form':checkin_paciente_form})
 
