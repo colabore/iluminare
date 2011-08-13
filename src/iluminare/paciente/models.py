@@ -40,7 +40,6 @@ class Paciente(models.Model):
     local_nascimento        = models.CharField(max_length=100, blank = True, null = True)
     escolaridade            = models.CharField(max_length=1, choices = ESCOLARIDADE, null= True, blank = True)    
     estado_civil            = models.CharField(max_length=1, choices = ESTADO_CIVIL, null= True, blank = True)    
-    prioridade              = models.BooleanField(blank=True)     
     frequencia              = models.CharField(max_length=1, choices = FREQUENCIA, null=True, blank=True)
     observacao              = models.CharField(max_length=200, blank = True, null = True)
     profissao               = models.CharField(max_length=100, blank = True, null = True)
@@ -54,15 +53,18 @@ class Paciente(models.Model):
         return self.nome
         
 class DetalhePrioridade(models.Model):
-    paciente                = models.ForeignKey(Paciente, null = False, blank = False)
-    gravida                 = models.BooleanField(blank = True)
-    data_inicio_gravidez    = models.DateField(blank = True, null = True)
-    lactante                = models.BooleanField(blank = True)
-    data_inicio_amamentacao = models.DateField(blank = True, null = True)
-    crianca                 = models.BooleanField(blank = True) 
-    baixa_imunidade         = models.BooleanField(blank=True)
+    TIPO = ( 
+        ('P', 'Prioridade'),
+        ('G', 'Grávida'),
+        ('L', 'Lactante'),
+        ('C', 'Crianca'), 
+        ('B', 'Baixa Imunidade'))
+
+    paciente        = models.ForeignKey(Paciente, null = False, blank = False)
+    tipo            = models.CharField(max_length=1, choices = TIPO, null = True, blank = True)	
+    data_inicio     = models.DateField(blank = True, null = True)
 
     # ajustar
     def __unicode__(self):
-        return self.paciente.nome
+        return "%s - %s - %s" % (self.paciente.nome, self.get_tipo_display(), str(self.data_inicio))
 
