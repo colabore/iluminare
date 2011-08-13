@@ -17,7 +17,9 @@ $(document).ready(function(){
     }
     function bindfancybox(paciente){
             $("#checkin_submit").click(function(){
-                $.post('/atendimento/checkin/'+paciente, function(data){
+                $.post('/atendimento/checkin/'+paciente, 
+                $("#form_paciente_checkin").serialize(),
+                function(data){
                     $("#paciente_checkin").html(data);
                     bindfancybox(paciente);
                 });

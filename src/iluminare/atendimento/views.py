@@ -2,7 +2,6 @@
 from iluminare.tratamento.models import Tratamento, InstanciaTratamento
 from iluminare.atendimento.models import Atendimento
 from iluminare.paciente.models import DetalhePrioridade, Paciente
-from iluminare.voluntario.models import Voluntario
 import iluminare.atendimento.logic as logic_atendimento
 
 from django import forms
@@ -46,14 +45,16 @@ def ajax_checkin_paciente(request, paciente_id):
             try:
                 logic_atendimento.checkin_paciente(paciente, tratamento, senha, redirecionar, prioridade, observacao_prioridade)
                 return HttpResponse("O checking de %s foi realizado com sucesso" % paciente.nome)
-            except:
-                pass
+            except Exception, e:
+                return HttpResponse("deu merda %s" % e)
+        else:
+            return HttpResponse("errro %s" % str(checkin_paciente_form.errors))
     else:
         checkin_paciente_form = CheckinPacienteForm()
     
     checkin_paciente_form.update_tratamentos(paciente)
 
-    return render_to_response('ajax-checkin-paciente.html', {'paciente':paciente, 'form':checkin_paciente_form})
+    return render_to_response('ajax-checkin-paciente.html', {'paciente':paciente, 'form':checkin_paciente_form, 'erros':str(checkin_paciente_form.errors)})
 
 def get_info(paciente):
     info = ""
