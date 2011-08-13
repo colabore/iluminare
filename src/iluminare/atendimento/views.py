@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render_to_response, get_object_or_404
-from iluminare.tratamento.models import Tratamento
+from iluminare.tratamento.models import Tratamento, InstanciaTratamento
 from iluminare.atendimento.models import Atendimento
 from iluminare.paciente.models import DetalhePrioridade, Paciente
+from iluminare.voluntario.models import Voluntario
 from django import forms
 from django.forms.models import modelformset_factory, BaseModelFormSet
 import datetime
@@ -111,9 +112,9 @@ def exibir_listagem(request, pagina = None):
 					try:					
 						prioridade = DetalhePrioridade.objects.get(paciente__id = atendimento.paciente.id)
 						voluntario = Voluntario.objects.get(paciente__id = atendimento.paciente.id)	
-						retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 'info': 						prioridade.get_prioridade_display() + '/' + voluntario.get_tipo_display(), 'prioridade': True})
+						retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 'info': 						prioridade.get_tipo_display() + '/' + voluntario.get_tipo_display(), 'prioridade': True})
 					except Voluntario.DoesNotExist:
-						retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 'info': 						prioridade.get_prioridade_display(), 'prioridade': True})
+						retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 'info': 						prioridade.get_tipo_display(), 'prioridade': True})
 							
 					except DetalhePrioridade.DoesNotExist:
 						try:					

@@ -22,8 +22,8 @@ def validar_detalhe_prioridade(detalhe_prioridade):
     if detalhe_prioridade is None:
         raise PacienteException("Problema ao salvar o tipo de prioridade.")
 
-    if detalhe_prioridade.data_inicio_gravidez is None and detalhe_prioridade.gravida is True:
-        raise PacienteException("A grávida precisa da data de inicio da gestacao.")
+    #if detalhe_prioridade.data_inicio_gravidez is None and detalhe_prioridade.gravida is True:
+    #    raise PacienteException("A grávida precisa da data de inicio da gestacao.")
 
 def consultar_paciente(codigo):
     try:
