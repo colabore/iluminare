@@ -427,66 +427,36 @@ def processa_arquivo_tratamento_voluntarios(nome_arquivo, lista_data_posicao, pr
 
 def cria_salas_tratamentos():
 
-    for i in range(5):
-        sala = "Sala "+str(i+1)
+    tratamentos = [
+        "Sala 1",
+        "Sala 2",
+        "Sala 3",
+        "Sala 4",
+        "Sala 5",
+        "Primeira vez",
+        "Manutenção"]
+    for t in tratamentos:
         try:
-            sala = Sala.objects.get(descricao=sala)
-        except Sala.DoesNotExist: 
-            sala = Sala(descricao=sala)
-            sala.save()
-
-        try:
-            tratamento = Tratamento.objects.get(sala=sala, descricao_basica=sala, dia_semana='N')
+            tratamento = Tratamento.objects.get(descricao_basica=t)
         except Tratamento.DoesNotExist:
-            tratamento = Tratamento(sala=sala, descricao_basica=sala, dia_semana='N')
+            tratamento = Tratamento(descricao_basica=t)
             tratamento.save()
-
-
-    
-    try:
-        sala = Sala.objects.get(descricao="Sala 1")
-        tratamento = Tratamento.objects.get(descricao_basica="Manutenção")
-    except Sala.DoesNotExist:
-        arquivo_log.write("*** ERRO: Tratamento não criado : Manutenção"+"\n")
-    except Tratamento.DoesNotExist:
-        tratamento = Tratamento(sala=sala, descricao_basica="Manutenção", dia_semana='S')
-        tratamento.save()
-
-    try:
-        sala = Sala.objects.get(descricao="Sala 1")
-        tratamento = Tratamento.objects.get(descricao_basica="Primeira vez")
-    except Sala.DoesNotExist:
-        arquivo_log.write("*** ERRO: Tratamento não criado : Primeira vez"+"\n")
-    except Tratamento.DoesNotExist:
-        tratamento = Tratamento(sala=sala, descricao_basica="Primeira vez", dia_semana='S')
-        tratamento.save()    
 
 def processa_manutencoes():
     
-    nome_arquivo = dir_csvs + "Manut-1avez-2010-12.csv"
-    processa_manutencao(nome_arquivo)
+    lista_arquivos = [
+        "Manut-1avez-2010-12.csv",
+        "Manut-1avez-2011-02.csv",
+        "Manut-1avez-2011-03.csv",
+        "Manut-1avez-2011-04.csv",
+        "Manut-1avez-2011-05.csv",
+        "Manut-1avez-2011-06.csv",
+        "Manut-1avez-2011-07.csv",
+        "Manut-1avez-2011-08.csv"]
 
-    nome_arquivo = dir_csvs + "Manut-1avez-2011-02.csv"
-    processa_manutencao(nome_arquivo)
-
-    nome_arquivo = dir_csvs + "Manut-1avez-2011-03.csv"
-    processa_manutencao(nome_arquivo)
-
-    nome_arquivo = dir_csvs + "Manut-1avez-2011-04.csv"
-    processa_manutencao(nome_arquivo)
-
-    nome_arquivo = dir_csvs + "Manut-1avez-2011-05.csv"
-    processa_manutencao(nome_arquivo)
-
-    nome_arquivo = dir_csvs + "Manut-1avez-2011-06.csv"
-    processa_manutencao(nome_arquivo)
-
-    nome_arquivo = dir_csvs + "Manut-1avez-2011-07.csv"
-    processa_manutencao(nome_arquivo)
-
-    nome_arquivo = dir_csvs + "Manut-1avez-2011-08.csv"
-    processa_manutencao(nome_arquivo)
-
+    for arq in lista_arquivos:
+        nome_arquivo = dir_csvs + arq
+        processa_manutencao(nome_arquivo)
 
 def processa_atendimentos_voluntarios():
     
@@ -1017,14 +987,8 @@ def processa_atendimentos_quinta():
 
 
 def processa():
-    # IMPORTANTE: RODAR ESSE MÉTODO COM A BASE ZERADA.
-
-    # cria schema: FALTA CRIAR
-    # CREATE SCHEMA 'iluminare' DEFAULT CHARACTER SET utf8 ;
+    # IMPORTANTE: RODAR ESSE MÉTODO É NECESSÁRIO CRIAR A BASE iluminare (utf-8 default)
     
-    
-    
-    # cria salas e tratamentos
     cria_salas_tratamentos()
     processa_manutencoes()
     processa_atendimentos_voluntarios()
