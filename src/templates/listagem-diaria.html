@@ -1,0 +1,80 @@
+{% extends "base.html"%}
+{% block content %}
+
+<script type="text/javascript">
+function pagina(number){
+	var url = "/atendimento/listagem/" + number + '/';
+	document.listagemdiaria.action = url;
+	document.listagemdiaria.submit();
+}
+</script>
+
+<form name="listagemdiaria" method="POST" action="/atendimento/listagem/">
+<table>
+
+{{form_listagem}}
+
+	<table>
+		
+		  <tr>	
+						
+			<th> chamado </th>
+			<th> atendido </th>	
+			<th> hora de chegada </th>
+			<th> nome </th>
+			<th> info </th>
+			<th> hora de atendimento </th>
+			<th> observacao </th>
+		  </tr>
+
+		{% for atendimento in pagina_atual.object_list %}
+			
+			 {% if atendimento.prioridade %} 
+			 <tr>
+				<td class = 'prioridade' > </td>
+				<td class = 'prioridade'> </td>
+				<td class = 'prioridade'> {{atendimento.hora}} </td>
+				<td class = 'prioridade'> {{atendimento.nome}} </td>
+				<td class = 'prioridade'> {{atendimento.info}}  </td>
+				<td class = 'prioridade'> </td>
+				<td class = 'prioridade'> </td>
+			  </tr>
+			 {% else %}
+			  <tr>
+				<td> </td>
+				<td> </td>
+				<td> {{atendimento.hora}} </td>
+				<td> {{atendimento.nome}} </td>
+				<td> {{atendimento.info}}  </td>
+				<td> </td>
+				<td> </td>
+			  </tr>
+			 {% endif %}
+		{% endfor %}
+	</table>
+</table>
+<input type="submit" />
+</form>
+
+{% if pagina_atual.paginator.num_pages > 1 %}
+		<div class="pagination">
+    			<span class="step-links">
+        		{% if pagina_atual.has_previous %}
+            			<a href="#" onclick="pagina({{ pagina_atual.previous_page_number }});"> Anterior</a> 
+        		{% endif %}
+
+				<span class="current">
+		    			Page {{ pagina_atual.number }} of {{ pagina_atual.paginator.num_pages }}.
+	       			</span>
+
+        		{% if pagina_atual.has_next %}
+            			<a href="#" onclick="pagina({{ pagina_atual.next_page_number }});">Proxima</a>
+        		{% endif %}
+    			</span>
+		</div>
+
+
+{% endif %}
+
+
+{% endblock %}
