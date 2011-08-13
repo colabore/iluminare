@@ -159,17 +159,26 @@ def exibir_listagem(request, pagina = None):
 							'mensagem': mensagem_erro,
 							'pagina_atual':pagina_atual})
 
-def exibir_atendimentos_paciente(request, paciente_id):
+def exibir_atendimentos_paciente(request, paciente_id, pagina = None):
 	lista_atendimentos = Atendimento.objects.filter(paciente__id = paciente_id)
 
+	mensagem_erro = ''
 	retorno   = [];
 	
 	for atendimento in lista_atendimentos:
-		retorno.append({'data':	atendimento.instancia_tratamento.data, 'tratamento': atendimento.instancia_tratamento.tratamento.descricao_basica, 			'hora_chegada': atendimento.hora_chegada, 'observacao': atendimento.observacao, 'msg': ""})
-
+		retorno.append({'data':	atendimento.instancia_tratamento.data, 'tratamento': atendimento.instancia_tratamento.tratamento.descricao_basica, 			'hora_chegada': atendimento.hora_chegada, 'observacao': atendimento.observacao})
+		
+		
 	if not retorno:
-		retorno.append({'data': None, 'tratamento': None, 'hora_chegada': None, 'observacao': None, 'msg': 'Não foi possível localizar usuário'})
+		mensagem_erro = 'Não foi possível localizar usuário'
+		
+	paginacao = Paginator(retorno,45)
+	if pagina == None:
+		num_pagina = 1
+	else:	
+		num_pagina = int(pagina)
+	pagina_atual = paginacao.page(num_pagina)	
 	
-	return render_to_response('lista-atendimentos.html',{'atendimentos': retorno})	
+	return render_to_response('lista-atendimentos.html',{'mensagem': mensagem_erro, 'pagina_atual': pagina_atual, 'paciente_id': paciente_id})	
 	
 		
