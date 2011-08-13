@@ -83,13 +83,16 @@ def format_table(pacientes):
 
     lista = []
     for paciente in pacientes:
-
+        tratamentos = paciente.tratamentopaciente_set.filter(status='A', paciente=paciente)
+        try:
+            instancia_tratamento = (a for a in InstanciaTratamento.objects.all().order_by('data') if a.atendimento_set.filter(paciente=paciente))
+            primeira_instancia_tratamento = next(instancia_tratamento)
+        except:
+            primeira_instancia_tratamento = ''
         dic = {
-			'tratamento_id': 0,
-			'id':paciente.id,
-            'nome':paciente.nome,
-			'data_nascimento':paciente.data_nascimento and paciente.data_nascimento.strftime("%d/%m/%Y") or '',
-            'atendimentos': "TODO",
+			'tratamentos': tratamentos,
+			'paciente':paciente,
+            'atendimento': primeira_instancia_tratamento,
             'salas': "TODO",
 			'hoje': 'TODO'
         }

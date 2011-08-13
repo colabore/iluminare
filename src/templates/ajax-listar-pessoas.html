@@ -5,20 +5,22 @@
             <th>Data Nasc.</th>
             <th>Tratamento</th>
             <th>Atendimento</th>
-            <th>Agenda</th>
-            <th>Último Trat.</th>
             <th>Check-in</th>
         </thead>
         <tbody id="tabela-pacientes">
-        {% for paciente in pacientes %}
+        {% for dado in lista %}
             <tr>
-                <td><a href="#" id="{{paciente.id}}">{{paciente.nome}}</a></td>
-                <td>{{paciente.data_nascimento}}</td>
-                <td>{{paciente.salas}}</td>
-                <td>[Agenda]</td> <!-- Agenda -->
-                <td>{{paciente.atendimentos}}</td>
-                <td>[Útimo Trat.]</td><!-- Ultimo Trat.-->
-				<td align="center"><a href="#"><img alt="" src="../static/img/checkin.png" /></a></td>
+                <td><a href="#" id="{{dado.paciente.id}}">{{dado.paciente.nome}}</a></td>
+                <td>{{dado.paciente.data_nascimento|date:"j/n/Y"}}</td>
+                <td>
+                <ul>
+                {% for tratamentopaciente in dado.tratamentos %}
+                <li>{{tratamentopaciente.tratamento.descricao_basica}}</li>
+                {% endfor %}
+                </ul>
+                </td>
+                <td>{{dado.atendimento.data|date:"j/n/Y"}}</td>
+				<td align="center"><a href="#" class="checkin" id="{{dado.paciente.id}}"><img alt="" src="../static/img/checkin.png" /></a></td>
 			</tr>
         {% endfor %}
         </tbody>

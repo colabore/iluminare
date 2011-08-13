@@ -15,6 +15,17 @@ label {
 <table>
 {{atendimentos.management_form}}
 {% for atendimento in atendimentos.forms %}
+    {% if forloop.first %}
+    <tr>
+    {% for coluna in atendimento %}
+        {% if coluna.label == 'Id' %}
+        <th> &nbsp; </th>
+        {% else %}
+        <th>{{coluna.label}}</th>
+        {% endif %}
+    {% endfor %}
+    </tr>
+    {% endif %}
     <tr>
     {% for coluna in atendimento %}
         <td>

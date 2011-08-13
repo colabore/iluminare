@@ -5,6 +5,11 @@ from iluminare.atendimento.models import Atendimento
 from django import forms
 from django.forms.models import modelformset_factory, BaseModelFormSet
 
+def get_info(paciente):
+    prioridade = paciente.detalheprioridade_set.get()
+
+    return str(prioridade)
+
 class FiltroAtendimentosForm(forms.Form):
     tratamento      = forms.ModelChoiceField(queryset=Tratamento.objects.all())
     data            = forms.DateField()
@@ -12,26 +17,27 @@ class FiltroAtendimentosForm(forms.Form):
     nao_prioridades = forms.BooleanField()
 
 class ConfirmacaoAtendimentoForm(forms.ModelForm):
-    paciente = forms.CharField()
-    observacao = forms.CharField()
+    observacao = forms.CharField(required=False)
+    nome = forms.CharField(required=False)
+    info = forms.CharField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(ConfirmacaoAtendimentoForm, self).__init__(*args, **kwargs)
+        self.fields.keyOrder = ['nome', 'hora_chegada', 'info', 'hora_atendimento', 'status', 'observacao']
+        atendimento = kwargs.pop('instance')
+        self.fields['nome'].initial = atendimento.paciente.nome
+        self.fields['info'].initial = get_info(atendimento.paciente)
 
     class Meta:
         model = Atendimento
-        exclude = ['prioridade', 'instancia_tratamento']
-
-class BaseConfirmacaoAtendimentoFormSet(BaseModelFormSet):
-    def add_fields(self, form, index):
-        super(BaseConfirmacaoAtendimentoFormSet, self).add_fields(form, index)
-        #paciente = Paciente.objects.get(pk=1)
-        form.fields["Nome"] = forms.CharField()
+        exclude = ['prioridade', 'instancia_tratamento', 'senha', 'observacao_prioridade', 'paciente']
 
 ConfirmacaoAtendimentoFormSet = modelformset_factory(Atendimento, extra=0,
-    form=ConfirmacaoAtendimentoForm, formset=BaseConfirmacaoAtendimentoFormSet)
+    form=ConfirmacaoAtendimentoForm)
 
 def confirmacao(request):
     if request.method == "POST":
         filtro_form = FiltroAtendimentosForm(request.POST)
-
         atendimentos = ConfirmacaoAtendimentoFormSet(request.POST)
         if atendimentos.is_valid():
             atendimentos.save()
@@ -39,7 +45,7 @@ def confirmacao(request):
         filtro_form = FiltroAtendimentosForm()
         atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.all())
     
-    return render_to_response('confirmacao_atendimentos.html', {'filtro_form':filtro_form, 'atendimentos':atendimentos})
+    return render_to_response('confirmacao_atendimentos.html', {'filtro_form':filtro_form, 'atendimentos':atendimentos, 'mensagem':atendimentos.errors})
 
 def index(request):
 	return render_to_response('index.html')

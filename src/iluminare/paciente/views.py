@@ -90,7 +90,7 @@ def ajaxlistarpessoas (request, nome):
 
     lista = paciente_logic.format_table(pacientes)
 
-    return render_to_response ('ajax-listar-pessoas.html', {'pacientes':lista})
+    return render_to_response ('ajax-listar-pessoas.html', {'lista':lista})
 
 def dialog_detalhe(request, paciente_id, tratamento_id):
     lista = TratamentoPaciente.objects.filter(tratamento__id=tratamento_id, paciente__id=paciente_id)
