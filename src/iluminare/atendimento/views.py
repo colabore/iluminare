@@ -35,7 +35,7 @@ def get_info(paciente):
     except DetalhePrioridade.MultipleObjectsReturned:
         prioridade = paciente.detalheprioridade_set.all()[0]
     finally:
-        info = prioridade.get_status_display()
+        info = prioridade.get_tipo_display()
 
     return info
 
