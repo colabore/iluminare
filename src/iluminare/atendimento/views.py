@@ -2,13 +2,24 @@
 from django.shortcuts import render_to_response
 from iluminare.tratamento.models import Tratamento
 from iluminare.atendimento.models import Atendimento
+from iluminare.paciente.models import DetalhePrioridade
 from django import forms
 from django.forms.models import modelformset_factory, BaseModelFormSet
 
 def get_info(paciente):
-    prioridade = paciente.detalheprioridade_set.get()
+    info = ""
+    
+    try:
+        prioridade = paciente.detalheprioridade_set.get()
+    except DetalhePrioridade.DoesNotExist:
+        prioridade = DetalhePrioridade(paciente=paciente)
+        prioridade.save()
+    except DetalhePrioridade.MultipleObjectsReturned:
+        prioridade = paciente.detalheprioridade_set.all()[0]
+    finally:
+        info = prioridade.get_status_display()
 
-    return str(prioridade)
+    return info
 
 class FiltroAtendimentosForm(forms.Form):
     tratamento      = forms.ModelChoiceField(queryset=Tratamento.objects.all())

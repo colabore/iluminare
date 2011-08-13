@@ -2,10 +2,17 @@ $(document).ready(function(){
     function bindclickpacientes(){
         $("#tabela-pacientes a").click(function(){
             var paciente = $(this).attr('id');
-            $.get('/paciente/consultar/' + paciente,
-                function (data){
-                    $.fancybox(data, {'transitionIn':'elastic', 'transitionOut':'elastic'});
-                });
+            var classe   = $(this).attr('class');
+            var url = '';
+
+            if (classe == 'checkin'){
+                url = '/paciente/checkin/' + paciente;
+            } else {
+                url = '/paciente/consultar/' + paciente;
+            }
+            
+            var motion = {'transitionIn':'elastic', 'transitionOut':'elastic'};
+            $.get(url,function (data){$.fancybox(data, motion);});
         });
     }
 
