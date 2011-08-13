@@ -22,7 +22,7 @@ class Tratamento(models.Model):
         ('X', 'Sexta'),
         ('B', 'Sábado'))
     
-    sala                = models.ForeignKey(Sala, null = False, blank = False)
+    sala                = models.ForeignKey(Sala, null = True, blank = True)
     descricao_basica    = models.CharField(max_length=100, blank = False, null = False)
     descricao_completa  = models.TextField(blank = True, null = True)
     dia_semana          = models.CharField(max_length=1, choices = DIAS, null = True, blank = True)	
