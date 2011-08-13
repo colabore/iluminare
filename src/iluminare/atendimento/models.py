@@ -25,5 +25,6 @@ class Atendimento(models.Model):
     senha                   = models.CharField(max_length=10, null = True, blank=True)
 
     def __unicode__(self):
-        return "%s (%s)" % (self.paciente.nome, self.hora_chegada)
+        return "%s - %s - %s - %s" % (self.paciente.nome, self.hora_chegada, str(self.instancia_tratamento.data), \
+            self.instancia_tratamento.tratamento.descricao_basica)
 
