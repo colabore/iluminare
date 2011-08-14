@@ -4,7 +4,8 @@
 <div class="lista-atendimentos">
  
 
-
+{{paciente_id}}
+{{mensagem}}
 
 <table>
 	  <tr>
@@ -14,16 +15,37 @@
 		<td>Observação</td>
 	  </tr>
 
-	{% for atendimento in atendimentos %}
+	{% for atendimento in pagina_atual.object_list %}
 	  <tr>
 		<td> {{atendimento.data}} </td> 
 		<td> {{atendimento.tratamento}} </td>
 		<td> {{atendimento.hora_chegada}} </td>
 		<td> {{atendimento.observacao}} </td>
-		{{atendimento.msg}}
+		
 	  </tr>
 	{% endfor %}
 </table>
 
 </div>
+
+{% if pagina_atual.paginator.num_pages > 1 %}
+<div class="pagination">
+	<span class="step-links">
+	{% if pagina_atual.has_previous %}
+		<a href="/atendimento/consultar/{{paciente_id}}/{{pagina_atual.previous_page_number}}"> Anterior</a> 
+	{% endif %}
+
+		<span class="current">
+    			Page {{ pagina_atual.number }} of {{ pagina_atual.paginator.num_pages }}.
+		</span>
+
+	{% if pagina_atual.has_next %}
+		<a href="/atendimento/consultar/{{paciente_id}}/{{pagina_atual.next_page_number}}">Proxima</a>
+	{% endif %}
+	</span>
+</div>
+
+
+{% endif %}
+
 {% endblock %}
