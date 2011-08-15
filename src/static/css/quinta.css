@@ -90,7 +90,7 @@ background-color: #D3E3B5;
 #search-results {
 	margin: 0px auto;
 	width: 660px;
-	height: 300px;
+	min-height: 300px;
 	border: 1px solid #e8e;
 }
 #footer {
@@ -99,6 +99,6 @@ background-color: #D3E3B5;
 	background-color: #3AA;
 }
 div .paciente_checkin, div .paciente_consulta {
-    width:400px;
+    min-width:400px;
     height:400px;
 }
