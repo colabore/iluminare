@@ -28,8 +28,13 @@ $(document).ready(function(){
 
     $("#q-paciente").keyup(function(key){
         var nome = $(this).val();
-        $("#search-results").load('/paciente/search/' + encodeURIComponent(nome),
-            bindclickpacientes);
+        if (key.keyCode == '13'){
+            $("#search-results").load('/paciente/search/' + encodeURIComponent(nome),
+                bindclickpacientes);
+        }
     });
+    $("#form-search").submit(function(){
+        return false;
+    })
 });
 
