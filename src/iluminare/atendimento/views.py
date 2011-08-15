@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from iluminare.tratamento.models import Tratamento, InstanciaTratamento, TratamentoPaciente
 from iluminare.atendimento.models import Atendimento
+from iluminare.voluntario.models import Voluntario
+
 from iluminare.paciente.models import DetalhePrioridade, Paciente
 import iluminare.atendimento.logic as logic_atendimento
 
@@ -104,7 +106,7 @@ def confirmacao(request):
             atendimentos.save()
     else:
         filtro_form = FiltroAtendimentosForm()
-        atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.all())
+        atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.filter(status='C'))
     
     return render_to_response('confirmacao_atendimentos.html', {'filtro_form':filtro_form, 'atendimentos':atendimentos, 'mensagem':atendimentos.errors})
 def index(request):
@@ -178,7 +180,7 @@ def exibir_listagem(request, pagina = None):
 		else:
 			mensagem_erro = 'formulário inválido';
 
-	paginacao = Paginator(retorno,3) 
+	paginacao = Paginator(retorno,45) 
 	if pagina == None:
 		num_pagina = 1
 	else:	
