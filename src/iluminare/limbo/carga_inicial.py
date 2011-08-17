@@ -12,8 +12,13 @@ from django.core.exceptions import MultipleObjectsReturned
 import re
 from django.utils.encoding import smart_str, smart_unicode
 
+dir_log = "/media/DATA/Iluminare/Arquivos locais/carga inicial/"
+arquivo_log = open(dir_log+"carga.log", "w")
 
-arquivo_log = open("carga.log", "w")
+t0 = datetime.now()
+
+
+
 dir_csvs = "/media/DATA/Iluminare/Arquivos locais/carga inicial/planilhas/"
 
 """
@@ -49,7 +54,6 @@ def le_arquivo(nome_arquivo, primeira_linha_valida):
         linha1 = [i.replace("\"","").replace("\n","") for i in linha1]
         if linha1[1] != '':
             matriz.append(linha1)
-    print matriz
     return matriz
     
    
@@ -239,7 +243,6 @@ def string_to_date(data_str):
         retorna o objeto do tipo date correspondente.
     """
     lista = []
-    print data_str
     if "/" in data_str:
         lista = data_str.split("/")
     elif "-" in data_str:    
@@ -273,7 +276,7 @@ def registra_atendimento(paciente, tratamento, data):
 def processa_manutencao(nome_arquivo):
 
     arquivo_log.write("--- Manutencoes: "+nome_arquivo+'\n')
-    print "--- Tratamentos Trabalhadores e Colabores: "+nome_arquivo
+    print "--- Manutencoes: "+nome_arquivo
     
     leitor = le_arquivo(nome_arquivo, 4)
 
@@ -293,7 +296,6 @@ def processa_manutencao(nome_arquivo):
         nome = primeira_letra_maiuscula(nome)
         
         arquivo_log.write(nome+"\n")
-        print nome
         
         ## PACIENTE
         pacientes = Paciente.objects.filter(nome = nome) # pode retornar mais de um paciente.
@@ -365,7 +367,6 @@ def processa_arquivo_tratamento_voluntarios(nome_arquivo, lista_data_posicao, pr
         nome = primeira_letra_maiuscula(nome)
         
         arquivo_log.write(nome+"\n")
-        print nome
         pacientes = Paciente.objects.filter(nome = nome) # pode retornar mais de um paciente.
         if len(pacientes) == 0:
             paciente = Paciente(nome = nome)
@@ -420,7 +421,6 @@ def processa_arquivo_tratamento_voluntarios(nome_arquivo, lista_data_posicao, pr
                         it = its[0]
                     else:
                         arquivo_log.write("*** ERRO: MAIS DE UMA INSTANCIA_TRATAMENTO: "+tratamento.descricao_basica+" "+str(data)+"\n")
-                    print str(it.data)
                     atendimento = Atendimento(paciente = paciente, instancia_tratamento = it, status='A')
                     atendimento.save()
                     arquivo_log.write(str(data)+'\n')
@@ -581,10 +581,14 @@ def processa_atendimentos_voluntarios():
         (date(2011,8,11),4)]
     processa_arquivo_tratamento_voluntarios(nome_arquivo, lista_data_posicao, 7)
 
+
     
 def processa_atendimentos_quinta():
-    # FALTAM OS DADOS DE AGOSTO..
-
+    """
+        PROCESSA OS TRATAMENTOS DOS PACIENTES DAS QUINTAS-FEIRAS.
+        
+        
+    """
 
 #### FEVEREIRO E MARÇO 2010
 
@@ -789,10 +793,10 @@ def processa_atendimentos_quinta():
     nome_arquivo = nome_arquivo_pre + 'Sala1.csv'
     tratamento = "Sala 1"
     lista_data_posicao = [
-        (date(2011,02,3), 4),
-        (date(2011,02,10), 5),
-        (date(2011,02,17), 6),
-        (date(2011,02,24), 7)]
+        (date(2011,2,3), 4),
+        (date(2011,2,10), 5),
+        (date(2011,2,17), 6),
+        (date(2011,2,24), 7)]
     processa_arquivo(nome_arquivo, tratamento, lista_data_posicao, 3)
 
     nome_arquivo = nome_arquivo_pre + 'Sala2.csv'
@@ -806,10 +810,10 @@ def processa_atendimentos_quinta():
     nome_arquivo = nome_arquivo_pre + 'Sala4.csv'
     tratamento = "Sala 4"
     lista_data_posicao4 = [
-        (date(2011,02,3), 5),
-        (date(2011,02,10), 6),
-        (date(2011,02,17), 7),
-        (date(2011,02,24), 8)]
+        (date(2011,2,3), 5),
+        (date(2011,2,10), 6),
+        (date(2011,2,17), 7),
+        (date(2011,2,24), 8)]
     processa_arquivo(nome_arquivo, tratamento, lista_data_posicao4, 3)
 
     nome_arquivo = nome_arquivo_pre + 'Sala5.csv'
@@ -822,11 +826,11 @@ def processa_atendimentos_quinta():
     nome_arquivo = nome_arquivo_pre + 'Sala1.csv'
     tratamento = "Sala 1"
     lista_data_posicao = [
-        (date(2011,03,3), 4),
-        (date(2011,03,10), 5),
-        (date(2011,03,17), 6),
-        (date(2011,03,24), 7),
-        (date(2011,03,31), 8)]
+        (date(2011,3,3), 4),
+        (date(2011,3,10), 5),
+        (date(2011,3,17), 6),
+        (date(2011,3,24), 7),
+        (date(2011,3,31), 8)]
     processa_arquivo(nome_arquivo, tratamento, lista_data_posicao, 3)
 
     nome_arquivo = nome_arquivo_pre + 'Sala2.csv'
@@ -840,11 +844,11 @@ def processa_atendimentos_quinta():
     nome_arquivo = nome_arquivo_pre + 'Sala4.csv'
     tratamento = "Sala 4"
     lista_data_posicao4 = [
-        (date(2011,03,3), 5),
-        (date(2011,03,10), 6),
-        (date(2011,03,17), 7),
-        (date(2011,03,24), 8),
-        (date(2011,03,31), 9)]
+        (date(2011,3,3), 5),
+        (date(2011,3,10), 6),
+        (date(2011,3,17), 7),
+        (date(2011,3,24), 8),
+        (date(2011,3,31), 9)]
     processa_arquivo(nome_arquivo, tratamento, lista_data_posicao4, 3)
 
     nome_arquivo = nome_arquivo_pre + 'Sala5.csv'
@@ -857,10 +861,10 @@ def processa_atendimentos_quinta():
     nome_arquivo = nome_arquivo_pre + 'Sala1.csv'
     tratamento = "Sala 1"
     lista_data_posicao = [
-        (date(2011,04,7), 4),
-        (date(2011,04,14), 5),
-        (date(2011,04,21), 6),
-        (date(2011,04,28), 7)]
+        (date(2011,4,7), 4),
+        (date(2011,4,14), 5),
+        (date(2011,4,21), 6),
+        (date(2011,4,28), 7)]
     processa_arquivo(nome_arquivo, tratamento, lista_data_posicao, 3)
 
     nome_arquivo = nome_arquivo_pre + 'Sala2.csv'
@@ -874,10 +878,10 @@ def processa_atendimentos_quinta():
     nome_arquivo = nome_arquivo_pre + 'Sala4.csv'
     tratamento = "Sala 4"
     lista_data_posicao4 = [
-        (date(2011,04,7), 5),
-        (date(2011,04,14), 6),
-        (date(2011,04,21), 7),
-        (date(2011,04,28), 8)]
+        (date(2011,4,7), 5),
+        (date(2011,4,14), 6),
+        (date(2011,4,21), 7),
+        (date(2011,4,28), 8)]
     processa_arquivo(nome_arquivo, tratamento, lista_data_posicao4, 3)
 
     nome_arquivo = nome_arquivo_pre + 'Sala5.csv'
@@ -890,10 +894,10 @@ def processa_atendimentos_quinta():
     nome_arquivo = nome_arquivo_pre + 'Sala1.csv'
     tratamento = "Sala 1"
     lista_data_posicao = [
-        (date(2011,05,5), 4),
-        (date(2011,05,12), 5),
-        (date(2011,05,19), 6),
-        (date(2011,05,26), 7)]
+        (date(2011,5,5), 4),
+        (date(2011,5,12), 5),
+        (date(2011,5,19), 6),
+        (date(2011,5,26), 7)]
     processa_arquivo(nome_arquivo, tratamento, lista_data_posicao, 3)
 
     nome_arquivo = nome_arquivo_pre + 'Sala2.csv'
@@ -907,10 +911,10 @@ def processa_atendimentos_quinta():
     nome_arquivo = nome_arquivo_pre + 'Sala4.csv'
     tratamento = "Sala 4"
     lista_data_posicao4 = [
-        (date(2011,05,5), 5),
-        (date(2011,05,12), 6),
-        (date(2011,05,19), 7),
-        (date(2011,05,26), 8)]
+        (date(2011,5,5), 5),
+        (date(2011,5,12), 6),
+        (date(2011,5,19), 7),
+        (date(2011,5,26), 8)]
     processa_arquivo(nome_arquivo, tratamento, lista_data_posicao4, 3)
 
     nome_arquivo = nome_arquivo_pre + 'Sala5.csv'
@@ -923,10 +927,10 @@ def processa_atendimentos_quinta():
     nome_arquivo = nome_arquivo_pre + 'Sala1.csv'
     tratamento = "Sala 1"
     lista_data_posicao = [
-        (date(2011,06,2), 4),
-        (date(2011,06,9), 5),
-        (date(2011,06,16), 6),
-        (date(2011,06,30), 7)]
+        (date(2011,6,2), 4),
+        (date(2011,6,9), 5),
+        (date(2011,6,16), 6),
+        (date(2011,6,30), 7)]
     processa_arquivo(nome_arquivo, tratamento, lista_data_posicao, 3)
 
     nome_arquivo = nome_arquivo_pre + 'Sala2.csv'
@@ -940,10 +944,10 @@ def processa_atendimentos_quinta():
     nome_arquivo = nome_arquivo_pre + 'Sala4.csv'
     tratamento = "Sala 4"
     lista_data_posicao4 = [
-        (date(2011,06,2), 5),
-        (date(2011,06,9), 6),
-        (date(2011,06,16), 7),
-        (date(2011,06,30), 8)]
+        (date(2011,6,2), 5),
+        (date(2011,6,9), 6),
+        (date(2011,6,16), 7),
+        (date(2011,6,30), 8)]
     processa_arquivo(nome_arquivo, tratamento, lista_data_posicao4, 3)
     nome_arquivo = nome_arquivo_pre + 'Sala5.csv'
     tratamento = "Sala 5"
@@ -955,10 +959,10 @@ def processa_atendimentos_quinta():
     nome_arquivo = nome_arquivo_pre + 'Sala1.csv'
     tratamento = "Sala 1"
     lista_data_posicao = [
-        (date(2011,07,7), 4),
-        (date(2011,07,14), 5),
-        (date(2011,07,21), 6),
-        (date(2011,07,28), 7)]
+        (date(2011,7,7), 4),
+        (date(2011,7,14), 5),
+        (date(2011,7,21), 6),
+        (date(2011,7,28), 7)]
     processa_arquivo(nome_arquivo, tratamento, lista_data_posicao, 3)
 
     nome_arquivo = nome_arquivo_pre + 'Sala2.csv'
@@ -972,16 +976,49 @@ def processa_atendimentos_quinta():
     nome_arquivo = nome_arquivo_pre + 'Sala4.csv'
     tratamento = "Sala 4"
     lista_data_posicao4 = [
-        (date(2011,07,7), 5),
-        (date(2011,07,14), 6),
-        (date(2011,07,21), 7),
-        (date(2011,07,28), 8)]
+        (date(2011,7,7), 5),
+        (date(2011,7,14), 6),
+        (date(2011,7,21), 7),
+        (date(2011,7,28), 8)]
     processa_arquivo(nome_arquivo, tratamento, lista_data_posicao4, 3)
 
     nome_arquivo = nome_arquivo_pre + 'Sala5.csv'
     tratamento = "Sala 5"
     processa_arquivo(nome_arquivo, tratamento, lista_data_posicao, 3)
 
+
+#### AGOSTO 2011
+
+    nome_arquivo_pre = dir_csvs + '2011-08-'
+    nome_arquivo = nome_arquivo_pre + 'Sala1.csv'
+    tratamento = "Sala 1"
+    lista_data_posicao = [
+        (date(2011,8,4), 4),
+        (date(2011,8,11), 5),
+        (date(2011,8,18), 6),
+        (date(2011,8,25), 7)]
+    processa_arquivo(nome_arquivo, tratamento, lista_data_posicao, 3)
+
+    nome_arquivo = nome_arquivo_pre + 'Sala2.csv'
+    tratamento = "Sala 2"
+    processa_arquivo(nome_arquivo, tratamento, lista_data_posicao, 3)
+
+    nome_arquivo = nome_arquivo_pre + 'Sala3.csv'
+    tratamento = "Sala 3"
+    processa_arquivo(nome_arquivo, tratamento, lista_data_posicao, 3)
+
+    nome_arquivo = nome_arquivo_pre + 'Sala4.csv'
+    tratamento = "Sala 4"
+    lista_data_posicao4 = [
+        (date(2011,8,4), 5),
+        (date(2011,8,11), 6),
+        (date(2011,8,18), 7),
+        (date(2011,8,25), 8)]
+    processa_arquivo(nome_arquivo, tratamento, lista_data_posicao4, 3)
+
+    nome_arquivo = nome_arquivo_pre + 'Sala5.csv'
+    tratamento = "Sala 5"
+    processa_arquivo(nome_arquivo, tratamento, lista_data_posicao, 3)
         
     
 
@@ -994,6 +1031,9 @@ def processa():
     processa_atendimentos_voluntarios()
     processa_atendimentos_quinta()
 
+    delta_t = datetime.now() - t0 
+    print delta_t
+    
     arquivo_log.close()
 
 
