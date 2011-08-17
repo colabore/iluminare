@@ -5,7 +5,8 @@ from iluminare.paciente.models import *
 from iluminare.tratamento.models import *
 from iluminare.atendimento.models import *
 from datetime import date
-import re, datetime
+from datetime import datetime
+import re
 
 class AtendimentoException(Exception):
     def __init__(self, msg):
@@ -40,5 +41,6 @@ def checkin_paciente(paciente, tratamento_paciente, senha_str, redirecionar, pri
     
     at = Atendimento(instancia_tratamento = it, paciente = paciente, prioridade = prioridade_bool, senha = senha_str, \
         observacao_prioridade = observacao_prioridade_str, status = 'C')
+    at.hora_chegada=datetime.now()
     at.save()
 
