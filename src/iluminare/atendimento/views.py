@@ -76,8 +76,6 @@ def get_info(paciente):
 class FiltroAtendimentosForm(forms.Form):
     tratamento      = forms.ModelChoiceField(queryset=Tratamento.objects.all())
     data            = forms.DateField()
-    prioridades     = forms.BooleanField()
-    nao_prioridades = forms.BooleanField()
 
 class ConfirmacaoAtendimentoForm(forms.ModelForm):
     observacao = forms.CharField(required=False)
@@ -102,11 +100,18 @@ def confirmacao(request):
     if request.method == "POST":
         filtro_form = FiltroAtendimentosForm(request.POST)
         atendimentos = ConfirmacaoAtendimentoFormSet(request.POST)
-        if atendimentos.is_valid():
-            atendimentos.save()
+	
+	if atendimentos.is_valid():
+		atendimentos.save()
+	
+	if filtro_form.is_valid() and atendimentos.is_valid():
+		tratamento = filtro_form.cleaned_data['tratamento']
+		data	   = filtro_form.cleaned_data['data']
+        	atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.filter(instancia_tratamento__data=data,instancia_tratamento__tratamento=tratamento,status='C'))
+		
     else:
         filtro_form = FiltroAtendimentosForm()
-        atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.filter(status='C'))
+        atendimentos = ConfirmacaoAtendimentoFormSet(queryset=None)
     
     return render_to_response('confirmacao_atendimentos.html', {'filtro_form':filtro_form, 'atendimentos':atendimentos, 'mensagem':atendimentos.errors})
 def index(request):
@@ -119,10 +124,43 @@ class ImprimirListagemForm(forms.Form):
 	def __init__(self, *args, **kwargs):
         	super(ImprimirListagemForm, self).__init__(*args, **kwargs)
         	self.fields['tratamento'].choices = [('', '----------')] + [(tratamento.id, tratamento.descricao_basica) for tratamento in Tratamento.objects.all()]
-
 	tratamento = forms.ChoiceField(choices=())
 	data = forms.DateField(initial = datetime.date.today)
 	
+class RelatorioAtendimentoData(forms.Form):
+
+	def __init__(self, *args, **kwargs):
+		super(RelatorioAtendimentoData,self).__init__(*args, **kwargs)
+		self.fields['tratamento'].choices = [('', '----------')] + [(tratamento.id, tratamento.descricao_basica) for tratamento in 			  			Tratamento.objects.all	()]
+
+	STATUS = (
+		('C','CHECK-IN'), 
+		('I','IMPRESSO'), 
+		('X','CHAMADO'), 
+		('A','ATENDIDO'), 
+		('N','NAO-ATENDIDO'))
+	
+	status = forms.ChoiceField(choices= STATUS)
+
+	data = forms.DateField(initial = datetime.date.today)
+	tratamento = forms.ChoiceField(choices=())
+	
+
+def exibir_relatorio_atendimento(rquest):
+
+	form_relatorio = RelatorioAtendimentoData()
+	mensagem_erro = ''	
+	
+	if request.method == "POST":
+		
+		if form_listagem.is_valid():
+			data_in = form_listagem.cleaned_data['data']
+			tratamento_in = form_listagem.cleaned_data['tratamento']
+		else:
+			mensagem_erro = 'formulário inválido'	
+		
+
+	return render_to_response('relatorio-atendimento.html', {'form_relatorio':form_relatorio})
 
 def exibir_listagem(request, pagina = None):
 	
