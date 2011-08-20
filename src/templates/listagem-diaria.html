@@ -9,10 +9,33 @@ function pagina(number){
 }
 </script>
 
-<form name="listagemdiaria" method="POST" action="/atendimento/listagem/">
-<table>
+<style media="print" type="text/css">
 
-{{form_listagem}}
+@PAGE landscape {size: landscape;}
+
+div .listagem_form {
+    display: none;
+
+}
+table {
+    border-collapse:collapse;
+}
+table, th, tr, td {   
+    border: 1px solid black;
+}
+#header {
+    display: none;
+}
+
+</style>
+
+<form name="listagemdiaria" method="POST" action="/atendimento/listagem/" >
+
+<table class="listagem_form">
+
+    
+    {{form_listagem}}
+    
 
 	<table>
 		
@@ -53,7 +76,7 @@ function pagina(number){
 		{% endfor %}
 	</table>
 </table>
-<input type="submit" />
+<input type="submit" class="listagem_form"/>
 </form>
 
 {% if pagina_atual.paginator.num_pages > 1 %}
