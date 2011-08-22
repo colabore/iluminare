@@ -101,17 +101,17 @@ def confirmacao(request):
         filtro_form = FiltroAtendimentosForm(request.POST)
         atendimentos = ConfirmacaoAtendimentoFormSet(request.POST)
 	
-	if atendimentos.is_valid():
-		atendimentos.save()
+        if atendimentos.is_valid():
+            atendimentos.save()
 	
-	if filtro_form.is_valid() and atendimentos.is_valid():
-		tratamento = filtro_form.cleaned_data['tratamento']
-		data	   = filtro_form.cleaned_data['data']
-        	atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.filter(instancia_tratamento__data=data,instancia_tratamento__tratamento=tratamento,status='C'))
+        if filtro_form.is_valid() and atendimentos.is_valid():
+            tratamento = filtro_form.cleaned_data['tratamento']
+            data	   = filtro_form.cleaned_data['data']
+            atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.filter(instancia_tratamento__data=data,instancia_tratamento__tratamento=tratamento,status='C'))
 		
     else:
         filtro_form = FiltroAtendimentosForm()
-        atendimentos = ConfirmacaoAtendimentoFormSet(queryset=None)
+        atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.none())
     
     return render_to_response('confirmacao_atendimentos.html', {'filtro_form':filtro_form, 'atendimentos':atendimentos, 'mensagem':atendimentos.errors})
 def index(request):
