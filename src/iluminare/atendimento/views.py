@@ -74,24 +74,64 @@ def get_info(paciente):
     return info
 
 class FiltroAtendimentosForm(forms.Form):
-    tratamento      = forms.ModelChoiceField(queryset=Tratamento.objects.all())
-    data            = forms.DateField()
-
-class ConfirmacaoAtendimentoForm(forms.ModelForm):
-    observacao = forms.CharField(required=False)
-    nome = forms.CharField(required=False)
-    info = forms.CharField(required=False)
+    tratamento      = forms.ModelChoiceField(queryset=Tratamento.objects.all(), help_text ="Tratamento")
+    data            = forms.DateField(help_text="Data")
 
     def __init__(self, *args, **kwargs):
+        super(FiltroAtendimentosForm, self).__init__(*args, **kwargs)
+        self.fields['data'].initial = datetime.date.today()
+    
+    
+class ConfirmacaoAtendimentoForm(forms.ModelForm):
+    observacao = forms.CharField(required=False)
+    nome = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly'}))
+    info = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly'}))
+    hora_chegada = forms.TimeField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly'}))   
+
+    def __init__(self, *args, **kwargs):
+        
+               
         super(ConfirmacaoAtendimentoForm, self).__init__(*args, **kwargs)
         self.fields.keyOrder = ['nome', 'hora_chegada', 'info', 'hora_atendimento', 'status', 'observacao']
         atendimento = kwargs.pop('instance')
+        
         self.fields['nome'].initial = atendimento.paciente.nome
-        self.fields['info'].initial = get_info(atendimento.paciente)
+        
+        info_str = ''
+        
+        try:
+            tratamento = Tratamento.objects.get(id = atendimento.instancia_tratamento.tratamento.id)
+            cont = len(Atendimento.objects.filter(paciente__id = atendimento.paciente.id, instancia_tratamento__tratamento__id = tratamento.id))           
+                
+           
+            info_str = info_str + '[' + str(cont) + ']'
+        
+        except Tratamento.DoesNotExist:
+            pass
+
+        try:
+            voluntario = Voluntario.objects.get(paciente__id = atendimento.paciente.id)
+            info_str = info_str + '[' + voluntario.get_tipo_display() + ']'  
+        except Voluntario.DoesNotExist:
+            pass
+        
+        try:
+            prioridade =  DetalhePrioridade.objects.get(paciente__id = atendimento.paciente.id)
+            info_str = info_str + '[' + prioridade.get_tipo_display() + ']'
+        except DetalhePrioridade.DoesNotExist:
+            pass
+        
+        if atendimento.observacao_prioridade:   
+            info_str = info_str + '[' + atendimento.observacao_prioridade + ']' 
+
+        
+
+        self.fields['info'].initial = info_str
 
     class Meta:
         model = Atendimento
         exclude = ['prioridade', 'instancia_tratamento', 'senha', 'observacao_prioridade', 'paciente']
+          
 
 ConfirmacaoAtendimentoFormSet = modelformset_factory(Atendimento, extra=0,
     form=ConfirmacaoAtendimentoForm)
@@ -107,7 +147,7 @@ def confirmacao(request):
         if filtro_form.is_valid() and atendimentos.is_valid():
             tratamento = filtro_form.cleaned_data['tratamento']
             data	   = filtro_form.cleaned_data['data']
-            atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.filter(instancia_tratamento__data=data,instancia_tratamento__tratamento=tratamento,status='C'))
+            atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.filter(instancia_tratamento__data=data,instancia_tratamento__tratamento=tratamento))
 		
     else:
         filtro_form = FiltroAtendimentosForm()

@@ -12,7 +12,8 @@
 		<link href="/static/css/quinta.css" media="screen" rel="stylesheet" type="text/css" />
 		<link href="/static/css/quinta-formato.css" media="screen" rel="stylesheet" type="text/css" />
 		<link href="/static/css/jquery.fancybox-1.3.4.css" media="screen" rel="stylesheet" type="text/css" />
-</head>	
+        
+    </head>	
 <body>
 <div id="iluminare">
 	<div id="header">
@@ -26,7 +27,9 @@
 
 	</div>
 	<div id="mensagem">
-    {{mensagem}}
+    {% if mensagem %}    
+        {{mensagem}}
+    {% endif %}
     </div>
     <div id="content">
     {% block content %}
