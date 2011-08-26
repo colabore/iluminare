@@ -20,7 +20,10 @@ def inserir_detalhe_prioridade(detalhe_prioridade):
         raise PacienteException("Objeto detalhe_prioridade inconsistente.")
 
     if detalhe_prioridade.tipo == None:
-        detalhe_prioridade.delete()
+        try:
+            detalhe_prioridade.delete()
+        except:
+            pass
     else:
         if detalhe_prioridade.tipo in ['C','P','B'] :
             detalhe_prioridade.data_inicio = None
