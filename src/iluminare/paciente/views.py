@@ -18,19 +18,17 @@ PRIORIDADE_CHOICES = (
 
 class DetalhePrioridadeForm(forms.ModelForm):
     """ formulário para atualizar os detalhes caso o paciente seja prioritário. """
+    paciente = None
     class Meta:
         model = DetalhePrioridade
         exclude = ('paciente', )
 
     def save(self):
         detalhe_prioridade = forms.ModelForm.save(self, commit=False)
-       
+        detalhe_prioridade.paciente = self.paciente
         # verifica se o objeto detalhe_prioridade está consistente
-        paciente_logic.validar_detalhe_prioridade(detalhe_prioridade)
-        
-        detalhe_prioridade.save()
+        paciente_logic.inserir_detalhe_prioridade(detalhe_prioridade)
         self.save_m2m()
-
 
 class PacienteForm(forms.ModelForm):
     class Meta:
@@ -46,16 +44,15 @@ def atualizar(request, paciente_id):
     try:
         detalhe_prioridade = DetalhePrioridade.objects.get(paciente=paciente)
     except:
-        # caso o detalhe_prioridade do paciente não exista, será criado.
-        detalhe_prioridade = DetalhePrioridade(paciente=paciente)
-        detalhe_prioridade.save()
+        detalhe_prioridade = None
 
     if request.method == "POST":
         form_paciente = PacienteForm(request.POST, instance=paciente)
         form_detalhe_prioridade = DetalhePrioridadeForm(request.POST, instance=detalhe_prioridade)
-
+        
         try:
             form_paciente.save()
+            form_detalhe_prioridade.paciente = paciente
             form_detalhe_prioridade.save()
             msg = "Paciente atualizado com sucesso"
         except paciente_logic.PacienteException as p_exc:

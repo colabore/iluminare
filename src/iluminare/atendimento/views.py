@@ -46,7 +46,7 @@ def ajax_checkin_paciente(request, paciente_id):
 
             try:
                 logic_atendimento.checkin_paciente(paciente, tratamento, senha, redirecionar, prioridade, observacao_prioridade)
-                return HttpResponse("O checking de %s foi realizado com sucesso" % paciente.nome)
+                return HttpResponse("O check-in de %s foi realizado com sucesso" % paciente.nome)
             except Exception, e:
                 return HttpResponse("Erro: %s" % e)
         else:
