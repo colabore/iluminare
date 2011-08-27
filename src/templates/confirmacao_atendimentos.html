@@ -9,7 +9,19 @@ label {
 
 <form method="POST">
 <table>
-{{filtro_form}}
+<form action="/confimacao/" method="post">
+    
+    <div class="filtro">
+       Data : {{ filtro_form.data }}
+       Tratamento: {{ filtro_form.tratamento }}    
+       <input type="submit" value="Pesquisar" />    
+    </div>
+    <br>
+    <br>
+    
+   
+</form>
+
 </table>
 
 <table>
@@ -35,8 +47,10 @@ label {
     </tr>
 {% endfor %}
 </table>
-
-<input type="submit" value="salvar dados" />
+{% if atendimentos.forms %}
+    <br>    
+    <input type="submit" value="Salvar Dados" />
+{% endif %}
 </form>
 
 
