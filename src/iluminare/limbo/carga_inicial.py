@@ -269,7 +269,7 @@ def registra_atendimento(paciente, tratamento, data):
     
     ats = Atendimento.objects.filter(paciente = paciente, instancia_tratamento=it)
     if len(ats) == 0:
-        at = Atendimento(paciente = paciente, instancia_tratamento=it)
+        at = Atendimento(paciente = paciente, instancia_tratamento=it, status='A')
         at.save()
 
 
@@ -434,7 +434,10 @@ def cria_salas_tratamentos():
         "Sala 4",
         "Sala 5",
         "Primeira vez",
-        "Manutenção"]
+        "Manutenção",
+        "Desobsessão",
+        "Atendimento Fraterno",
+        "Acolhimento Espiritual"]
     for t in tratamentos:
         try:
             tratamento = Tratamento.objects.get(descricao_basica=t)

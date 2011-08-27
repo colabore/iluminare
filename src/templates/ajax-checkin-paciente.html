@@ -10,13 +10,32 @@
 {% endif %}
 
 {% endfor %}</h1>
+{%if paciente.observacao %}
+<br />
+{{paciente.observacao}}
+<br />
+{% endif %}
+
 
 <br />
 <form method="POST" id="form_paciente_checkin">
 <table>
 {{form}}
 </table>
-<a href="#" id="checkin_submit">OK</a>
+<br />
+<ul>
+<div id="checkin-lista-atendimentos">
+
+{% for atendimento in lista %}
+<li>{{atendimento.instancia_tratamento.tratamento.descricao_basica}}
+ - {{atendimento.instancia_tratamento.data|date:"d/m/Y"}}
+</li>
+{% endfor %}
+
+</div>
+</ul>
+<br />
+<a href="#" id="checkin_submit">CONFIRMAR CHECK-IN</a>
 </form>
 <p>{{erros}}</p>
 </div>

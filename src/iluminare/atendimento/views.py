@@ -35,6 +35,8 @@ class CheckinPacienteForm(forms.ModelForm):
 def ajax_checkin_paciente(request, paciente_id):
     paciente = get_object_or_404(Paciente, pk=paciente_id)
     
+    lista_atendimentos = logic_atendimento.atendimentos_paciente(paciente.id)
+    
     if request.method == 'POST':
         checkin_paciente_form = CheckinPacienteForm(request.POST)
         if checkin_paciente_form.is_valid():
@@ -56,7 +58,7 @@ def ajax_checkin_paciente(request, paciente_id):
     
     checkin_paciente_form.update_tratamentos(paciente)
 
-    return render_to_response('ajax-checkin-paciente.html', {'paciente':paciente, 'form':checkin_paciente_form, 'erros':str(checkin_paciente_form.errors)})
+    return render_to_response('ajax-checkin-paciente.html', {'paciente':paciente, 'form':checkin_paciente_form, 'lista':lista_atendimentos, 'erros':str(checkin_paciente_form.errors)})
 
 def get_info(paciente):
     info = ""
@@ -101,7 +103,7 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
         
         try:
             tratamento = Tratamento.objects.get(id = atendimento.instancia_tratamento.tratamento.id)
-            cont = len(Atendimento.objects.filter(paciente__id = atendimento.paciente.id, instancia_tratamento__tratamento__id = tratamento.id))           
+            cont = len(Atendimento.objects.filter(paciente__id = atendimento.paciente.id, instancia_tratamento__tratamento__id = tratamento.id, status='A'))           
                 
            
             info_str = info_str + '[' + str(cont) + ']'
