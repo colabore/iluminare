@@ -62,6 +62,8 @@ def le_arquivo(nome_arquivo, primeira_linha_valida):
 # Excecão para palavras com 1 letra, 'da' e 'de'.
 # Evita que tenhamos João Da Silva ou João E Silva
 def letra_maiuscula(nome):
+    if len(nome) == 0:
+        return ""
     if len(nome) == 1:
         return nome.lower()
     elif nome.lower() == 'da':
@@ -72,18 +74,27 @@ def letra_maiuscula(nome):
         return nome.lower()
     elif nome.lower() == 'dos':
         return nome.lower()
+    elif len(nome) >= 2:
+        nome = nome.capitalize()
+        primeira_letra = nome[0]
+        resto_nome = nome[1:].replace("Ã","ã").\
+            replace("Á","á").replace("Ç","ç").\
+            replace("É","é").replace("Ô","ô").\
+            replace("Ó","ó").replace("Ê","ê").\
+            replace("Ú","ú")
+        return primeira_letra + resto_nome
     else:
-        return nome.capitalize()
+        return nome
 
 # recebe como parêmetro um nome completo uppercase.
 # retorna o nome da pessoa somente com as primeiras letras maiúsculas
 # Ex: JOÃO DA SILVA -> João da Silva
 def primeira_letra_maiuscula(nome):
-    list = nome.split(' ')
+    lista = nome.split(' ')
     # para cada item na lista, põe a primeira letra maiúscula
-    list2 = [letra_maiuscula(c) for c in list]
-    nome2 = ' '.join(list2)
-    return nome2
+    lista2 = [letra_maiuscula(c) for c in lista]
+    nome = ' '.join(lista2)
+    return nome
              
 
 def atualiza_tratamento(paciente, instancia_tratamento_novo):
@@ -203,6 +214,7 @@ def processa_arquivo(nome_arquivo, tratamento_str, lista_data_posicao, ficha):
             pacientes = Paciente.objects.filter(nome=nome)
             if len(pacientes) == 0:
                 paciente = Paciente(nome=nome)
+                arquivo_log.write("Adicionado"+"\n")
             
             if len(pacientes) == 1:
                 paciente = pacientes[0]
@@ -269,7 +281,7 @@ def registra_atendimento(paciente, tratamento, data):
     
     ats = Atendimento.objects.filter(paciente = paciente, instancia_tratamento=it)
     if len(ats) == 0:
-        at = Atendimento(paciente = paciente, instancia_tratamento=it)
+        at = Atendimento(paciente = paciente, instancia_tratamento=it, status='A')
         at.save()
 
 
@@ -298,14 +310,21 @@ def processa_manutencao(nome_arquivo):
         arquivo_log.write(nome+"\n")
         
         ## PACIENTE
+        tem_ficha = False
+        if linha[c_o].lower == 'cf':
+            tem_ficha = True
+            
         pacientes = Paciente.objects.filter(nome = nome) # pode retornar mais de um paciente.
         if len(pacientes) == 0:
             paciente = Paciente(nome = nome)
-            paciente.save()
+            arquivo_log.write("Adicionado"+"\n")
         elif len(pacientes) == 1:
             paciente = pacientes[0]
         else:
             arquivo_log.write("*** ERRO: MAIS DE UM TRABALHADOR(PACIENTE) COM MESMO NOME:"+nome+'\n')
+        
+        paciente.tem_ficha = tem_ficha
+        paciente.save()
 
 
         ## TRATAMENTO + TRATAMENTO_PACIENTE
@@ -371,6 +390,7 @@ def processa_arquivo_tratamento_voluntarios(nome_arquivo, lista_data_posicao, pr
         if len(pacientes) == 0:
             paciente = Paciente(nome = nome)
             paciente.save()
+            arquivo_log.write("Adicionado"+"\n")
         elif len(pacientes) == 1:
             paciente = pacientes[0]
         else:
@@ -434,7 +454,10 @@ def cria_salas_tratamentos():
         "Sala 4",
         "Sala 5",
         "Primeira vez",
-        "Manutenção"]
+        "Manutenção",
+        "Desobsessão",
+        "Atendimento Fraterno",
+        "Acolhimento Espiritual"]
     for t in tratamentos:
         try:
             tratamento = Tratamento.objects.get(descricao_basica=t)
