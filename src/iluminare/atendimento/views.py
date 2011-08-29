@@ -17,17 +17,19 @@ from operator import itemgetter
 
 class CheckinPacienteForm(forms.ModelForm):
     redirecionar = forms.ModelChoiceField(queryset=Tratamento.objects.all(), required=False)
-    tratamento   = forms.ModelChoiceField(queryset=TratamentoPaciente.objects.all(), required=False)
+    tratamento   = forms.ModelChoiceField(queryset=Tratamento.objects.all(), required=False)
 
     def __init__(self, *args, **kargs):
         super(CheckinPacienteForm, self).__init__(*args, **kargs)
-        self.fields.keyOrder = ['tratamento', 'senha', 'redirecionar', 'prioridade', 'observacao_prioridade']
+        self.fields.keyOrder = ['tratamento', 'redirecionar', 'prioridade', 'observacao_prioridade', 'senha']
 
     def update_tratamentos(self, paciente):
-        tratamentos = paciente.tratamentopaciente_set.all()
-        self.fields['tratamento'].queryset = tratamentos
+        tratamentos = [tp.tratamento for tp in paciente.tratamentopaciente_set.all()]
+        ids_tratamentos = [t.id for t in tratamentos]
+        self.fields['tratamento'].queryset = Tratamento.objects.filter(id__in=ids_tratamentos)
         self.fields['observacao_prioridade'].help_tag = "Observação (prioridade)"
-
+        self.fields['observacao_prioridade'].label = "Motivo prioridade"
+        
     class Meta:
         model = Atendimento
         exclude = ['observacao', 'status', 'hora_atendimento', 'hora_chegada', 'instancia_tratamento', 'paciente']
@@ -47,12 +49,12 @@ def ajax_checkin_paciente(request, paciente_id):
             observacao_prioridade   = checkin_paciente_form.cleaned_data['observacao_prioridade']
 
             try:
-                logic_atendimento.checkin_paciente(paciente, tratamento, senha, redirecionar, prioridade, observacao_prioridade)
-                return HttpResponse("O check-in de %s foi realizado com sucesso" % paciente.nome)
+                at = logic_atendimento.checkin_paciente(paciente, tratamento, senha, redirecionar, prioridade, observacao_prioridade)
+                return HttpResponse("O check-in realizado com sucesso!<br/> Paciente: %s <br /> Tratamento: %s" % (paciente.nome, at.instancia_tratamento.tratamento.descricao_basica))
             except Exception, e:
                 return HttpResponse("Erro: %s" % e)
         else:
-            return HttpResponse("errro %s" % str(checkin_paciente_form.errors))
+            return HttpResponse("Erro %s" % str(checkin_paciente_form.errors))
     else:
         checkin_paciente_form = CheckinPacienteForm()
     
@@ -156,6 +158,7 @@ def confirmacao(request):
         atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.none())
     
     return render_to_response('confirmacao_atendimentos.html', {'filtro_form':filtro_form, 'atendimentos':atendimentos, 'mensagem':atendimentos.errors})
+
 def index(request):
 	return render_to_response('index.html')
 

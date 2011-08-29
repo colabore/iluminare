@@ -17,15 +17,13 @@ class AtendimentoException(Exception):
         
     
 
-def checkin_paciente(paciente, tratamento_paciente, senha_str, redirecionar, prioridade_bool, observacao_prioridade_str):
+def checkin_paciente(paciente, tratamento, senha_str, redirecionar, prioridade_bool, observacao_prioridade_str):
 
-    if redirecionar == None and tratamento_paciente == None:
+    if redirecionar == None and tratamento == None:
         raise AtendimentoException("Favor informar o tratamento.")
 
     if redirecionar != None:
         tratamento = redirecionar
-    else:
-        tratamento = tratamento_paciente.tratamento
     
     hoje = date.today()
     its = InstanciaTratamento.objects.filter(tratamento = tratamento, data = hoje)
@@ -43,6 +41,8 @@ def checkin_paciente(paciente, tratamento_paciente, senha_str, redirecionar, pri
         observacao_prioridade = observacao_prioridade_str, status = 'C')
     at.hora_chegada=datetime.now()
     at.save()
+    
+    return at
 
 
 def atendimentos_paciente(paciente_id):

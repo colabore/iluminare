@@ -69,9 +69,9 @@ def search(nome):
     if data:
         data_nascimento = data[0]
         data_nascimento = "%s-%s-%s" % (data_nascimento[2], data_nascimento[1], data_nascimento[0])
-        pacientes = Paciente.objects.filter(data_nascimento__startswith=data_nascimento)
+        pacientes = Paciente.objects.filter(data_nascimento__startswith=data_nascimento).order_by('nome')
     else:
-        pacientes = Paciente.objects.filter(nome__istartswith=nome)
+        pacientes = Paciente.objects.filter(nome__istartswith=nome).order_by('nome')
     
     return pacientes
 

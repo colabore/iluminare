@@ -68,6 +68,32 @@ def atualizar(request, paciente_id):
 
     return render_to_response('crud-paciente.html', {'form_paciente':form_paciente, 'form_detalhe_prioridade':form_detalhe_prioridade, 'mensagem':msg})
 
+def incluir_paciente(request):
+
+    form_paciente = PacienteForm()
+#    form_detalhe_prioridade = DetalhePrioridadeForm()
+    msg = ""
+    
+    if request.method == "POST":
+        form_paciente = PacienteForm(request.POST)
+#        form_detalhe_prioridade = DetalhePrioridadeForm(request.POST)
+#        if form_paciente.is_valid() and form_detalhe_prioridade.is_valid():
+        if form_paciente.is_valid():
+            try:
+                paciente = form_paciente.save()
+#                form_detalhe_prioridade.paciente = paciente
+#                form_detalhe_prioridade.save()
+                msg = "Paciente cadastrado com sucesso."
+            except paciente_logic.PacienteException as p_exc:
+                msg = "Erro ao cadastrar o paciente (%s)." % p_exc
+            except ValueError as v_exc:
+                msg = "Erro de validação dos dados (%s)." % v_exc
+        else:
+            msg = "Erro de validação dos dados."
+
+#    return render_to_response('crud-paciente.html', {'form_paciente':form_paciente, 'form_detalhe_prioridade':form_detalhe_prioridade, 'mensagem':msg})
+    return render_to_response('crud-paciente.html', {'form_paciente':form_paciente, 'mensagem':msg})
+
 def ajax_consultar_paciente(request, paciente_id):
     try:
         paciente_dic = paciente_logic.consultar_paciente(int(paciente_id))
@@ -83,7 +109,7 @@ def ajaxlistarpessoas (request, nome):
         pacientes = paciente_logic.search(nome)
         
     if not pacientes:
-        pacientes = Paciente.objects.all()[:10]
+        pacientes = []
 
     lista = paciente_logic.format_table(pacientes)
 
