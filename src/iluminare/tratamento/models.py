@@ -9,10 +9,7 @@ class Sala(models.Model):
     def __unicode__(self):
         return "%s" % self.descricao 
 
-
-
 class Tratamento(models.Model):
-	
     DIAS = ( 
         ('D', 'Domingo'),
         ('S', 'Segunda'),
@@ -33,7 +30,6 @@ class Tratamento(models.Model):
         return "%s" % (self.descricao_basica)
 
 class TratamentoPaciente(models.Model):
-
     # talvez seja necessário ajustar esses status mais pra frente.
     STATUS = ( 
         ('C', 'Concluído'),
@@ -61,7 +57,7 @@ class InstanciaTratamento(models.Model):
     observacoes         = models.TextField(blank = True, null = True)
 
     def __unicode__(self):
-        return "%s em %s" % (self.tratamento, self.data)
+        return u'%s em %s' % (self.tratamento, self.data)
 		
 class AgendaTratamento(models.Model):
     paciente        = models.ForeignKey(Paciente, null = False, blank = False)
@@ -70,5 +66,5 @@ class AgendaTratamento(models.Model):
     data            = models.DateField(null = True, blank = True)
     
     def __unicode__(self):
-        return "%s %s %s" % (self.paciente, self.tratamento, self.data)
+        return u'%s %s %s' % (self.paciente, self.tratamento, self.data)
 
