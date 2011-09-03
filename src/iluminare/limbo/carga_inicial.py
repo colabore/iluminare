@@ -81,7 +81,7 @@ def letra_maiuscula(nome):
             replace("Á","á").replace("Ç","ç").\
             replace("É","é").replace("Ô","ô").\
             replace("Ó","ó").replace("Ê","ê").\
-            replace("Ú","ú")
+            replace("Ú","ú").replace("Í","í")
         return primeira_letra + resto_nome
     else:
         return nome
@@ -601,7 +601,10 @@ def processa_atendimentos_voluntarios():
     nome_arquivo = dir_csvs + "Trabalhadores-2011-Tratamentos-ago.csv"
     lista_data_posicao = [
         (date(2011,8,4),3),
-        (date(2011,8,11),4)]
+        (date(2011,8,11),4),
+        (date(2011,8,18),5),
+        (date(2011,8,25),6)]
+        
     processa_arquivo_tratamento_voluntarios(nome_arquivo, lista_data_posicao, 7)
 
 
