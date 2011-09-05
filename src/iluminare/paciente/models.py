@@ -11,14 +11,15 @@ class Paciente(models.Model):
     FREQUENCIA = (
         ('S','Semanal'), 
         ('Q','Quinzenal'), 
-        ('M','Mensal'))
+        ('M','Mensal'),
+        ('O','Outro'))
 
     ESTADO_CIVIL = (
         ('1', 'Solteiro'),
         ('2', 'Casado'), 
         ('3', 'Separado'), 
         ('4', 'Divorciado'), 
-        ('5', 'Viuvo'))
+        ('5', 'Viúvo'))
 
     ESCOLARIDADE = (
         ('1', 'Ensino Básico'),
