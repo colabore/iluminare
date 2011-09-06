@@ -263,7 +263,7 @@ def exibir_listagem(request, pagina = None):
 		else:
 			mensagem_erro = 'formulário inválido';
 
-	paginacao = Paginator(retorno,45) 
+	paginacao = Paginator(retorno,35) 
 	if pagina == None:
 		num_pagina = 1
 	else:	

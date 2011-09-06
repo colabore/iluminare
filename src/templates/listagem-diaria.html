@@ -41,13 +41,13 @@ table, th, tr, td {
 		
 		  <tr>	
 						
-			<th> chamado </th>
-			<th> atendido </th>	
-			<th> hora de chegada </th>
-			<th> nome </th>
-			<th> info </th>
-			<th> hora de atendimento </th>
-			<th> observacao </th>
+			<th width="30"> C </th>
+			<th width="30"> A </th>	
+			<th width="60"> Hora cheg. </th>
+			<th> Nome </th>
+			<th> Info </th>
+			<th width="60"> Hora atend. </th>
+			<th> Observação </th>
 		  </tr>
 
 		{% for atendimento in pagina_atual.object_list %}
@@ -56,7 +56,7 @@ table, th, tr, td {
 			 <tr>
 				<td class = 'prioridade' > </td>
 				<td class = 'prioridade'> </td>
-				<td class = 'prioridade'> {{atendimento.hora}} </td>
+				<td class = 'prioridade' align="center"> {{atendimento.hora}} </td>
 				<td class = 'prioridade'> {{atendimento.nome}} </td>
 				<td class = 'prioridade'> {{atendimento.info}}  </td>
 				<td class = 'prioridade'> </td>
@@ -66,7 +66,7 @@ table, th, tr, td {
 			  <tr>
 				<td> </td>
 				<td> </td>
-				<td> {{atendimento.hora}} </td>
+				<td align="center"> {{atendimento.hora}} </td>
 				<td> {{atendimento.nome}} </td>
 				<td> {{atendimento.info}}  </td>
 				<td> </td>
