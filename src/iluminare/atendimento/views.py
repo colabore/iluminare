@@ -84,6 +84,46 @@ class FiltroAtendimentosForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(FiltroAtendimentosForm, self).__init__(*args, **kwargs)
         self.fields['data'].initial = datetime.date.today()
+
+def retornaInfo(atendimento):
+
+    info_str = ''
+    
+    try:
+        tratamento = Tratamento.objects.get(id = atendimento.instancia_tratamento.tratamento.id)
+        cont = len(Atendimento.objects.filter(paciente__id = atendimento.paciente.id, 
+            instancia_tratamento__tratamento__id = tratamento.id, status='A'))  
+       
+        info_str = info_str + '[' + str(cont) + ']'
+        if tratamento.descricao_basica[:4] == "Manu":
+            tps = TratamentoPaciente.objects.filter(paciente = atendimento.paciente, status='A')
+            tratamentos = ''
+            for tp in tps:
+                tratamentos = tratamentos + tp.tratamento.descricao_basica + ', '
+            
+            # retira o ', ' do final
+            tratamentos = tratamentos[:-2]
+            
+            info_str = info_str + '[' + tratamentos + ']'
+    except Tratamento.DoesNotExist:
+        pass
+
+    try:
+        voluntario = Voluntario.objects.get(paciente__id = atendimento.paciente.id)
+        info_str = info_str + '[' + voluntario.get_tipo_display() + ']'  
+    except Voluntario.DoesNotExist:
+        pass
+    
+    try:
+        prioridade =  DetalhePrioridade.objects.get(paciente__id = atendimento.paciente.id)
+        info_str = info_str + '[' + prioridade.get_tipo_display() + ']'
+    except DetalhePrioridade.DoesNotExist:
+        pass
+    
+    if atendimento.observacao_prioridade:   
+        info_str = info_str + '[' + atendimento.observacao_prioridade + ']' 
+
+    return info_str
     
     
 class ConfirmacaoAtendimentoForm(forms.ModelForm):
@@ -100,37 +140,7 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
         atendimento = kwargs.pop('instance')
         
         self.fields['nome'].initial = atendimento.paciente.nome
-        
-        info_str = ''
-        
-        try:
-            tratamento = Tratamento.objects.get(id = atendimento.instancia_tratamento.tratamento.id)
-            cont = len(Atendimento.objects.filter(paciente__id = atendimento.paciente.id, instancia_tratamento__tratamento__id = tratamento.id, status='A'))           
-                
-           
-            info_str = info_str + '[' + str(cont) + ']'
-        
-        except Tratamento.DoesNotExist:
-            pass
-
-        try:
-            voluntario = Voluntario.objects.get(paciente__id = atendimento.paciente.id)
-            info_str = info_str + '[' + voluntario.get_tipo_display() + ']'  
-        except Voluntario.DoesNotExist:
-            pass
-        
-        try:
-            prioridade =  DetalhePrioridade.objects.get(paciente__id = atendimento.paciente.id)
-            info_str = info_str + '[' + prioridade.get_tipo_display() + ']'
-        except DetalhePrioridade.DoesNotExist:
-            pass
-        
-        if atendimento.observacao_prioridade:   
-            info_str = info_str + '[' + atendimento.observacao_prioridade + ']' 
-
-        
-
-        self.fields['info'].initial = info_str
+        self.fields['info'].initial = retornaInfo(atendimento)
 
     class Meta:
         model = Atendimento
@@ -225,26 +235,10 @@ def exibir_listagem(request, pagina = None):
 			for tratamentos in tratamentos_marcados:
 				atendimentos_previstos = Atendimento.objects.filter(instancia_tratamento__id = tratamentos.id)
 				for atendimento in atendimentos_previstos:
-					try:					
-						prioridade = DetalhePrioridade.objects.get(paciente__id = atendimento.paciente.id)
-						voluntario = Voluntario.objects.get(paciente__id = atendimento.paciente.id)	
-						retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 'info': 						prioridade.get_tipo_display() + '/' + voluntario.get_tipo_display(), 'prioridade': True})
-					except Voluntario.DoesNotExist:
-						retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 'info': 						prioridade.get_tipo_display(), 'prioridade': True})
-							
-					except DetalhePrioridade.DoesNotExist:
-						try:					
-							voluntario = Voluntario.objects.get(paciente__id = atendimento.paciente.id)
-							if atendimento.prioridade:
-								retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 'info': 								voluntario.get_tipo_display() + '/' + atendimento.observacao_prioridade, 'prioridade': True})
-
-							else:
-								retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 'info': 								voluntario.get_tipo_display(), 'prioridade': False})
-						except Voluntario.DoesNotExist:	
-							if atendimento.prioridade:
-								retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 'info': 								atendimento.observacao_prioridade, 'prioridade': True})
-							else:					
-								retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 'info':'', 									'prioridade': False})
+					info_str = retornaInfo(atendimento)
+					
+					retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 
+						    'info': info_str, 'prioridade': False})
 			retorno_com_hora = [];
 			retorno_sem_hora = [];
 
@@ -280,6 +274,8 @@ def exibir_atendimentos_paciente(request, paciente_id, pagina = None):
 
 	mensagem_erro = ''
 	retorno   = [];
+	paciente = Paciente.objects.get(id=paciente_id)
+	
 	
 	for atendimento in lista_atendimentos:
 		retorno.append({'data':	atendimento.instancia_tratamento.data, 'tratamento': atendimento.instancia_tratamento.tratamento.descricao_basica, 			'hora_chegada': atendimento.hora_chegada, 'observacao': atendimento.observacao})
@@ -295,6 +291,7 @@ def exibir_atendimentos_paciente(request, paciente_id, pagina = None):
 		num_pagina = int(pagina)
 	pagina_atual = paginacao.page(num_pagina)	
 	
-	return render_to_response('lista-atendimentos.html',{'mensagem': mensagem_erro, 'pagina_atual': pagina_atual, 'paciente_id': paciente_id})	
+	return render_to_response('lista-atendimentos.html',{'mensagem': mensagem_erro, 'pagina_atual': pagina_atual, 'paciente_id': paciente_id, \
+	    'nome_paciente': paciente.nome })	
 	
 		
