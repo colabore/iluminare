@@ -7,8 +7,13 @@ from iluminare.paciente.models import *
 from iluminare.atendimento.models import *
 from iluminare.tratamento.models import *
 
+from django.db.models import Q
+
 import iluminare.paciente.logic as paciente_logic
+import iluminare.tratamento.logic as tratamento_logic
 import datetime
+
+
 
 PRIORIDADE_CHOICES = (
     ('G', 'Grávida'),
@@ -36,7 +41,71 @@ class PacienteForm(forms.ModelForm):
         exclude = ('saude', )
 
     def save(self):
-        forms.ModelForm.save(self)
+        paciente = forms.ModelForm.save(self)
+        return paciente
+
+def get_lista_tratamentos(tps):
+    # Retorna a lista de tratamentos a partir da lista de TratamentoPaciente
+    
+    lista = []
+    for tp in tps:
+        lista.append(tp.tratamento)
+    return lista
+
+            
+def get_lista_tratamentos_atuais(paciente):
+    # Retorna a lista de tratamentos no formato TRATAMENTO_CHOICES
+    # Exemplo: ['1','4']
+
+    TRATAMENTOS_CHOICES = (
+        (1, u'Sala 1'),
+        (2, u'Sala 2'),
+        (3, u'Sala 3'),
+        (4, u'Sala 4'),
+        (5, u'Sala 5'),
+        (6, u'Manutenção')
+    )
+
+    lista = []    
+    tps = list(TratamentoPaciente.objects.filter(Q(paciente=paciente.id), Q(status = 'A')))
+    ts = get_lista_tratamentos(tps)    
+
+    for t in TRATAMENTOS_CHOICES:
+        tratamento = Tratamento.objects.get(descricao_basica = t[1])
+        if tratamento in ts:
+            lista.append(t[0])
+    return lista
+
+
+class TratamentoPacienteForm(forms.Form):
+    # IMPORTANTE OBSERVAR QUE OS TRATAMENTOS DEVEM TER OS MESMOS NOMES QUE OS TRATAMENTOS QUE ESTÃO NA BASE
+    # PODE SER MELHORADO.
+    TRATAMENTOS_CHOICES = (
+        (1, u'Sala 1'),
+        (2, u'Sala 2'),
+        (3, u'Sala 3'),
+        (4, u'Sala 4'),
+        (5, u'Sala 5'),
+        (6, u'Manutenção')
+    )
+    tratamentos = forms.MultipleChoiceField(choices=TRATAMENTOS_CHOICES, widget=forms.CheckboxSelectMultiple, required=False)
+
+    def update(self, paciente):
+        lista_tratamentos_atuais = get_lista_tratamentos_atuais(paciente)
+        self.fields['tratamentos'].initial=lista_tratamentos_atuais
+
+    def save(self, paciente):
+        cod_ts = self.cleaned_data["tratamentos"]
+        lista_tratamentos_novos = []
+        # pega a lista de tratamentos a partir dos códigos
+        for t in self.TRATAMENTOS_CHOICES:
+            if str(t[0]) in cod_ts:
+                tratamento = Tratamento.objects.get(descricao_basica = t[1])
+                lista_tratamentos_novos.append(tratamento)
+        tratamento_logic.encaminhar_paciente(paciente.id, lista_tratamentos_novos)
+            
+
+
 
 def atualizar(request, paciente_id):
     paciente = Paciente.objects.get(pk=paciente_id)
@@ -49,40 +118,45 @@ def atualizar(request, paciente_id):
     if request.method == "POST":
         form_paciente = PacienteForm(request.POST, instance=paciente)
         form_detalhe_prioridade = DetalhePrioridadeForm(request.POST, instance=detalhe_prioridade)
-        
-        try:
-            form_paciente.save()
-            form_detalhe_prioridade.paciente = paciente
-            form_detalhe_prioridade.save()
-            msg = "Paciente atualizado com sucesso"
-        except paciente_logic.PacienteException as p_exc:
-            msg = "Houve um erro ao atualizar o paciente (%s)" % p_exc
-        except ValueError as v_exc:
-            msg = "Houve um erro de validação dos dados (%s)" % v_exc
+        form_tratamento_paciente = TratamentoPacienteForm(request.POST)
+        if form_paciente.is_valid() and form_detalhe_prioridade.is_valid() and form_tratamento_paciente.is_valid():
+            try:
+                form_paciente.save()
+                form_detalhe_prioridade.paciente = paciente
+                form_detalhe_prioridade.save()
+                form_tratamento_paciente.save(paciente)
+                msg = "Paciente atualizado com sucesso."
+            except paciente_logic.PacienteException as p_exc:
+                msg = "Houve um erro ao atualizar o paciente (%s)" % p_exc
+            except ValueError as v_exc:
+                msg = "Houve um erro de validação dos dados (%s)" % v_exc
+        else:
+            msg = "Erro de validação dos dados."
 
     else:
         form_paciente = PacienteForm(instance=paciente)
         form_detalhe_prioridade = DetalhePrioridadeForm(instance=detalhe_prioridade)
-        
+        form_tratamento_paciente = TratamentoPacienteForm()
+        form_tratamento_paciente.update(paciente)
         msg = ""
 
-    return render_to_response('crud-paciente.html', {'form_paciente':form_paciente, 'form_detalhe_prioridade':form_detalhe_prioridade, 'mensagem':msg})
+    return render_to_response('crud-paciente.html', {'form_paciente':form_paciente, 'form_detalhe_prioridade':form_detalhe_prioridade, \
+        'form_tratamento_paciente':form_tratamento_paciente, 'mensagem':msg})
+    
 
 def incluir_paciente(request):
 
-    form_paciente = PacienteForm()
-#    form_detalhe_prioridade = DetalhePrioridadeForm()
-    msg = ""
     
     if request.method == "POST":
         form_paciente = PacienteForm(request.POST)
-#        form_detalhe_prioridade = DetalhePrioridadeForm(request.POST)
-#        if form_paciente.is_valid() and form_detalhe_prioridade.is_valid():
-        if form_paciente.is_valid():
+        form_detalhe_prioridade = DetalhePrioridadeForm(request.POST)
+        form_tratamento_paciente = TratamentoPacienteForm(request.POST)
+        if form_paciente.is_valid() and form_detalhe_prioridade.is_valid() and form_tratamento_paciente.is_valid():
             try:
                 paciente = form_paciente.save()
-#                form_detalhe_prioridade.paciente = paciente
-#                form_detalhe_prioridade.save()
+                form_detalhe_prioridade.paciente = paciente
+                form_detalhe_prioridade.save()
+                form_tratamento_paciente.save(paciente)
                 msg = "Paciente cadastrado com sucesso."
             except paciente_logic.PacienteException as p_exc:
                 msg = "Erro ao cadastrar o paciente (%s)." % p_exc
@@ -90,9 +164,15 @@ def incluir_paciente(request):
                 msg = "Erro de validação dos dados (%s)." % v_exc
         else:
             msg = "Erro de validação dos dados."
+    else:
+        form_paciente = PacienteForm()
+        form_detalhe_prioridade = DetalhePrioridadeForm()
+        form_tratamento_paciente = TratamentoPacienteForm()
+        msg = ""
+        
 
-#    return render_to_response('crud-paciente.html', {'form_paciente':form_paciente, 'form_detalhe_prioridade':form_detalhe_prioridade, 'mensagem':msg})
-    return render_to_response('crud-paciente.html', {'form_paciente':form_paciente, 'mensagem':msg})
+    return render_to_response('crud-paciente.html', {'form_paciente':form_paciente, 'form_detalhe_prioridade':form_detalhe_prioridade, \
+        'form_tratamento_paciente':form_tratamento_paciente, 'mensagem':msg})
 
 def ajax_consultar_paciente(request, paciente_id):
     try:

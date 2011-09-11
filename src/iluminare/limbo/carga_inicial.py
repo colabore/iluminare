@@ -81,7 +81,7 @@ def letra_maiuscula(nome):
             replace("Á","á").replace("Ç","ç").\
             replace("É","é").replace("Ô","ô").\
             replace("Ó","ó").replace("Ê","ê").\
-            replace("Ú","ú")
+            replace("Ú","ú").replace("Í","í")
         return primeira_letra + resto_nome
     else:
         return nome
@@ -475,7 +475,9 @@ def processa_manutencoes():
         "Manut-1avez-2011-05.csv",
         "Manut-1avez-2011-06.csv",
         "Manut-1avez-2011-07.csv",
-        "Manut-1avez-2011-08.csv"]
+        "Manut-1avez-2011-08.csv",
+        "Manut-1avez-2011-09.csv"        
+        ]
 
     for arq in lista_arquivos:
         nome_arquivo = dir_csvs + arq
@@ -542,7 +544,7 @@ def processa_atendimentos_voluntarios():
 
 
     ######## FEV 2011
-    nome_arquivo = dir_csvs + "Trabalhadores-2011-Tratamentos-fev.csv"
+    nome_arquivo = dir_csvs + "TratamentosTrabalhadores-2011-02.csv"
     lista_data_posicao = [
         (date(2011,2,3),3),
         (date(2011,2,10),4),
@@ -551,7 +553,7 @@ def processa_atendimentos_voluntarios():
     processa_arquivo_tratamento_voluntarios(nome_arquivo, lista_data_posicao, 7)
     
     ######## MAR 2011
-    nome_arquivo = dir_csvs + "Trabalhadores-2011-Tratamentos-mar.csv"
+    nome_arquivo = dir_csvs + "TratamentosTrabalhadores-2011-03.csv"
     lista_data_posicao = [
         (date(2011,3,3),3),
         (date(2011,3,10),4),
@@ -561,7 +563,7 @@ def processa_atendimentos_voluntarios():
     processa_arquivo_tratamento_voluntarios(nome_arquivo, lista_data_posicao, 7)
 
     ######## ABR 2011
-    nome_arquivo = dir_csvs + "Trabalhadores-2011-Tratamentos-abr.csv"
+    nome_arquivo = dir_csvs + "TratamentosTrabalhadores-2011-04.csv"
     lista_data_posicao = [
         (date(2011,4,7),3),
         (date(2011,4,14),4),
@@ -570,7 +572,7 @@ def processa_atendimentos_voluntarios():
     processa_arquivo_tratamento_voluntarios(nome_arquivo, lista_data_posicao, 7)
 
     ######## MAI 2011
-    nome_arquivo = dir_csvs + "Trabalhadores-2011-Tratamentos-mai.csv"
+    nome_arquivo = dir_csvs + "TratamentosTrabalhadores-2011-05.csv"
     lista_data_posicao = [
         (date(2011,5,5),3),
         (date(2011,5,12),4),
@@ -579,7 +581,7 @@ def processa_atendimentos_voluntarios():
     processa_arquivo_tratamento_voluntarios(nome_arquivo, lista_data_posicao, 7)
     
     ######## JUN 2011
-    nome_arquivo = dir_csvs + "Trabalhadores-2011-Tratamentos-jun.csv"
+    nome_arquivo = dir_csvs + "TratamentosTrabalhadores-2011-06.csv"
     lista_data_posicao = [
         (date(2011,6,2),3),
         (date(2011,6,9),4),
@@ -589,7 +591,7 @@ def processa_atendimentos_voluntarios():
     processa_arquivo_tratamento_voluntarios(nome_arquivo, lista_data_posicao, 7)
 
     ######## JUL 2011
-    nome_arquivo = dir_csvs + "Trabalhadores-2011-Tratamentos-jul.csv"
+    nome_arquivo = dir_csvs + "TratamentosTrabalhadores-2011-07.csv"
     lista_data_posicao = [
         (date(2011,7,7),3),
         (date(2011,7,14),4),
@@ -598,10 +600,24 @@ def processa_atendimentos_voluntarios():
     processa_arquivo_tratamento_voluntarios(nome_arquivo, lista_data_posicao, 7)
 
     ######## AGO 2011
-    nome_arquivo = dir_csvs + "Trabalhadores-2011-Tratamentos-ago.csv"
+    nome_arquivo = dir_csvs + "TratamentosTrabalhadores-2011-08.csv"
     lista_data_posicao = [
         (date(2011,8,4),3),
-        (date(2011,8,11),4)]
+        (date(2011,8,11),4),
+        (date(2011,8,18),5),
+        (date(2011,8,25),6)]
+        
+    processa_arquivo_tratamento_voluntarios(nome_arquivo, lista_data_posicao, 7)
+
+    ######## SET 2011
+    nome_arquivo = dir_csvs + "TratamentosTrabalhadores-2011-09.csv"
+    lista_data_posicao = [
+        (date(2011,9,1),3),
+        (date(2011,9,8),4),
+        (date(2011,9,15),5),
+        (date(2011,9,22),6),
+        (date(2011,9,29),7)]
+        
     processa_arquivo_tratamento_voluntarios(nome_arquivo, lista_data_posicao, 7)
 
 
@@ -609,8 +625,6 @@ def processa_atendimentos_voluntarios():
 def processa_atendimentos_quinta():
     """
         PROCESSA OS TRATAMENTOS DOS PACIENTES DAS QUINTAS-FEIRAS.
-        
-        
     """
 
 #### FEVEREIRO E MARÇO 2010
@@ -1043,6 +1057,41 @@ def processa_atendimentos_quinta():
     tratamento = "Sala 5"
     processa_arquivo(nome_arquivo, tratamento, lista_data_posicao, 3)
         
+
+#### SETEMBRO 2011
+
+    nome_arquivo_pre = dir_csvs + '2011-09-'
+    nome_arquivo = nome_arquivo_pre + 'Sala1.csv'
+    tratamento = "Sala 1"
+    lista_data_posicao = [
+        (date(2011,9,1), 4),
+        (date(2011,9,8), 5),
+        (date(2011,9,15), 6),
+        (date(2011,9,22), 7),
+        (date(2011,9,29), 8)]
+    processa_arquivo(nome_arquivo, tratamento, lista_data_posicao, 3)
+
+    nome_arquivo = nome_arquivo_pre + 'Sala2.csv'
+    tratamento = "Sala 2"
+    processa_arquivo(nome_arquivo, tratamento, lista_data_posicao, 3)
+
+    nome_arquivo = nome_arquivo_pre + 'Sala3.csv'
+    tratamento = "Sala 3"
+    processa_arquivo(nome_arquivo, tratamento, lista_data_posicao, 3)
+
+    nome_arquivo = nome_arquivo_pre + 'Sala4.csv'
+    tratamento = "Sala 4"
+    lista_data_posicao4 = [
+        (date(2011,9,1), 5),
+        (date(2011,9,8), 6),
+        (date(2011,9,15), 7),
+        (date(2011,9,22), 8),
+        (date(2011,9,29), 9)]
+    processa_arquivo(nome_arquivo, tratamento, lista_data_posicao4, 3)
+
+    nome_arquivo = nome_arquivo_pre + 'Sala5.csv'
+    tratamento = "Sala 5"
+    processa_arquivo(nome_arquivo, tratamento, lista_data_posicao, 3)
     
 
 

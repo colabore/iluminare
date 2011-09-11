@@ -32,7 +32,7 @@ def encaminhar_paciente(paciente_id_par, lista_tratamentos_novos):
     # só executa algo se existir um paciente com o id passado    
     if Paciente.objects.filter(id=paciente_id_par).count() == 1:
         # retorna uma lista de TratamentoPaciente ativos
-        tratamento_paciente = list(TratamentoPaciente.objects.filter(Q(paciente=paciente_id_par), Q(data_fim = None)))
+        tratamento_paciente = list(TratamentoPaciente.objects.filter(Q(paciente=paciente_id_par), Q(status = 'A')))
         tratamentos_atuais = []
 
         for t in tratamento_paciente:
@@ -41,12 +41,13 @@ def encaminhar_paciente(paciente_id_par, lista_tratamentos_novos):
             if t.tratamento not in lista_tratamentos_novos:
                 # significa que o tratamento foi concluído, isto é, será removido da lista de tratamentos ativos.
                 t.data_fim = date.today()
+                t.status = 'C'
                 t.save()
 
         for t in lista_tratamentos_novos:
             if t not in tratamentos_atuais:
                 # significa que um novo tratamento foi iniciado.
-                novoTP = TratamentoPaciente(tratamento_id=t.id, paciente_id=paciente_id_par, data_inicio=date.today(), data_fim=None)
+                novoTP = TratamentoPaciente(tratamento_id=t.id, paciente_id=paciente_id_par, data_inicio=date.today(), data_fim=None, status='A')
                 novoTP.save()            
     else:
         raise TratamentoException("Erro: Não foi possível encaminhar o paciente. Paciente inexistente. ID: "+ str(paciente_id_par))
