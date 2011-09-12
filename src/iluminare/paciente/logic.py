@@ -94,7 +94,7 @@ def format_table(pacientes):
 		            on p.id = ate.paciente_id
 	            join tratamento_instanciatratamento as it
 		            on ate.instancia_tratamento_id = it.id
-	            where p.id = %d
+	            where p.id = %d and ate.status = 'A'
 	            order by it.data desc
 	            limit 1;""" % paciente.id)[0]
         except:

@@ -36,5 +36,14 @@ $(document).ready(function(){
     $("#form-search").submit(function(){
         return false;
     })
+    
+    $('#cadastro_rapido_paciente').click(function(){
+        var motion = {'transitionIn':'elastic', 'transitionOut':'elastic'};
+        $.get('/paciente/cadastro-rapido/',function (data){
+            $.fancybox(data, motion);
+            bindfancybox($(this).attr('id'));
+            $('#id_nome').val($('#q-paciente').val());
+        });
+    });
 });
 
