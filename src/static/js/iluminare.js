@@ -16,14 +16,24 @@ $(document).ready(function(){
         });
     }
     function bindfancybox(paciente){
-            $("#checkin_submit").click(function(){
-                $.post('/atendimento/checkin/'+paciente, 
-                $("#form_paciente_checkin").serialize(),
-                function(data){
-                    $("#paciente_checkin").html(data);
-                    bindfancybox(paciente);
-                });
+        $("#checkin_submit").click(function(){
+            $.post('/atendimento/checkin/'+paciente, 
+            $("#form_paciente_checkin").serialize(),
+            function(data){
+                $("#paciente_checkin").html(data);
+                bindfancybox(paciente);
             });
+        });
+
+        $("#cadastro_checkin_rapido").click(function(){
+            $.post('/paciente/cadastro-rapido/', 
+            $("#form-cadastro-paciente").serialize(),
+            function(data){
+                $("#div-cadastro-paciente").html(data);
+                bindfancybox(paciente);
+            });
+        });
+            
     }
 
     $("#q-paciente").keyup(function(key){
@@ -45,5 +55,7 @@ $(document).ready(function(){
             $('#id_nome').val($('#q-paciente').val());
         });
     });
+    
+    
 });
 
