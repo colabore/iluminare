@@ -17,7 +17,7 @@ class Voluntario(models.Model):
     TIPO = (('T', "Trabalhador"),('C',"Colaborador"))
     
     paciente        = models.ForeignKey(Paciente, null = False, blank = False)
-    tipo            = models.CharField(max_length = 1, choices = TIPO, null = False, blank = False)
+    tipo            = models.CharField(max_length = 1, choices = TIPO)
     data_inicio     = models.DateField(null = True, blank = True)
     data_fim        = models.DateField(null = True, blank = True)
     ativo           = models.BooleanField(blank = True)    

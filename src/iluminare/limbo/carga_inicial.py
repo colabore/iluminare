@@ -7,6 +7,7 @@ from datetime import *
 from iluminare.paciente.models import *
 from iluminare.tratamento.models import *
 from iluminare.atendimento.models import *
+from iluminare.voluntario.models import *
 from django.core.exceptions import MultipleObjectsReturned
 
 import re
@@ -386,6 +387,7 @@ def processa_arquivo_tratamento_voluntarios(nome_arquivo, lista_data_posicao, pr
         nome = primeira_letra_maiuscula(nome)
         
         arquivo_log.write(nome+"\n")
+        
         pacientes = Paciente.objects.filter(nome = nome) # pode retornar mais de um paciente.
         if len(pacientes) == 0:
             paciente = Paciente(nome = nome)
@@ -396,7 +398,11 @@ def processa_arquivo_tratamento_voluntarios(nome_arquivo, lista_data_posicao, pr
         else:
             arquivo_log.write("*** ERRO: MAIS DE UM TRABALHADOR(PACIENTE) COM MESMO NOME:"+nome+'\n')
 
-
+        voluntarios = Voluntario.objects.filter(paciente  = paciente)
+        if len(voluntarios) == 0:
+            voluntario = Voluntario(paciente = paciente)
+            voluntario.save()
+            arquivo_log.write("Adicionado Voluntário: "+"\n")
 
         if linha[c_t] != "": 
             tratamento_str = "Sala "+linha[c_t]
