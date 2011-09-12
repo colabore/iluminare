@@ -104,9 +104,26 @@ def retornaInfo(atendimento):
             # retira o ', ' do final
             tratamentos = tratamentos[:-2]
             
-            info_str = info_str + '[' + tratamentos + ']'
+            if tratamentos != "":
+                info_str = info_str + '[' + tratamentos + ']'
+            
+            # inclui o [1a vez] se o paciente também está realizando um atendimento de 1a vez no mesmo dia.
+            primeira_vez = Atendimento.objects.filter(paciente__id = atendimento.paciente.id, 
+                instancia_tratamento__tratamento__descricao_basica__startswith = "Prime", instancia_tratamento__data = datetime.datetime.today())
+            if len(primeira_vez) == 1:
+                info_str = info_str + '[1a vez]'
+            
     except Tratamento.DoesNotExist:
         pass
+
+    manutencao = Atendimento.objects.filter(paciente__id = atendimento.paciente.id, 
+        instancia_tratamento__tratamento__descricao_basica__startswith = "Manu", status='A')
+    atendimentos = Atendimento.objects.filter(paciente__id = atendimento.paciente.id, 
+        instancia_tratamento__tratamento = tratamento, status='A')
+
+    if tratamento.descricao_basica in ["Sala 1", "Sala 2", "Sala 3", "Sala 4", "Sala 5"] and len(manutencao) == 4 and \
+        len(atendimentos) == 0:
+        info_str = info_str + '[1o tratamento]'
 
     try:
         voluntario = Voluntario.objects.get(paciente__id = atendimento.paciente.id)
