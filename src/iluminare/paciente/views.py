@@ -250,7 +250,7 @@ def cadastro_rapido_paciente(request):
             try:
                 paciente = form.save()
                 trat_form.save(paciente)
-                return HttpResponse("Cadastro e Check-in realizados com Sucesso!<br/> Paciente: %s " % paciente.nome)
+                return HttpResponse("Cadastro e Check-in realizados com Sucesso!<br/> Paciente: %s <br/><br/>" % paciente.nome)
             except Exception, e:
                 return HttpResponse("Erro: %s" % e)
         else:
