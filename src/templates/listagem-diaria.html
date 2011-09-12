@@ -31,26 +31,35 @@ table, th, tr, td {
 
 <form name="listagemdiaria" method="POST" action="/atendimento/listagem/" >
 
-<table class="listagem_form">
+<table>
+       Data : {{ form_listagem.data }}
+       Tratamento: {{ form_listagem.tratamento }}    
+        <input type="submit" class="listagem_form" value="Pesquisar"/>
+        <br>
+        <br>
+</table>
 
-    
-    {{form_listagem}}
-    
+<table class="listagem_form">
 
 	<table>
 		
-		  <tr>	
-						
-			<th width="30"> C </th>
-			<th width="30"> A </th>	
-			<th width="60"> Hora cheg. </th>
-			<th> Nome </th>
-			<th> Info </th>
-			<th width="60"> Hora atend. </th>
-			<th> Observação </th>
-		  </tr>
 
+        
 		{% for atendimento in pagina_atual.object_list %}
+            {% if forloop.first %}
+
+		      <tr>	
+						
+			    <th width="30"> C </th>
+			    <th width="30"> A </th>	
+			    <th width="60"> Hora cheg. </th>
+			    <th> Nome </th>
+			    <th> Info </th>
+			    <th width="60"> Hora atend. </th>
+			    <th> Observação </th>
+		      </tr>
+		      
+            {% endif %}
 			
 			 {% if atendimento.prioridade %} 
 			 <tr>
@@ -76,7 +85,7 @@ table, th, tr, td {
 		{% endfor %}
 	</table>
 </table>
-<input type="submit" class="listagem_form"/>
+
 </form>
 
 {% if pagina_atual.paginator.num_pages > 1 %}
