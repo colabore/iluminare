@@ -1,38 +1,21 @@
 <div id="div-cadastro-paciente">
-	<form method="post" name="cadastro-paciente" id="form-cadastro-paciente">
+	<form method="post" name="cadastro-paciente" id="form-cadastro-paciente" action="{% url cadastro_rapido_paciente %}">
 		<table>
-			<tr>
-				<td>
-					<label for="input-name">Nome completo:</label>
-				</td>
-				<td>
-					<input type="text" name="nome" id="input-name" />
-				</td>
+		    <tr>
+			    <td>
+				    <label for="input-name">Nome:</label>
+			    </td>
+			    <td>
+				    {{ form.nome }} 
+			    </td>
 			</tr>
-			<tr>
-				<td>
-					<label for="input-data">Data de Nascimento:</label>
-				</td>
-				<td>
-					<input type="text" name="data-nascimento" id="input-data"/>
-				</td>
+			    <td>
+			    </td>
+			    <td>
+                    {{trat_form.tratamentos}}
+                </td>
 			</tr>
 		</table>
-		<table>
-			<tr>
-				<td>		
-					<label>Sexo:</label>
-					<input type="radio" name="radio-sexo" id="masc" value="M"/>
-					<label for="masc">Masculino</label>
-					<input type="radio" name="radio-sexo" id="fem" value="F" />
-					<label for="fem">Feminino</label>
-				</td>
-				<td>
-					<!--- <input type="" name="sexo" id="combo-sexo"/> -->
-				</td>
-			</tr>
-		</table>
-		<textarea id="area-observacao">Observação</textarea>
 		<input type="submit" id="confirmar-cadastro" value="OK" />
 		<input type="button" id="cancela-cadastro" value="Cancela"/>
 	</form>

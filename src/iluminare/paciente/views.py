@@ -11,6 +11,8 @@ from django.db.models import Q
 
 import iluminare.paciente.logic as paciente_logic
 import iluminare.tratamento.logic as tratamento_logic
+import iluminare.atendimento.logic as logic_atendimento
+
 import datetime
 
 
@@ -103,8 +105,26 @@ class TratamentoPacienteForm(forms.Form):
                 tratamento = Tratamento.objects.get(descricao_basica = t[1])
                 lista_tratamentos_novos.append(tratamento)
         tratamento_logic.encaminhar_paciente(paciente.id, lista_tratamentos_novos)
-            
 
+class TratamentoCadastroRapido(forms.Form):
+    TRATAMENTOS_CHOICES = (
+        (1, u'Primeira Vez'),
+        (2, u'Manutenção'),
+        (3, u'Sala 4')
+    )
+    tratamentos = forms.MultipleChoiceField(choices=TRATAMENTOS_CHOICES, widget=forms.CheckboxSelectMultiple, required=False)
+                
+    def update(self):
+        self.fields['tratamentos'].initial=['1','2']
+        
+    def save(self, paciente):
+        ts = self.cleaned_data["tratamentos"]
+        for t in self.TRATAMENTOS_CHOICES:
+            if str(t[0]) in ts:
+                # realiza check-in para o tratamento.
+                tratamento = Tratamento.objects.get(descricao_basica = t[1])
+                at = logic_atendimento.checkin_paciente(paciente, tratamento, None, None, False, None)
+                at.save()
 
 
 def atualizar(request, paciente_id):
@@ -222,4 +242,24 @@ def dialog_detalhe(request, paciente_id, tratamento_id):
 def index(request):
     return render_to_response ('index.html')
 
+def cadastro_rapido_paciente(request):
+    if request.method == "POST":
+        form = PacienteForm(request.POST)
+        trat_form = TratamentoCadastroRapido(request.POST)
+        if form.is_valid() and trat_form.is_valid():
+            try:
+                paciente = form.save()
+                trat_form.save(paciente)
+                return HttpResponse("Cadastro e Check-in realizados com Sucesso!<br/> Paciente: %s " % paciente.nome)
+            except Exception, e:
+                return HttpResponse("Erro: %s" % e)
+        else:
+            return HttpResponse("Erro %s" % str(form.errors) + str(trat_form.errors))
+            
+    else:
+        form = PacienteForm()
+        trat_form = TratamentoCadastroRapido()
+        trat_form.update()
+        
+    return render_to_response ('cadastro-rapido-paciente.html', {'form': form, 'trat_form': trat_form})
 
