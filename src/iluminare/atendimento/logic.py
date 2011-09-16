@@ -13,7 +13,7 @@ class AtendimentoException(Exception):
         self.message = msg
     
     def __str__(self):
-        return repr(self.message)
+        return self.message
         
     
 
@@ -37,10 +37,15 @@ def checkin_paciente(paciente, tratamento, senha_str, redirecionar, prioridade_b
         raise AtendimentoException("Inconsistência: Mais de um tratamento aberto para a mesma sala no mesmo dia. \
             (Mais de uma InstanciaTratamento para o mesmo tratamento-data)")
     
-    at = Atendimento(instancia_tratamento = it, paciente = paciente, prioridade = prioridade_bool, senha = senha_str, \
-        observacao_prioridade = observacao_prioridade_str, status = 'C')
-    at.hora_chegada=datetime.now()
-    at.save()
+    ats = Atendimento.objects.filter(instancia_tratamento = it, paciente = paciente)
+    
+    if len(ats) == 0:
+        at = Atendimento(instancia_tratamento = it, paciente = paciente, prioridade = prioridade_bool, senha = senha_str, \
+            observacao_prioridade = observacao_prioridade_str, status = 'C')
+        at.hora_chegada=datetime.now()
+        at.save()
+    else:
+        raise AtendimentoException("Check-in do paciente já realizado para este tratamento.")
     
     return at
 
