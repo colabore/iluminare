@@ -24,7 +24,7 @@ class CheckinPacienteForm(forms.ModelForm):
         self.fields.keyOrder = ['tratamento', 'redirecionar', 'prioridade', 'observacao_prioridade', 'senha']
 
     def update_tratamentos(self, paciente):
-        tratamentos = [tp.tratamento for tp in paciente.tratamentopaciente_set.all()]
+        tratamentos = [tp.tratamento for tp in paciente.tratamentopaciente_set.filter(status='A')]
         ids_tratamentos = [t.id for t in tratamentos]
         self.fields['tratamento'].queryset = Tratamento.objects.filter(id__in=ids_tratamentos)
         self.fields['observacao_prioridade'].help_tag = "Observação (prioridade)"
