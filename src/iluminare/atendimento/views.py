@@ -15,6 +15,8 @@ from django.http import HttpResponse
 import datetime
 from operator import itemgetter
 
+import itertools
+
 class CheckinPacienteForm(forms.ModelForm):
     redirecionar = forms.ModelChoiceField(queryset=Tratamento.objects.all(), required=False)
     tratamento   = forms.ModelChoiceField(queryset=Tratamento.objects.all(), required=False)
@@ -273,6 +275,10 @@ def exibir_listagem(request, pagina = None):
 				mensagem_erro = 'não há registros'
 		else:
 			mensagem_erro = 'formulário inválido';
+
+	i = itertools.count(1)
+	for at in retorno:
+		at["id"]=next(i)
 
 	paginacao = Paginator(retorno,35) 
 	if pagina == None:
