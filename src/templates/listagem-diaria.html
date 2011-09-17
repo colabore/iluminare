@@ -49,7 +49,7 @@ table, th, tr, td {
             {% if forloop.first %}
 
 		      <tr>	
-						
+				<th width="30" align="center"> # </th>		
 			    <th width="30"> C </th>
 			    <th width="30"> A </th>	
 			    <th width="60"> Hora cheg. </th>
@@ -63,6 +63,7 @@ table, th, tr, td {
 			
 			 {% if atendimento.prioridade %} 
 			 <tr>
+				<td class = 'prioridade' align="center"> {{atendimento.id}} </td>
 				<td class = 'prioridade' > </td>
 				<td class = 'prioridade'> </td>
 				<td class = 'prioridade' align="center"> {{atendimento.hora}} </td>
@@ -73,6 +74,7 @@ table, th, tr, td {
 			  </tr>
 			 {% else %}
 			  <tr>
+				<td align="center"> {{atendimento.id}}  </td>
 				<td> </td>
 				<td> </td>
 				<td align="center"> {{atendimento.hora}} </td>
