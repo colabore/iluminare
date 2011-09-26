@@ -181,7 +181,7 @@ def confirmacao(request):
             tratamento = filtro_form.cleaned_data['tratamento']
             data	   = filtro_form.cleaned_data['data']
             atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.filter(instancia_tratamento__data=data,instancia_tratamento__tratamento=tratamento))
-		
+
     else:
         filtro_form = FiltroAtendimentosForm()
         atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.none())
@@ -200,6 +200,7 @@ class ImprimirListagemForm(forms.Form):
         	self.fields['tratamento'].choices = [('', '----------')] + [(tratamento.id, tratamento.descricao_basica) for tratamento in Tratamento.objects.all()]
 	tratamento = forms.ChoiceField(choices=())
 	data = forms.DateField(initial = datetime.date.today)
+	prioridade = forms.BooleanField(required = False)
 	
 class RelatorioAtendimentoData(forms.Form):
 
@@ -237,60 +238,79 @@ def exibir_relatorio_atendimento(rquest):
 	return render_to_response('relatorio-atendimento.html', {'form_relatorio':form_relatorio})
 
 def exibir_listagem(request, pagina = None):
+
+    form_listagem = ImprimirListagemForm()
+    mensagem_erro = ''
+    retorno = [];
+    tratamento = ''
+
+    if request.method == 'POST':
+        form_listagem = ImprimirListagemForm(request.POST)
+
+        if form_listagem.is_valid():
+            data_in = form_listagem.cleaned_data['data']
+            tratamento_in = form_listagem.cleaned_data['tratamento']
+            prioridade_in = form_listagem.cleaned_data['prioridade']
+
+            tratamentos_marcados = InstanciaTratamento.objects.filter(tratamento__id  = tratamento_in, data = data_in)
+            tratamento = Tratamento.objects.get(id=tratamento_in)
+            for tratamentos in tratamentos_marcados:
+                if not prioridade_in:
+                    atendimentos_previstos = Atendimento.objects.filter(instancia_tratamento__id = tratamentos.id)
+                else:
+                    #atendimentos_previstos = Atendimento.objects.filter(instancia_tratamento__id = tratamentos.id)
+                    atendimentos_previstos1 = Atendimento.objects.raw(""" select ate.* from atendimento_atendimento ate
+	                                                                            join paciente_paciente pac
+		                                                                            on pac.id = ate.paciente_id
+	                                                                            join paciente_detalheprioridade dp
+		                                                                            on pac.id = dp.paciente_id
+	                                                                            where ate.instancia_tratamento_id = %d""" % tratamentos.id)
+                    atendimentos_previstos2 = Atendimento.objects.raw(""" select ate.* from atendimento_atendimento ate
+	                                                                        where ate.prioridade = True and ate.instancia_tratamento_id = %d
+                                                                            order by hora_chegada;""" % tratamentos.id)
+
+                    atendimentos_previstos = []
+                    for at in atendimentos_previstos1:
+                        atendimentos_previstos.append(at)
+                    for at in atendimentos_previstos2:
+                        atendimentos_previstos.append(at)
+
+                for atendimento in atendimentos_previstos:
+                    info_str = retornaInfo(atendimento)
+                    retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 'info': info_str, 'prioridade': False})
+            retorno_com_hora = [];
+            retorno_sem_hora = [];
+
+            for elemento in retorno:
+                if (elemento['hora'] == None):
+                    retorno_sem_hora.append(elemento)
+                else:
+                    retorno_com_hora.append(elemento)
+
+            retorno_com_hora = sorted(retorno_com_hora, key= itemgetter('hora'))
+            retorno = retorno_com_hora + retorno_sem_hora
+
+            if not retorno:
+                mensagem_erro = 'não há registros'
+        else:
+            mensagem_erro = 'formulário inválido';
+
+    i = itertools.count(1)
+    for at in retorno:
+        at["id"]=next(i)
+
+    paginacao = Paginator(retorno,25) 
+    if pagina == None:
+        num_pagina = 1
+    else:
+        num_pagina = int(pagina)
+    pagina_atual = paginacao.page(num_pagina)
+
 	
-	form_listagem = ImprimirListagemForm()
-	mensagem_erro = ''
-	retorno = [];
-	
-	if request.method == 'POST':
-		form_listagem = ImprimirListagemForm(request.POST)
-
-		if form_listagem.is_valid():
-			data_in = form_listagem.cleaned_data['data']
-			tratamento_in = form_listagem.cleaned_data['tratamento']
-			
-			tratamentos_marcados = InstanciaTratamento.objects.filter(tratamento__id  = tratamento_in, data = data_in)
-			
-			for tratamentos in tratamentos_marcados:
-				atendimentos_previstos = Atendimento.objects.filter(instancia_tratamento__id = tratamentos.id)
-				for atendimento in atendimentos_previstos:
-					info_str = retornaInfo(atendimento)
-					
-					retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 
-						    'info': info_str, 'prioridade': False})
-			retorno_com_hora = [];
-			retorno_sem_hora = [];
-
-			for elemento in retorno:
-				if (elemento['hora'] == None):
-					retorno_sem_hora.append(elemento)
-				else:
-					retorno_com_hora.append(elemento)
- 
-			retorno_com_hora = sorted(retorno_com_hora, key= itemgetter('hora'))
-			retorno = retorno_com_hora + retorno_sem_hora			
-			
-			
-			if not retorno:
-				mensagem_erro = 'não há registros'
-		else:
-			mensagem_erro = 'formulário inválido';
-
-	i = itertools.count(1)
-	for at in retorno:
-		at["id"]=next(i)
-
-	paginacao = Paginator(retorno,35) 
-	if pagina == None:
-		num_pagina = 1
-	else:	
-		num_pagina = int(pagina)
-	pagina_atual = paginacao.page(num_pagina)		
-
-	
-	return render_to_response('listagem-diaria.html', {'form_listagem':form_listagem, 
-							'mensagem': mensagem_erro,
-							'pagina_atual':pagina_atual})
+    return render_to_response('listagem-diaria.html', {'form_listagem':form_listagem, 
+                            'mensagem': mensagem_erro,
+                            'pagina_atual':pagina_atual,
+                            'tratamento':tratamento})
 
 def exibir_atendimentos_paciente(request, paciente_id, pagina = None):
 	lista_atendimentos = Atendimento.objects.filter(paciente__id = paciente_id)
