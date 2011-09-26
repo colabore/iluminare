@@ -33,12 +33,37 @@ table, th, tr, td {
 
 <table>
        Data : {{ form_listagem.data }}
-       Tratamento: {{ form_listagem.tratamento }}    
+       Tratamento: {{ form_listagem.tratamento }}
+       {{ form_listagem.prioridade }} Prioridades
         <input type="submit" class="listagem_form" value="Pesquisar"/>
-        <br>
-        <br>
 </table>
+<br>
 
+<table>
+<td>
+<b>{{ tratamento }} &nbsp;</b>
+</td>
+<td>
+<b>
+<div class="pagination">
+		<span class="step-links">
+		{% if pagina_atual.has_previous %}
+    			<a href="#" onclick="pagina({{ pagina_atual.previous_page_number }});"> Anterior</a> 
+		{% endif %}
+
+		<span class="current">
+    			Página {{ pagina_atual.number }} de {{ pagina_atual.paginator.num_pages }}
+   			</span>
+
+		{% if pagina_atual.has_next %}
+    			<a href="#" onclick="pagina({{ pagina_atual.next_page_number }});">Proxima</a>
+		{% endif %}
+		</span>
+</div>
+</b>
+</td>
+</table>
+<br>
 <table class="listagem_form">
 
 	<table>
@@ -52,10 +77,10 @@ table, th, tr, td {
 				<th width="30" align="center"> # </th>		
 			    <th width="30"> C </th>
 			    <th width="30"> A </th>	
-			    <th width="60"> Hora cheg. </th>
-			    <th> Nome </th>
+			    <th> Hora cheg. </th>
+			    <th width="200"> Nome </th>
 			    <th> Info </th>
-			    <th width="60"> Hora atend. </th>
+			    <th> Hora atend. </th>
 			    <th> Observação </th>
 		      </tr>
 		      
@@ -64,24 +89,24 @@ table, th, tr, td {
 			 {% if atendimento.prioridade %} 
 			 <tr>
 				<td class = 'prioridade' align="center"> {{atendimento.id}} </td>
-				<td class = 'prioridade' > </td>
-				<td class = 'prioridade'> </td>
+				<td class = 'prioridade' ></td>
+				<td class = 'prioridade'></td>
 				<td class = 'prioridade' align="center"> {{atendimento.hora}} </td>
 				<td class = 'prioridade'> {{atendimento.nome}} </td>
-				<td class = 'prioridade'> {{atendimento.info}}  </td>
-				<td class = 'prioridade'> </td>
-				<td class = 'prioridade'> </td>
+				<td class = 'prioridade'> {{atendimento.info}} </td>
+				<td class = 'prioridade'></td>
+				<td class = 'prioridade'></td>
 			  </tr>
 			 {% else %}
 			  <tr>
-				<td align="center"> {{atendimento.id}}  </td>
-				<td> </td>
-				<td> </td>
+				<td align="center"> {{atendimento.id}} </td>
+				<td></td>
+				<td></td>
 				<td align="center"> {{atendimento.hora}} </td>
 				<td> {{atendimento.nome}} </td>
-				<td> {{atendimento.info}}  </td>
-				<td> </td>
-				<td> </td>
+				<td> {{atendimento.info}} </td>
+				<td></td>
+				<td></td>
 			  </tr>
 			 {% endif %}
 		{% endfor %}
@@ -90,25 +115,9 @@ table, th, tr, td {
 
 </form>
 
-{% if pagina_atual.paginator.num_pages > 1 %}
-		<div class="pagination">
-    			<span class="step-links">
-        		{% if pagina_atual.has_previous %}
-            			<a href="#" onclick="pagina({{ pagina_atual.previous_page_number }});"> Anterior</a> 
-        		{% endif %}
-
-				<span class="current">
-		    			Page {{ pagina_atual.number }} of {{ pagina_atual.paginator.num_pages }}.
-	       			</span>
-
-        		{% if pagina_atual.has_next %}
-            			<a href="#" onclick="pagina({{ pagina_atual.next_page_number }});">Proxima</a>
-        		{% endif %}
-    			</span>
-		</div>
 
 
-{% endif %}
+
 
 
 {% endblock %}
