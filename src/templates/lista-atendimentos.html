@@ -11,10 +11,11 @@ Paciente: {{nome_paciente}}
 <br>
 <table>
 	  <tr>
-		<td>Data</td>
-		<td>Tratamento</td>
-		<td>Hora Chegada</td>
-		<td>Observação</td>
+		<th>Data</th>
+		<th>Tratamento</th>
+		<th>Hora Chegada</th>
+		<th>Observação</th>
+		<th>Status</th>
 	  </tr>
 
 	{% for atendimento in pagina_atual.object_list %}
@@ -23,7 +24,7 @@ Paciente: {{nome_paciente}}
 		<td> {{atendimento.tratamento}} </td>
 		<td> {{atendimento.hora_chegada}} </td>
 		<td> {{atendimento.observacao}} </td>
-		
+		<td> {{atendimento.status}} </td>
 	  </tr>
 	{% endfor %}
 </table>
