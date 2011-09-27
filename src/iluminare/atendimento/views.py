@@ -313,7 +313,7 @@ def exibir_listagem(request, pagina = None):
                             'tratamento':tratamento})
 
 def exibir_atendimentos_paciente(request, paciente_id, pagina = None):
-	lista_atendimentos = Atendimento.objects.filter(paciente__id = paciente_id)
+	lista_atendimentos = Atendimento.objects.filter(paciente__id = paciente_id).order_by('-instancia_tratamento__data')
 
 	mensagem_erro = ''
 	retorno   = [];
@@ -321,7 +321,7 @@ def exibir_atendimentos_paciente(request, paciente_id, pagina = None):
 	
 	
 	for atendimento in lista_atendimentos:
-		retorno.append({'data':	atendimento.instancia_tratamento.data, 'tratamento': atendimento.instancia_tratamento.tratamento.descricao_basica, 			'hora_chegada': atendimento.hora_chegada, 'observacao': atendimento.observacao})
+		retorno.append({'data':	atendimento.instancia_tratamento.data, 'tratamento': atendimento.instancia_tratamento.tratamento.descricao_basica, 			'hora_chegada': atendimento.hora_chegada, 'observacao': atendimento.observacao, 'status':atendimento.status})
 		
 		
 	if not retorno:
