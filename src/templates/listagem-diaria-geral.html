@@ -1,0 +1,49 @@
+{% extends "base.html"%}
+{% block content %}
+
+
+
+<form name="listagemdiaria" method="POST" action="/atendimento/listagem-geral/" >
+
+<table>
+       Data : {{ form_listagem.data }}
+        <input type="submit" class="listagem_form" value="Pesquisar"/>
+</table>
+<br>
+
+<table>
+
+	<table>
+	    
+		{% for atendimento in retorno %}
+            {% if forloop.first %}
+
+		      <tr>	
+				<th width="30" align="center"> # </th>		
+			    <th> Hora cheg. </th>
+			    <th> Sala </th>
+			    <th width="200"> Nome </th>
+			    <th> Info </th>
+		      </tr>
+		      
+            {% endif %}
+			
+			  <tr>
+				<td align="center"> {{atendimento.cont}} </td>
+				<td align="center"> {{atendimento.hora}} </td>
+				<td> {{atendimento.sala}} </td>
+				<td> {{atendimento.nome}} </td>
+				<td> {{atendimento.info}} </td>
+			  </tr>
+		{% endfor %}
+	</table>
+</table>
+
+</form>
+
+
+
+
+
+
+{% endblock %}

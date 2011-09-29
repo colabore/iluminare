@@ -18,16 +18,37 @@ div .listagem_form {
 
 }
 table {
-    border-collapse:collapse;
+	border-width: 2px;
+	border-spacing: 2px;
+	border-style: dotted;
+	border-color: gray;
+	border-collapse: collapse;
+	background-color: white;    
 }
-table, th, tr, td {   
-    border: 1px solid black;
+
+table th {
+	border-width: 1px;
+	padding: 1px;
+	border-style: dotted;
+	border-color: gray;
+	background-color: white;
 }
+table td {
+	border-width: 1px;
+	padding: 1px;
+	border-style: dotted;
+	border-color: gray;
+	background-color: white;
+}
+
 #header {
     display: none;
 }
 
 </style>
+
+
+
 
 <form name="listagemdiaria" method="POST" action="/atendimento/listagem/" >
 
@@ -39,30 +60,34 @@ table, th, tr, td {
 </table>
 <br>
 
-<table>
-<td>
-<b>{{ tratamento }} &nbsp;</b>
-</td>
-<td>
-<b>
-<div class="pagination">
-		<span class="step-links">
-		{% if pagina_atual.has_previous %}
-    			<a href="#" onclick="pagina({{ pagina_atual.previous_page_number }});"> Anterior</a> 
-		{% endif %}
 
-		<span class="current">
-    			Página {{ pagina_atual.number }} de {{ pagina_atual.paginator.num_pages }}
-   			</span>
+{% if pagina_atual.paginator.object_list|length > 0 %}
+    <table>
+    <td>
+    <b>{{ tratamento }} &nbsp;</b>
+    </td>
+    <td>
+    <b>
+    <div class="pagination">
+		    <span class="step-links">
+		    <span class="current"> Página {{ pagina_atual.number }} </span>
+            [
+            {% for num_pagina in pagina_atual.paginator.page_range %}
+                {% ifequal num_pagina pagina_atual %}
+                    <span class="current">{{ num_pagina }}</span>
+                {% else %}
+                    <span><a href="#" onclick="pagina({{ num_pagina }});">{{ num_pagina }}</a></span>
+                {% endifequal %}
+            {% endfor %}
+            ]
+		    </span>
+		       		
+    </div>
+    </b>
+    </td>
+    </table>
+{% endif %}
 
-		{% if pagina_atual.has_next %}
-    			<a href="#" onclick="pagina({{ pagina_atual.next_page_number }});">Proxima</a>
-		{% endif %}
-		</span>
-</div>
-</b>
-</td>
-</table>
 <br>
 <table class="listagem_form">
 
