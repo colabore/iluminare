@@ -203,6 +203,14 @@ class ImprimirListagemForm(forms.Form):
 	tratamento = forms.ChoiceField(choices=())
 	data = forms.DateField(initial = datetime.date.today)
 	prioridade = forms.BooleanField(required = False)
+
+class ListagemGeralForm(forms.Form):
+
+	def __init__(self, *args, **kwargs):
+        	super(ListagemGeralForm, self).__init__(*args, **kwargs)
+
+	data = forms.DateField(initial = datetime.date.today)
+
 	
 class RelatorioAtendimentoData(forms.Form):
 
@@ -293,9 +301,9 @@ def exibir_listagem(request, pagina = None):
             retorno = retorno_com_hora + retorno_sem_hora
 
             if not retorno:
-                mensagem_erro = 'não há registros'
+                mensagem_erro = 'Não há registros'
         else:
-            mensagem_erro = 'formulário inválido';
+            mensagem_erro = 'Formulário inválido';
 
     i = itertools.count(1)
     for at in retorno:
@@ -312,6 +320,40 @@ def exibir_listagem(request, pagina = None):
     return render_to_response('listagem-diaria.html', {'form_listagem':form_listagem, 
                             'mensagem': mensagem_erro,
                             'pagina_atual':pagina_atual,
+                            'tratamento':tratamento})
+
+def exibir_listagem_geral(request):
+
+    form_listagem = ListagemGeralForm()
+    mensagem_erro = ''
+    retorno = [];
+    tratamento = ''
+
+    if request.method == 'POST':
+        form_listagem = ListagemGeralForm(request.POST)
+
+        if form_listagem.is_valid():
+            data_in = form_listagem.cleaned_data['data']
+
+            tratamentos_marcados = InstanciaTratamento.objects.filter(data = data_in)
+            atendimentos_previstos = Atendimento.objects.filter(instancia_tratamento__data = data_in).order_by('-hora_chegada')
+            
+            i = len(atendimentos_previstos)
+            for atendimento in atendimentos_previstos:
+                info_str = retornaInfo(atendimento)
+                retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 'info': info_str, 'prioridade': False, \
+                    'sala': atendimento.instancia_tratamento.tratamento.descricao_basica, 'cont':i})
+                i=i-1
+                
+
+            if not retorno:
+                mensagem_erro = 'Não há registros'
+        else:
+            mensagem_erro = 'Formulário inválido';
+
+    return render_to_response('listagem-diaria-geral.html', {'form_listagem':form_listagem, 
+                            'mensagem': mensagem_erro,
+                            'retorno':retorno,
                             'tratamento':tratamento})
 
 def exibir_atendimentos_paciente(request, paciente_id, pagina = None):
