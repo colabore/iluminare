@@ -93,10 +93,12 @@ def retornaInfo(atendimento):
     
     try:
         tratamento = Tratamento.objects.get(id = atendimento.instancia_tratamento.tratamento.id)
-        cont = len(Atendimento.objects.filter(paciente__id = atendimento.paciente.id, 
-            instancia_tratamento__tratamento__id = tratamento.id, status='A'))  
-       
-        info_str = info_str + '[' + str(cont) + ']'
+        
+        if tratamento.descricao_basica[:4] == "Manu" or tratamento.descricao_basica[:4] == "Prim":
+            cont = len(Atendimento.objects.filter(paciente__id = atendimento.paciente.id, 
+                instancia_tratamento__tratamento__id = tratamento.id, status='A'))  
+           
+            info_str = info_str + '[' + str(cont) + ']'
         if tratamento.descricao_basica[:4] == "Manu":
             tps = TratamentoPaciente.objects.filter(paciente = atendimento.paciente, status='A')
             tratamentos = ''
