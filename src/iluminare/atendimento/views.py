@@ -130,14 +130,16 @@ def retornaInfo(atendimento):
         info_str = info_str + '[1o tratamento]'
 
     try:
-        voluntario = Voluntario.objects.get(paciente__id = atendimento.paciente.id)
-        info_str = info_str + '[' + voluntario.get_tipo_display() + ']'  
+        voluntario = Voluntario.objects.filter(paciente__id = atendimento.paciente.id, ativo = True)
+        if len(voluntario) > 0:
+            info_str = info_str + '[' + voluntario[0].get_tipo_display() + ']'
     except Voluntario.DoesNotExist:
         pass
     
     try:
-        prioridade =  DetalhePrioridade.objects.get(paciente__id = atendimento.paciente.id)
-        info_str = info_str + '[' + prioridade.get_tipo_display() + ']'
+        prioridade =  DetalhePrioridade.objects.filter(paciente__id = atendimento.paciente.id)
+        if len(prioridade) > 0:
+            info_str = info_str + '[' + prioridade[0].get_tipo_display() + ']'
     except DetalhePrioridade.DoesNotExist:
         pass
     
