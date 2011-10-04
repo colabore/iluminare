@@ -154,20 +154,38 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
     nome = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly'}))
     info = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly'}))
     hora_chegada = forms.TimeField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly'}))   
+    confirma = forms.BooleanField(required = False, label= 'Conf.')   
 
     def __init__(self, *args, **kwargs):
         
                
         super(ConfirmacaoAtendimentoForm, self).__init__(*args, **kwargs)
-        self.fields.keyOrder = ['nome', 'hora_chegada', 'info', 'hora_atendimento', 'status', 'observacao']
+        self.fields.keyOrder = ['confirma','nome', 'hora_chegada', 'info', 'observacao']
         atendimento = kwargs.pop('instance')
         
         self.fields['nome'].initial = atendimento.paciente.nome
         self.fields['info'].initial = retornaInfo(atendimento)
+        
+        if atendimento.status == 'A':
+            status = True
+        else:
+            status = False
+        self.fields['confirma'].initial = status
+
+    def save(self, commit=True):
+        atendimento = super(ConfirmacaoAtendimentoForm, self).save(commit=False)
+#        atendimento = forms.ModelForm.save(self, commit=True)
+        prioridade_in = self.cleaned_data['confirma']
+        if prioridade_in:
+            atendimento.status = 'A'
+        else:
+            atendimento.status = 'C'
+        if commit:
+            atendimento.save()
 
     class Meta:
         model = Atendimento
-        exclude = ['prioridade', 'instancia_tratamento', 'senha', 'observacao_prioridade', 'paciente']
+        exclude = ['prioridade', 'instancia_tratamento', 'senha', 'observacao_prioridade', 'paciente', 'hora_atendimento', 'status']
           
 
 ConfirmacaoAtendimentoFormSet = modelformset_factory(Atendimento, extra=0,

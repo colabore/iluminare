@@ -7,7 +7,26 @@ label {
 }
 </style>
 
-<form method="POST">
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+<!-- Begin
+checked = false
+function checkAll(field)
+{
+	 if (checked == false)
+        checked = true
+    else
+        checked = false
+          
+    for (var i = 0; i < field.elements.length; i++)
+        if(field.elements[i].type == 'checkbox' && field.elements[i].name != 'CheckAll')
+        	field.elements[i].checked = checked ;
+}
+
+//  End -->
+</script>
+
+<form name="at1" method="POST">
 <table>
 <form action="/confimacao/" method="post">
     
@@ -23,7 +42,11 @@ label {
 </form>
 
 </table>
-
+{% if atendimentos.forms %} 
+    <input type="checkbox" name="CheckAll" value="CheckAll" onClick="checkAll(document.at1)"> Selecionar todos
+{% endif %}
+<br>
+<br>
 <table>
 {{atendimentos.management_form}}
 {% for atendimento in atendimentos.forms %}
