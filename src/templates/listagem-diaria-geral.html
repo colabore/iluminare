@@ -1,7 +1,38 @@
 {% extends "base.html"%}
 {% block content %}
 
+<style type="text/css">
 
+@PAGE landscape {size: landscape;}
+
+div .listagem_form {
+
+}
+table {
+	border-width: 1px;
+	border-spacing: 2px;
+	border-style: solid;
+	border-color: gray;
+	border-collapse: collapse;
+	background-color: white;    
+}
+
+table th {
+	border-width: 1px;
+	padding: 3px;
+	border-style: dotted;
+	border-color: gray;
+	background-color: white;
+}
+table td {
+	border-width: 1px;
+	padding: 3px;
+	border-style: dotted;
+	border-color: gray;
+	background-color: white;
+}
+
+</style>
 
 <form name="listagemdiaria" method="POST" action="/atendimento/listagem-geral/" >
 
@@ -11,7 +42,7 @@
 </table>
 <br>
 
-<table>
+<table class="listagem_form">
 
 	<table>
 	    
@@ -22,7 +53,7 @@
 				<th width="30" align="center"> # </th>		
 			    <th> Hora cheg. </th>
 			    <th> Sala </th>
-			    <th width="200"> Nome </th>
+			    <th> Nome </th>
 			    <th> Info </th>
 		      </tr>
 		      
