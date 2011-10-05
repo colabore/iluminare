@@ -50,6 +50,9 @@ class Paciente(models.Model):
     acompanhante            = models.ForeignKey('self', null=True, blank=True)
     acompanhante_crianca    = models.ForeignKey('self', null=True, blank=True, related_name='acompanhantecrianca')
 
+    class Meta:
+        ordering = ['nome']
+
     def __unicode__(self):
         return self.nome
         

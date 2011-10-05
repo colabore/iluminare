@@ -29,6 +29,28 @@ class CheckinPacienteForm(forms.ModelForm):
         tratamentos = [tp.tratamento for tp in paciente.tratamentopaciente_set.filter(status='A')]
         ids_tratamentos = [t.id for t in tratamentos]
         self.fields['tratamento'].queryset = Tratamento.objects.filter(id__in=ids_tratamentos)
+
+        # AJUSTANDO A TELA PARA AS SEGUNDAS
+        if datetime.date.today().weekday() == 0:
+            lista_trat = Tratamento.objects.filter(dia_semana = 'S')
+            self.fields['redirecionar'].queryset = lista_trat
+            
+            trat_manut = Tratamento.objects.filter(descricao_basica__startswith = "Manu")
+            if len(trat_manut) > 0:
+                manut = trat_manut[0]
+                if manut in lista_trat:
+                    self.fields['redirecionar'].initial = manut
+            
+        # AJUSTANDO A TELA PARA AS QUINTAS            
+        elif datetime.date.today().weekday() == 3:
+            self.fields['redirecionar'].queryset = Tratamento.objects.filter(dia_semana = 'N')
+            if len(tratamentos) > 0:
+                self.fields['tratamento'].initial = tratamentos[0]
+                
+        # AJUSTANDO A TELA PARA OUTROS DIAS (em geral utilizado para os testes)
+        else:
+            self.fields['redirecionar'].queryset = Tratamento.objects.all()
+
         self.fields['observacao_prioridade'].help_tag = "Observação (prioridade)"
         self.fields['observacao_prioridade'].label = "Motivo prioridade"
         
