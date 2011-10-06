@@ -22,6 +22,9 @@ class Voluntario(models.Model):
     data_fim        = models.DateField(null = True, blank = True)
     ativo           = models.BooleanField(blank = True)    
     observacao      = models.TextField(null = True, blank = True)       
+
+    class Meta:
+        ordering = ['paciente__nome']
     
     
     def __unicode__(self):

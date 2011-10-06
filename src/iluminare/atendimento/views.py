@@ -18,12 +18,19 @@ from operator import itemgetter
 import itertools
 
 class CheckinPacienteForm(forms.ModelForm):
+
+    PONTO_CHOICES = (
+        ('N','------'),
+        ('E', 'Entrada'),
+        ('S', 'Saída'),
+    )
     redirecionar = forms.ModelChoiceField(queryset=Tratamento.objects.all(), required=False)
     tratamento   = forms.ModelChoiceField(queryset=Tratamento.objects.all(), required=False)
+    ponto_voluntario    = forms.ChoiceField(required=False, choices=PONTO_CHOICES)
 
     def __init__(self, *args, **kargs):
         super(CheckinPacienteForm, self).__init__(*args, **kargs)
-        self.fields.keyOrder = ['tratamento', 'redirecionar', 'prioridade', 'observacao_prioridade', 'senha']
+        self.fields.keyOrder = ['tratamento', 'redirecionar', 'prioridade', 'observacao_prioridade', 'senha', 'ponto_voluntario']
 
     def update_tratamentos(self, paciente):
         tratamentos = [tp.tratamento for tp in paciente.tratamentopaciente_set.filter(status='A')]
@@ -63,6 +70,12 @@ def ajax_checkin_paciente(request, paciente_id):
     
     lista_atendimentos = logic_atendimento.atendimentos_paciente(paciente.id)
     
+    voluntarios = Voluntario.objects.filter(paciente = paciente, ativo = True)
+    voluntario = None
+    if len(voluntarios) > 0:
+        voluntario = voluntarios[0]
+        
+    
     if request.method == 'POST':
         checkin_paciente_form = CheckinPacienteForm(request.POST)
         if checkin_paciente_form.is_valid():
@@ -71,10 +84,12 @@ def ajax_checkin_paciente(request, paciente_id):
             redirecionar            = checkin_paciente_form.cleaned_data['redirecionar']
             prioridade              = checkin_paciente_form.cleaned_data['prioridade']
             observacao_prioridade   = checkin_paciente_form.cleaned_data['observacao_prioridade']
+            ponto_voluntario        = checkin_paciente_form.cleaned_data['ponto_voluntario']
 
             try:
-                at = logic_atendimento.checkin_paciente(paciente, tratamento, senha, redirecionar, prioridade, observacao_prioridade)
-                return HttpResponse("O check-in realizado com sucesso!<br/> Paciente: %s <br /> Tratamento: %s" % (paciente.nome, at.instancia_tratamento.tratamento.descricao_basica))
+                msg = logic_atendimento.checkin_paciente(paciente, tratamento, senha, redirecionar, prioridade, observacao_prioridade, ponto_voluntario)
+                return HttpResponse(msg)
+                
             except Exception, e:
                 return HttpResponse("Erro: %s" % str(e))
         else:
@@ -84,7 +99,8 @@ def ajax_checkin_paciente(request, paciente_id):
     
     checkin_paciente_form.update_tratamentos(paciente)
 
-    return render_to_response('ajax-checkin-paciente.html', {'paciente':paciente, 'form':checkin_paciente_form, 'lista':lista_atendimentos, 'erros':str(checkin_paciente_form.errors)})
+    return render_to_response('ajax-checkin-paciente.html', {'paciente':paciente, 'form':checkin_paciente_form, 'lista':lista_atendimentos, \
+        'erros':str(checkin_paciente_form.errors), 'voluntario':voluntario})
 
 def get_info(paciente):
     info = ""

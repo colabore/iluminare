@@ -1,6 +1,13 @@
 <div class="paciente_checkin" id="paciente_checkin">
 <h1>{{paciente.nome}}</h1>
-<h1>{% for prioridade in paciente.detalheprioridade_set.all %}
+<h1>
+
+{% if voluntario %}
+{{voluntario.tipo}}
+{% endif %}
+
+
+{% for prioridade in paciente.detalheprioridade_set.all %}
 {{prioridade.get_tipo_display}}
 
 {% if prioridade.data_inicio %}
@@ -8,8 +15,10 @@
  {{prioridade.data_inicio|date:"F"}} de 
  {{prioridade.data_inicio|date:"Y"}} 
 {% endif %}
+{% endfor %}
 
-{% endfor %}</h1>
+</h1>
+
 {%if paciente.observacao %}
 <br />
 {{paciente.observacao}}
