@@ -6,6 +6,7 @@ from datetime import *
 from iluminare.paciente.models import *
 from iluminare.tratamento.models import *
 from iluminare.atendimento.models import *
+from iluminare.voluntario.models import *
 from django.core.exceptions import MultipleObjectsReturned
 
 import re
@@ -56,7 +57,7 @@ def tamanho_parecido(nome1, nome2):
         return False
 
 def inicio_parecido(nome1, nome2):
-    if nome1[:6] == nome2[:6]:
+    if nome1[:3] == nome2[:3]:
         return True
     else:
         return False
@@ -69,12 +70,12 @@ def final_parecido(nome1, nome2):
 
 
 # retorna true se há intersecao entre os atendimentos
-def intersecao_atendimentos(nome1, nome2):
-    if nome1 == nome2:
+def intersecao_atendimentos(id_nome1, id_nome2):
+    if id_nome1 == id_nome2:
         return True
     
-    paciente1 = Paciente.objects.get(nome = nome1)
-    paciente2 = Paciente.objects.get(nome = nome2)
+    paciente1 = Paciente.objects.get(id = id_nome1)
+    paciente2 = Paciente.objects.get(id = id_nome2)
 
     atendimentos1 = Atendimento.objects.filter(paciente=paciente1)
     atendimentos2 = Atendimento.objects.filter(paciente=paciente2)
@@ -105,7 +106,7 @@ def consulta_scores():
         
         # esse teste garante que os nomes já inseridos na lista não entrem outra vez.
         if nome_principal not in lista_geral:
-            comando = "select nome, (match(nome) against(\"%s\" IN BOOLEAN MODE)) as score from  paciente_paciente order by score desc;" % nome_principal
+            comando = "select nome, id, (match(nome) against(\"%s\" IN BOOLEAN MODE)) as score from  paciente_paciente order by score desc;" % nome_principal
             cursor.execute(comando)
             rows = cursor.fetchall()
             lista = []
@@ -115,105 +116,111 @@ def consulta_scores():
                 if i==3:
                     break;
                 nome_local = row[0]
-                score = row[1]
-                if score >= 3 and inicio_parecido(nome_principal, nome_local) and not intersecao_atendimentos(nome_principal, nome_local): 
+                id_paciente = row[1]
+                score = row[2]
+                if score >= 3 and nome_principal != nome_local and inicio_parecido(nome_principal, nome_local) and not intersecao_atendimentos(paciente.id, id_paciente): 
                     lista_geral.append(nome_local)
-                    arquivo_consolida.write(""+smart_str(nome_local)+" ; ")
+                    arquivo_consolida.write(""+smart_str(nome_local)+"-"+str(id_paciente)+" ; ")
                     j+=1
                 
                 i+=1
             if j>0:
                 lista_geral.append(nome_local)
-                arquivo_consolida.write(""+smart_str(nome_principal)+'\n')
+                arquivo_consolida.write(""+smart_str(nome_principal)+'-'+str(paciente.id)+'\n')
     
     arquivo_consolida.close()
     t1 = datetime.now()
     delta = t1-t0
     print "Duração: "+str(delta)
 
-def consolida_tratamentos_paciente(paciente_consolidado, paciente):
-    tps_pc = TratamentoPaciente.objects.filter(paciente = paciente_consolidado)
-    arquivo_log.write("TPs Paciente consolidado: "+smart_str(""+str(tps_pc)+"\n"))
-    tps_p = TratamentoPaciente.objects.filter(paciente = paciente)
-    arquivo_log.write("TPs Paciente a consolidar: "+smart_str(""+str(tps_p)+"\n"))
+# JUNTA AS INSTANCIAS TRATAMENTO_PACIENTE EM UM ÚNICO PACIENTE.
+def consolida_tratamentos_paciente(id_paciente_consolidado, id_paciente):
+    paciente_consolidado = Paciente.objects.get(id = id_paciente_consolidado)
+    arquivo_log.write("Paciente consolidado: "+smart_str(""+paciente_consolidado.nome+"\n"))
+    
+    tps_p = TratamentoPaciente.objects.filter(paciente__id = id_paciente)
+
+    for tp in tps_p:
+        tp.paciente = paciente_consolidado
+        tp.save()
+        arquivo_log.write(smart_str("Incluindo TP: "+str(tp)+"\n"))
+        print smart_str("Incluindo TP: "+str(tp)+"\n")
         
-    # assumo que se o id é maior, o registro do paciente é posterior ao do paciente consolidado.
-    # isso implica que devo considerar que o tratamento mais recente é o do paciente e não do paciente consolidado.
-    if paciente.id > paciente_consolidado.id:
-        lista_tratamentos_pc = [tp.tratamento for tp in tps_pc]
-        lista_tratamentos_p = [tp.tratamento for tp in tps_p]
-        
-        """
-            TPC = [M, 1]
-            TP = [M, 2]
-        """
-        for t in lista_tratamentos_p:
-            if t not in lista_tratamentos_pc:
-                tp = TratamentoPaciente(paciente = paciente_consolidado, tratamento = t)
-                tp.save()
-        """
-            TPC = [M, 1, 2]
-
-        """            
-        for t in lista_tratamentos_pc:
-            if t not in lista_tratamentos_p and t.descricao_basica[:4] != "Manu":
-                tp = TratamentoPaciente.objects.get(paciente = paciente_consolidado, tratamento = t)
-                tp.delete()
-
-
-        """
-            TPC = [M, 2]
-        
-        """
-        tps_pc = TratamentoPaciente.objects.filter(paciente = paciente_consolidado)
-        arquivo_log.write("TPs Paciente consolidado: "+smart_str(""+str(tps_pc)+"\n"))
-
-def consolida_atendimentos(paciente_consolidado, paciente):
-    ats_pc = Atendimento.objects.filter(paciente = paciente_consolidado)
-    ats_p = Atendimento.objects.filter(paciente = paciente)
+# JUNTA AS INSTANCIAS DOS ATENDIMENTOS EM UM ÚNICO PACIENTE.
+def consolida_atendimentos(id_paciente_consolidado, id_paciente):
+    ats_pc = Atendimento.objects.filter(paciente__id = id_paciente_consolidado)
+    ats_p = Atendimento.objects.filter(paciente__id = id_paciente)
     
     for at in ats_p:
-        at.paciente = paciente_consolidado
+        at.paciente = Paciente.objects.get(id = id_paciente_consolidado)
         at.save()
         arquivo_log.write(smart_str("Incluindo atendimento: "+str(at.instancia_tratamento.data)+" - " +at.instancia_tratamento.tratamento.descricao_basica+"\n"))
+        print smart_str("Incluindo atendimento: "+str(at.instancia_tratamento.data)+" - " +at.instancia_tratamento.tratamento.descricao_basica+"\n")
         
-
-
-
-def consolidar_paciente(lista_nomes_paciente):
+# RECEBE UMA LISTA DE IDS DE PACIENTES.
+# CONSIDERA QUE O PRIMEIRO É O PACIENTE A SER CONSOLIDADO.
+# JUNTA OS TRATAMENTOS_PACIENTE E OS ATENDIMENTOS E
+# APAGA O PACIENTE.
+def consolidar_paciente(lista_ids_pacientes):
     """
-        Recebe uma lista de pacientes que deve ser consolidados em um só.
-        Ex: Maria José B. da Silva; Maria José Bastos da Silva
-            São a mesma pessoa com registros diferentes na base
-        
-        - Consolidar os atendimentos
-        - Consolidar os tratamentos
-        - Consolidar o registro dos pacientes
-        
+        O PRIMEIRO PACIENTE DA LISTA SERÁ O CONSOLIDADO. TODOS OS OUTROS SERÃO EXCLUÍDOS.        
     """
     
-    # assumo que só há um paciente com o mesmo nome.
-    paciente_consolidado = Paciente.objects.filter(nome = lista_nomes_paciente[0])[0]
-    arquivo_log.write(smart_str(lista_nomes_paciente[0])+"\n")
+    paciente_consolidado = Paciente.objects.get(id = lista_ids_pacientes[0])
+    arquivo_log.write(smart_str(paciente_consolidado.nome)+"\n")
+    print smart_str(paciente_consolidado.nome)+"\n"
     
-    if lista_nomes_paciente > 1:
-        for nome_paciente in lista_nomes_paciente[1:]:
-            paciente = Paciente.objects.filter(nome = nome_paciente)[0]
+    if lista_ids_pacientes > 1:
+        for id_paciente in lista_ids_pacientes[1:]:
+            paciente = Paciente.objects.get(id = id_paciente)
             arquivo_log.write(smart_str(paciente.nome)+"\n")
-            consolida_tratamentos_paciente(paciente_consolidado, paciente)
-            consolida_atendimentos(paciente_consolidado, paciente)
-        
+            consolida_tratamentos_paciente(paciente_consolidado.id, id_paciente)
+            consolida_atendimentos(paciente_consolidado.id, id_paciente)
+            
+            vs = Voluntario.objects.filter(paciente = paciente)
+            if len(vs) == 1:
+                vol = vs[0]
+                vol.paciente = paciente_consolidado
+                vol.save()
+                msg = "Voluntário consolidado: "+smart_str(paciente.nome)+"\n"
+                arquivo_log.write(msg)
+                print msg
+                
+            paciente.delete()
+            msg = "Paciente excluído: "+ smart_str(paciente.nome)+"\n"
+            arquivo_log.write(msg)
+            print msg
         
 def consolidar_pacientes():
     print "Consolidando pacientes...."
-    arquivo_consolida = open(dir_log+"consolida_pacientes.csv")
+    arquivo_consolida = open(dir_log+"consolida_pacientes_ids.csv")
     linhas = file.readlines(arquivo_consolida)
     for linha in linhas:
         linha = linha.split(";")
-        nomes = [i.replace("\"","").replace("\n","").strip(" ") for i in linha]
-        consolidar_paciente(nomes)
+        ids = [int(i) for i in linha]
+        consolidar_paciente(ids)
         arquivo_log.write("---------"+"\n")
     arquivo_consolida.close()
+
+def unifica_tratamentos():
+    print "Unificando tratamentos...."
+    arquivo_consolida = open(dir_log+"consolida_pacientes_ids.csv")
+    linhas = file.readlines(arquivo_consolida)
+    for linha in linhas:
+        linha = linha.split(";")
+        id_paciente = int(linha[0])
+        paciente = Paciente.objects.get(id = id_paciente)
+        tps = TratamentoPaciente.objects.filter(paciente__id = id_paciente)
+        print smart_str(paciente.nome) + "  -  " + str(len(tps))
+        
+        if len(tps) == 2 and tps[0].tratamento ==  tps[1].tratamento:
+            tps[1].delete()
+        elif len(tps) == 3 and tps[0].tratamento ==  tps[1].tratamento and tps[1].tratamento ==  tps[2].tratamento:
+            tps[1].delete()
+            tps[2].delete()
+        else:
+            pass
+
 
 ## executa:
 
@@ -221,7 +228,8 @@ def consolidar_pacientes():
 #lista_nomes_possivelmente_iguais()
 
 #consulta_scores()
-consolidar_pacientes()
+#consolidar_pacientes()
+unifica_tratamentos()
 
 #print str(intersecao_atendimentos("Wilson Soares de Souza Barros","Wilson Soares de Souza"))
 #print str(intersecao_atendimentos("Guilherme Barros CorrÊa de Amorim","MarÍlia Barros CorrÊa de Amorim"))
