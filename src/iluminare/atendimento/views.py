@@ -5,6 +5,8 @@ from iluminare.voluntario.models import Voluntario
 
 from iluminare.paciente.models import DetalhePrioridade, Paciente
 import iluminare.atendimento.logic as logic_atendimento
+import iluminare.tratamento.logic as tratamento_logic
+
 
 from django import forms
 from django.shortcuts import render_to_response, get_object_or_404
@@ -190,20 +192,39 @@ def retornaInfo(atendimento):
 class ConfirmacaoAtendimentoForm(forms.ModelForm):
     observacao = forms.CharField(required=False)
     nome = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly'}))
-    info = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly'}))
-    hora_chegada = forms.TimeField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly'}))   
-    confirma = forms.BooleanField(required = False, label= 'Conf.')   
+    hora_chegada = forms.TimeField(label='Cheg.',required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'6'}))   
+    confirma = forms.BooleanField(required = False, label= 'Conf.') 
+    redireciona = forms.ModelChoiceField(label='Redir.',queryset=Tratamento.objects.none(), required=False)
+    encaminha = forms.ModelChoiceField(label='Enc.', queryset=Tratamento.objects.none(), required=False)
+    frequencia = forms.ChoiceField(label='Freq', choices=(('X','---------'),) , required=False)
 
     def __init__(self, *args, **kwargs):
-        
-               
         super(ConfirmacaoAtendimentoForm, self).__init__(*args, **kwargs)
-        self.fields.keyOrder = ['confirma','nome', 'hora_chegada', 'info', 'observacao']
+        self.fields.keyOrder = ['confirma','nome', 'hora_chegada','observacao', 'frequencia', 'redireciona', 'encaminha']
         atendimento = kwargs.pop('instance')
         
-        self.fields['nome'].initial = atendimento.paciente.nome
-        self.fields['info'].initial = retornaInfo(atendimento)
+        tratamento_desc = atendimento.instancia_tratamento.tratamento.descricao_basica
         
+        # CAREREGA OS CAMPOS REDIRECIONA E ENCAMINHA
+        if tratamento_desc[:4] == 'Sala':
+            self.fields['redireciona'].queryset=Tratamento.objects.filter(descricao_basica__startswith='Sala')
+            self.fields['encaminha'].queryset=Tratamento.objects.filter(descricao_basica__startswith='Sala')
+        elif tratamento_desc[:4] == 'Manu':
+            self.fields['redireciona'].queryset=Tratamento.objects.none()
+            self.fields['encaminha'].queryset=Tratamento.objects.none()
+        elif tratamento_desc[:4] == 'Prim':
+            self.fields['redireciona'].queryset=Tratamento.objects.none()
+            self.fields['encaminha'].queryset=Tratamento.objects.filter(descricao_basica__startswith='Sala')
+            opcoes = (('X','---------'),) + Paciente.FREQUENCIA
+            self.fields['frequencia'].choices=opcoes
+        else:
+            self.fields['redireciona'].queryset=Tratamento.objects.none()
+            self.fields['encaminha'].queryset=Tratamento.objects.none()
+                
+        # CARREGA O NOME DO PACIENTE
+        self.fields['nome'].initial = atendimento.paciente.nome
+        
+        # CARREGA STATUS DO ATENDIMENTO
         if atendimento.status == 'A':
             status = True
         else:
@@ -212,10 +233,42 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
 
     def save(self, commit=True):
         atendimento = super(ConfirmacaoAtendimentoForm, self).save(commit=False)
-#        atendimento = forms.ModelForm.save(self, commit=True)
-        prioridade_in = self.cleaned_data['confirma']
-        if prioridade_in:
+        confirma_in = self.cleaned_data['confirma']
+        redireciona_in = self.cleaned_data['redireciona']
+        encaminha_in = self.cleaned_data['encaminha']
+        frequencia_in = self.cleaned_data['frequencia']
+        
+        if redireciona_in:
+            its = InstanciaTratamento.objects.filter(data=atendimento.instancia_tratamento.data, tratamento__descricao_basica=redireciona_in)
+            if its and its[0] != atendimento.instancia_tratamento:
+                atendimento.instancia_tratamento = its[0]
+                obs = atendimento.observacao 
+                atendimento.observacao = obs + '[Hoje foi para '+str(redireciona_in)+']'
+        
+        if encaminha_in:
+            tratamento = Tratamento.objects.get(descricao_basica = encaminha_in)
+            if tratamento:
+                lista_t = []
+                lista_t.append(tratamento)
+                tratamento_logic.encaminhar_paciente(atendimento.paciente.id, lista_t)
+                obs = atendimento.observacao 
+                atendimento.observacao = obs + '[Encaminhado para '+str(encaminha_in)+']'
+        
+        if frequencia_in != 'X':
+            # significa que se trata de um atendimento de primeira vez, pois somente estes podem ser alterados.
+            atendimento.paciente.frequencia = frequencia_in
+            atendimento.paciente.save()
+            obs = atendimento.observacao 
+            atendimento.observacao = obs + '[Freq: '+str(frequencia_in)+']'
+
+        
+        if confirma_in:
             atendimento.status = 'A'
+            
+            # se o tratamento for primeira vez, aproveitamos para atualizar o campo tem ficha.
+            if atendimento.instancia_tratamento.tratamento.descricao_basica[:4] == 'Prim':
+                atendimento.paciente.tem_ficha = True
+                atendimento.paciente.save()
         else:
             atendimento.status = 'C'
         if commit:
