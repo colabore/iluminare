@@ -17,6 +17,11 @@
 {% endif %}
 {% endfor %}
 
+{%if paciente.acompanhante %}
+<br>
+Acompanha:{{paciente.acompanhante.nome}}
+{% endif %}
+
 </h1>
 
 {%if paciente.observacao %}
