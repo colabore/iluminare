@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from iluminare.tratamento.models import Tratamento, InstanciaTratamento, TratamentoPaciente
 from iluminare.atendimento.models import Atendimento
-from iluminare.voluntario.models import Voluntario
+from iluminare.voluntario.models import Voluntario, Trabalho
 
 from iluminare.paciente.models import DetalhePrioridade, Paciente
 import iluminare.atendimento.logic as logic_atendimento
@@ -18,6 +18,8 @@ import datetime
 from operator import itemgetter
 
 import itertools
+
+from django.utils.encoding import smart_str
 
 class CheckinPacienteForm(forms.ModelForm):
 
@@ -76,7 +78,7 @@ def ajax_checkin_paciente(request, paciente_id):
     voluntario = None
     if len(voluntarios) > 0:
         voluntario = voluntarios[0]
-        
+    
     
     if request.method == 'POST':
         checkin_paciente_form = CheckinPacienteForm(request.POST)
@@ -172,7 +174,13 @@ def retornaInfo(atendimento):
     try:
         voluntario = Voluntario.objects.filter(paciente__id = atendimento.paciente.id, ativo = True)
         if len(voluntario) > 0:
+            trabalho = Trabalho.objects.filter(voluntario = voluntario[0], data = atendimento.instancia_tratamento.data)
             info_str = info_str + '[' + voluntario[0].get_tipo_display() + ']'
+            # caso o trabalhador tenha efetuado o ponto de entrada, constará na lista de impressão a informação
+            # [Só tratamento]
+            # Dessa forma, a pessoa que estiver chamando não o deixará para o final.
+            if len(trabalho) == 0:
+                info_str = info_str + u'[Só tratamento]'
     except Voluntario.DoesNotExist:
         pass
     
@@ -186,14 +194,21 @@ def retornaInfo(atendimento):
     if atendimento.observacao_prioridade:   
         info_str = info_str + '[' + atendimento.observacao_prioridade + ']' 
 
+    if atendimento.paciente.acompanhante:
+        dp = DetalhePrioridade.objects.filter(paciente = atendimento.paciente.acompanhante)
+        at = Atendimento.objects.filter(paciente = atendimento.paciente.acompanhante, instancia_tratamento__data = datetime.datetime.today())
+        if dp and at:
+            nome_prioridade = atendimento.paciente.acompanhante.nome[:10]+'...'
+            info_str = info_str + '[Acompanha: ' + unicode(nome_prioridade) + ']'
+
     return info_str
     
     
 class ConfirmacaoAtendimentoForm(forms.ModelForm):
     observacao = forms.CharField(required=False)
     nome = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly'}))
-    hora_chegada = forms.TimeField(label='Cheg.',required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'6'}))   
-    confirma = forms.BooleanField(required = False, label= 'Conf.') 
+    hora_chegada = forms.TimeField(label='Cheg.',required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'6'}))
+    confirma = forms.BooleanField(required = False, label= 'Conf.')
     redireciona = forms.ModelChoiceField(label='Redir.',queryset=Tratamento.objects.none(), required=False)
     encaminha = forms.ModelChoiceField(label='Enc.', queryset=Tratamento.objects.none(), required=False)
     frequencia = forms.ChoiceField(label='Freq', choices=(('X','---------'),) , required=False)
