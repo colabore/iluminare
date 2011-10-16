@@ -123,7 +123,7 @@ class TratamentoCadastroRapido(forms.Form):
             if str(t[0]) in ts:
                 # realiza check-in para o tratamento.
                 tratamento = Tratamento.objects.get(descricao_basica = t[1])
-                mensagem = logic_atendimento.checkin_paciente(paciente, tratamento, None, None, False, None, 'N')
+                mensagem = logic_atendimento.checkin_paciente(paciente, tratamento, None, None, False, None, 'N', False)
 
 
 def atualizar(request, paciente_id):

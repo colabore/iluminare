@@ -28,42 +28,71 @@ class CheckinPacienteForm(forms.ModelForm):
         ('E', 'Entrada'),
         ('S', 'Saída'),
     )
-    redirecionar = forms.ModelChoiceField(queryset=Tratamento.objects.all(), required=False)
-    tratamento   = forms.ModelChoiceField(queryset=Tratamento.objects.all(), required=False)
+    redirecionar        = forms.ModelChoiceField(queryset=Tratamento.objects.all(), required=False)
+    tratamento          = forms.ModelChoiceField(queryset=Tratamento.objects.all(), required=False)
     ponto_voluntario    = forms.ChoiceField(required=False, choices=PONTO_CHOICES)
+    forcar_checkin      = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kargs):
         super(CheckinPacienteForm, self).__init__(*args, **kargs)
-        self.fields.keyOrder = ['tratamento', 'redirecionar', 'prioridade', 'observacao_prioridade', 'senha', 'ponto_voluntario']
+        self.fields.keyOrder = ['tratamento', 'redirecionar', 'prioridade', 'observacao_prioridade', \
+            'senha', 'ponto_voluntario', 'forcar_checkin']
 
     def update_tratamentos(self, paciente):
         tratamentos = [tp.tratamento for tp in paciente.tratamentopaciente_set.filter(status='A')]
         ids_tratamentos = [t.id for t in tratamentos]
         self.fields['tratamento'].queryset = Tratamento.objects.filter(id__in=ids_tratamentos)
 
+        volunt = False
+        volunt_entrada = False
+        volunt_saida = False
+        
+        # AJUSTANDO PONTO DO VOLUNTÁRIO
+        vs = Voluntario.objects.filter(paciente = paciente)
+        if len(vs) >= 1: # indica que o paciente é um voluntário da casa
+            volunt = True
+            ts = Trabalho.objects.filter(voluntario = vs[0], data = datetime.date.today())
+            if len(ts) == 0: # indica que ele ainda não tem nenhum trabalho no dia. Ou seja, está entrando.
+                self.fields['ponto_voluntario'].initial = 'E'
+                volunt_entrada = True
+            else:
+                self.fields['ponto_voluntario'].initial = 'S'
+                volunt_saida = True
+
         # AJUSTANDO A TELA PARA AS SEGUNDAS
         if datetime.date.today().weekday() == 0:
             lista_trat = Tratamento.objects.filter(dia_semana = 'S')
             self.fields['redirecionar'].queryset = lista_trat
             
-            trat_manut = Tratamento.objects.filter(descricao_basica__startswith = "Manu")
-            if len(trat_manut) > 0:
-                manut = trat_manut[0]
-                if manut in lista_trat:
-                    self.fields['redirecionar'].initial = manut
+            # só atualiza a opção inicial do campo redirecionar na segunda para Manutenção se não for voluntário.
+            # Em geral, os voluntários não se tratam nas segundas. Logo, só farão os pontos de entrada e saída.
+            if not volunt: 
+                trat_manut = Tratamento.objects.filter(descricao_basica__startswith = "Manu")
+                if len(trat_manut) > 0:
+                    manut = trat_manut[0]
+                    if manut in lista_trat:
+                        self.fields['redirecionar'].initial = manut
+                    
+            
             
         # AJUSTANDO A TELA PARA AS QUINTAS            
         elif datetime.date.today().weekday() == 3:
             self.fields['redirecionar'].queryset = Tratamento.objects.filter(dia_semana = 'N')
-            if len(tratamentos) > 0:
-                self.fields['tratamento'].initial = tratamentos[0]
+            
+            # só atualiza a opção inicial do campo tratamento na quinta se não for voluntário 
+            # ou for um voluntário entrando na casa.
+            # A ideia é que na saída só haja para o voluntário a opção ponto de saída.
+            if not volunt or volunt_entrada:
+                if len(tratamentos) > 0:
+                    self.fields['tratamento'].initial = tratamentos[0]
                 
         # AJUSTANDO A TELA PARA OUTROS DIAS (em geral utilizado para os testes)
         else:
             self.fields['redirecionar'].queryset = Tratamento.objects.all()
 
-        self.fields['observacao_prioridade'].help_tag = "Observação (prioridade)"
-        self.fields['observacao_prioridade'].label = "Motivo prioridade"
+        # ATUALIZANDO LABEL DA OBSERVAÇÃO PRIORIDADE
+        self.fields['observacao_prioridade'].label = "Info. Complementar"
+        
         
     class Meta:
         model = Atendimento
@@ -89,9 +118,10 @@ def ajax_checkin_paciente(request, paciente_id):
             prioridade              = checkin_paciente_form.cleaned_data['prioridade']
             observacao_prioridade   = checkin_paciente_form.cleaned_data['observacao_prioridade']
             ponto_voluntario        = checkin_paciente_form.cleaned_data['ponto_voluntario']
+            forcar_checkin          = checkin_paciente_form.cleaned_data['forcar_checkin']
 
             try:
-                msg = logic_atendimento.checkin_paciente(paciente, tratamento, senha, redirecionar, prioridade, observacao_prioridade, ponto_voluntario)
+                msg = logic_atendimento.checkin_paciente(paciente, tratamento, senha, redirecionar, prioridade, observacao_prioridade, ponto_voluntario, forcar_checkin)
                 return HttpResponse(msg)
                 
             except Exception, e:

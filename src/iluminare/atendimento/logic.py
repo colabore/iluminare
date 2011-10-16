@@ -7,6 +7,7 @@ from iluminare.atendimento.models import *
 from iluminare.voluntario.models import *
 from datetime import date
 from datetime import datetime
+from datetime import timedelta
 import re
 from django.utils.encoding import smart_str
 
@@ -26,7 +27,7 @@ def ponto_voluntario(paciente, ponto_voluntario_char):
     if len(voluntarios) > 0:
         voluntario = voluntarios[0]
     else:
-        return "Ponto não efetuado: Paciente não é voluntário da casa."
+        return "ATENÇÃO! PONTO não efetuado: Paciente não é voluntário da casa."
     
     funcoes = Funcao.objects.filter(descricao__startswith = "Geral")
     if len(funcoes) == 0:
@@ -40,23 +41,62 @@ def ponto_voluntario(paciente, ponto_voluntario_char):
         if len(trabalhos) == 0:
             trabalho = Trabalho(voluntario = voluntario, funcao=funcao, data = date.today(), hora_inicio = datetime.now())
             trabalho.save()
-            return "Ponto de entrada do voluntário efetuado com sucesso."
+            return "PONTO DE ENTRADA do voluntário efetuado com SUCESSO."
         else:
-            return "Ponto de entrada do voluntário já realizado."
+            return "ATENÇÃO! PONTO DE ENTRADA do voluntário JÁ REALIZADO."
     
     if ponto_voluntario_char == 'S':
         trabalhos = Trabalho.objects.filter(voluntario = voluntario, funcao=funcao, data = date.today())
         if len(trabalhos) == 0:
-            return "Ponto de saída não realizado: o ponto de saída só pode ser efetuado depois do ponto de entrada."
+            return "ATENÇÃO! Ponto de saída não realizado: o ponto de saída só pode ser efetuado após o ponto de entrada."
         else:
             trabalho = trabalhos[0]
-            trabalho.hora_final = datetime.now()
-            trabalho.save()
-            return "Ponto de saída do voluntário efetuado com sucesso."
+            if trabalho.hora_final == None:
+                trabalho.hora_final = datetime.now()
+                trabalho.save()
+                return "PONTO DE SAÍDA do voluntário efetuado com sucesso."
+            else:
+                return "ATENÇÃO! PONTO DE SAÍDA do voluntário JÁ REALIZADO."
     
+def horario_autorizado(tratamento):
     
+    if tratamento.horario_limite != None:
+        if datetime.now().time() > tratamento.horario_limite:
+            return False
+        else:
+            return True
+    else:
+        return True
 
-def checkin_paciente(paciente, tratamento, senha_str, redirecionar, prioridade_bool, observacao_prioridade_str, ponto_voluntario_char):
+def regras_gerais_atendidas(paciente, tratamento):
+    
+    ats = Atendimento.objects.filter(paciente = paciente, status='A').order_by('-instancia_tratamento__data')
+
+    # último atendimento na casa há mais de 3 meses
+    if len(ats) == 0:
+        return (False,'Paciente sem atendimentos registrados. Deve retornar para as segundas-feiras')
+    else:
+        if ats[0].instancia_tratamento.data < datetime.today().date() - timedelta(days=90):
+            return (False,'Último atendimento realizado há mais de 3 meses. Deve retornar para as segundas-feiras')    
+
+    # ainda não finalizou as manutenções
+    # talvez ainda seja necessário ajustar essa lógica.
+    if tratamento.descricao_basica[:4] == 'Sala':
+        if len(ats) > 0:
+            if ats[0].instancia_tratamento.tratamento.descricao_basica[:4] == "Manu" or \
+                ats[0].instancia_tratamento.tratamento.descricao_basica[:4] == "Prim":
+                data_limite = datetime.today().date() - timedelta(days=90)
+                manuts = Atendimento.objects.filter(paciente = paciente, status='A', \
+                    instancia_tratamento__tratamento__descricao_basica__startswith="Manu", \
+                    instancia_tratamento__data__gte=data_limite)
+                if len(manuts) < 4:
+                   return (False,'Paciente ainda não finalizou as manutenções da segunda-feira.')
+    
+    # caso feliz
+    return (True,'')
+
+def checkin_paciente(paciente, tratamento, senha_str, redirecionar, prioridade_bool, \
+        observacao_prioridade_str, ponto_voluntario_char, forcar_checkin):
 
     if redirecionar == None and tratamento == None and ponto_voluntario_char == 'N':
         return "Favor informar o tratamento ou confirmar o ponto do voluntário"
@@ -87,14 +127,22 @@ def checkin_paciente(paciente, tratamento, senha_str, redirecionar, prioridade_b
         ats = Atendimento.objects.filter(instancia_tratamento = it, paciente = paciente)
         
         if len(ats) == 0:
-            at = Atendimento(instancia_tratamento = it, paciente = paciente, prioridade = prioridade_bool, senha = senha_str, \
-                observacao_prioridade = observacao_prioridade_str, status = 'C')
-            at.hora_chegada=datetime.now()
-            at.save()
-            mensagem_retorno = smart_str("O check-in realizado com sucesso!<br/> Paciente: %s <br /> Tratamento: %s <br/>" % (paciente.nome, \
-                at.instancia_tratamento.tratamento.descricao_basica))
+            bool_msg = regras_gerais_atendidas(paciente, tratamento)
+            if bool_msg[0] or forcar_checkin:
+                if horario_autorizado(tratamento) or forcar_checkin:
+                    at = Atendimento(instancia_tratamento = it, paciente = paciente, prioridade = prioridade_bool, senha = senha_str, \
+                        observacao_prioridade = observacao_prioridade_str, status = 'C')
+                    at.hora_chegada=datetime.now()
+                    at.save()
+                    mensagem_retorno = smart_str("CHECK-IN realizado com SUCESSO!<br/><br/> Paciente: %s <br /> \
+                        Tratamento: %s <br/><br/>" % (paciente.nome, at.instancia_tratamento.tratamento.descricao_basica))
+                else:
+                    mensagem_retorno = smart_str("ATENÇÃO! CHECK-IN NÃO REALIZADO: Horário limite de entrada não atendido.<br/><br/>")
+            else:
+                mensagem_retorno = smart_str("ATENÇÃO! CHECK-IN NÃO REALIZADO: %s.<br/>" % bool_msg[1])    
         else:
-            mensagem_retorno = "Check-in do paciente já realizado para este tratamento.<br/>"
+            mensagem_retorno = smart_str("ATENÇÃO! Check-in do paciente JÁ REALIZADO para este tratamento.<br/><br/>")
+            
     
 
     if ponto_voluntario_char != 'N':
