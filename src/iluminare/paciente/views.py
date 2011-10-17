@@ -15,6 +15,7 @@ import iluminare.atendimento.logic as logic_atendimento
 
 import datetime
 
+from django.utils.encoding import smart_str
 
 
 PRIORIDADE_CHOICES = (
@@ -119,11 +120,14 @@ class TratamentoCadastroRapido(forms.Form):
         
     def save(self, paciente):
         ts = self.cleaned_data["tratamentos"]
+        mensagem = ''
         for t in self.TRATAMENTOS_CHOICES:
             if str(t[0]) in ts:
                 # realiza check-in para o tratamento.
                 tratamento = Tratamento.objects.get(descricao_basica = t[1])
                 mensagem = logic_atendimento.checkin_paciente(paciente, tratamento, None, None, False, None, 'N', False)
+
+        return smart_str(mensagem)
 
 
 def atualizar(request, paciente_id):
@@ -248,8 +252,10 @@ def cadastro_rapido_paciente(request):
         if form.is_valid() and trat_form.is_valid():
             try:
                 paciente = form.save()
-                trat_form.save(paciente)
-                return HttpResponse("Cadastro e Check-in realizados com Sucesso!<br/> Paciente: %s <br/><br/>" % paciente.nome)
+                msg = trat_form.save(paciente)
+                msg_resposta = "Cadastro e Check-in realizados com Sucesso!<br/> Paciente: %s <br><br> " % paciente.nome
+                return HttpResponse(msg_resposta)
+
             except Exception, e:
                 return HttpResponse("Erro: %s" % e)
         else:
