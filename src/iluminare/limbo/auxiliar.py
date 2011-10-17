@@ -141,10 +141,9 @@ def consolida_tratamentos_paciente(id_paciente_consolidado, id_paciente):
     tps_p = TratamentoPaciente.objects.filter(paciente__id = id_paciente)
 
     for tp in tps_p:
-        tp.paciente = paciente_consolidado
-        tp.save()
-        arquivo_log.write(smart_str("Incluindo TP: "+str(tp)+"\n"))
-        print smart_str("Incluindo TP: "+str(tp)+"\n")
+        tp.delete()
+        arquivo_log.write(smart_str("Deletando TP: "+str(tp)+"\n"))
+        print smart_str("Deletando TP: "+str(tp)+"\n")
         
 # JUNTA AS INSTANCIAS DOS ATENDIMENTOS EM UM ÚNICO PACIENTE.
 def consolida_atendimentos(id_paciente_consolidado, id_paciente):
@@ -174,8 +173,8 @@ def consolidar_paciente(lista_ids_pacientes):
         for id_paciente in lista_ids_pacientes[1:]:
             paciente = Paciente.objects.get(id = id_paciente)
             arquivo_log.write(smart_str(paciente.nome)+"\n")
-            consolida_tratamentos_paciente(paciente_consolidado.id, id_paciente)
             consolida_atendimentos(paciente_consolidado.id, id_paciente)
+            consolida_tratamentos_paciente(paciente_consolidado.id, id_paciente)
             
             vs = Voluntario.objects.filter(paciente = paciente)
             if len(vs) == 1:
@@ -193,7 +192,7 @@ def consolidar_paciente(lista_ids_pacientes):
         
 def consolidar_pacientes():
     print "Consolidando pacientes...."
-    arquivo_consolida = open(dir_log+"consolida_pacientes_ids.csv")
+    arquivo_consolida = open(dir_log+"consolida_pacientes_ids_2.csv")
     linhas = file.readlines(arquivo_consolida)
     for linha in linhas:
         linha = linha.split(";")
@@ -204,7 +203,7 @@ def consolidar_pacientes():
 
 def unifica_tratamentos():
     print "Unificando tratamentos...."
-    arquivo_consolida = open(dir_log+"consolida_pacientes_ids.csv")
+    arquivo_consolida = open(dir_log+"consolida_pacientes_ids_2.csv")
     linhas = file.readlines(arquivo_consolida)
     for linha in linhas:
         linha = linha.split(";")
@@ -228,8 +227,8 @@ def unifica_tratamentos():
 #lista_nomes_possivelmente_iguais()
 
 #consulta_scores()
-#consolidar_pacientes()
-unifica_tratamentos()
+consolidar_pacientes()
+#unifica_tratamentos()
 
 #print str(intersecao_atendimentos("Wilson Soares de Souza Barros","Wilson Soares de Souza"))
 #print str(intersecao_atendimentos("Guilherme Barros CorrÊa de Amorim","MarÍlia Barros CorrÊa de Amorim"))
