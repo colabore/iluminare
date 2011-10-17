@@ -73,11 +73,12 @@ def regras_gerais_atendidas(paciente, tratamento):
     ats = Atendimento.objects.filter(paciente = paciente, status='A').order_by('-instancia_tratamento__data')
 
     # último atendimento na casa há mais de 3 meses
-    if len(ats) == 0:
-        return (False,'Paciente sem atendimentos registrados. Deve retornar para as segundas-feiras')
-    else:
-        if ats[0].instancia_tratamento.data < datetime.today().date() - timedelta(days=90):
-            return (False,'Último atendimento realizado há mais de 3 meses. Deve retornar para as segundas-feiras')    
+    if tratamento.descricao_basica[:4] == 'Sala':
+        if len(ats) == 0:
+            return (False,'Paciente sem atendimentos registrados. Deve retornar para as segundas-feiras')
+        else:
+            if ats[0].instancia_tratamento.data < datetime.today().date() - timedelta(days=90):
+                return (False,'Último atendimento realizado há mais de 3 meses. Deve retornar para as segundas-feiras')    
 
     # ainda não finalizou as manutenções
     # talvez ainda seja necessário ajustar essa lógica.
