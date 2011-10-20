@@ -15,11 +15,14 @@ from django.core.paginator import Paginator
 from django.http import HttpResponse
 
 import datetime
+
 from operator import itemgetter
 
 import itertools
 
 from django.utils.encoding import smart_str
+
+from django.db.models import Q
 
 class CheckinPacienteForm(forms.ModelForm):
 
@@ -164,14 +167,24 @@ def retornaInfo(atendimento):
     info_str = ''
     
     try:
-        tratamento = Tratamento.objects.get(id = atendimento.instancia_tratamento.tratamento.id)
+        tratamento = atendimento.instancia_tratamento.tratamento
         
-        if tratamento.descricao_basica[:4] == "Manu" or tratamento.descricao_basica[:4] == "Prim":
-            cont = len(Atendimento.objects.filter(paciente__id = atendimento.paciente.id, 
-                instancia_tratamento__tratamento__id = tratamento.id, status='A'))  
+        if tratamento.descricao_basica[:4] == "Manu":
+            data_limite = datetime.datetime.today().date() - datetime.timedelta(days=90)
+
+            
+            # CONTAGEM DE MANUTENÇÕES
+            # com essa restrição dos 90 dias, estamos garantindo que a contagem de manutenções 
+            # realizadas se restrinjam aos atendimentos recentes.
+            # Dessa forma, se o paciente há 1 ano fez a primeira vez e as manutenções, 
+            # essa contagem será ignorada.
+            cont = len(Atendimento.objects.filter(paciente__id = atendimento.paciente.id, \
+                instancia_tratamento__tratamento = tratamento, status='A', \
+                instancia_tratamento__data__gte=data_limite))
            
             info_str = info_str + '[' + str(cont) + ']'
-        if tratamento.descricao_basica[:4] == "Manu":
+
+            # LISTA DE TRATAMENTOS
             tps = TratamentoPaciente.objects.filter(paciente = atendimento.paciente, status='A')
             tratamentos = ''
             for tp in tps:
@@ -183,24 +196,45 @@ def retornaInfo(atendimento):
             if tratamentos != "":
                 info_str = info_str + '[' + tratamentos + ']'
             
+            # [1a VEZ]
             # inclui o [1a vez] se o paciente também está realizando um atendimento de 1a vez no mesmo dia.
-            primeira_vez = Atendimento.objects.filter(paciente__id = atendimento.paciente.id, 
-                instancia_tratamento__tratamento__descricao_basica__startswith = "Prime", instancia_tratamento__data = datetime.datetime.today())
+            # ATENCAO [1a VEZ] != [1o ATENDIMENTO]
+            primeira_vez = Atendimento.objects.filter(paciente__id = atendimento.paciente.id, \
+                instancia_tratamento__tratamento__descricao_basica__startswith = "Prime", \
+                instancia_tratamento__data = datetime.datetime.today())
             if len(primeira_vez) == 1:
                 info_str = info_str + '[1a vez]'
             
     except Tratamento.DoesNotExist:
         pass
 
+
+    # 1o QUINTA.
+    data_limite = datetime.datetime.today().date() - datetime.timedelta(days=90)
+
+    # manutencoes nos ultimos 90 dias.    
     manutencao = Atendimento.objects.filter(paciente__id = atendimento.paciente.id, 
-        instancia_tratamento__tratamento__descricao_basica__startswith = "Manu", status='A')
+        instancia_tratamento__tratamento__descricao_basica__startswith = "Manu", status='A', \
+        instancia_tratamento__data__gte=data_limite)
+        
     atendimentos = Atendimento.objects.filter(paciente__id = atendimento.paciente.id, 
-        instancia_tratamento__tratamento = tratamento, status='A')
+        instancia_tratamento__tratamento__descricao_basica__startswith ="Sala", status='A')
 
-    if tratamento.descricao_basica in ["Sala 1", "Sala 2", "Sala 3", "Sala 4", "Sala 5"] and len(manutencao) == 4 and \
-        len(atendimentos) == 0:
-        info_str = info_str + '[1o tratamento]'
+    ats = Atendimento.objects.raw("""select ate.* from paciente_paciente as p
+        join atendimento_atendimento as ate
+            on p.id = ate.paciente_id
+        join tratamento_instanciatratamento as it
+            on ate.instancia_tratamento_id = it.id
+        where p.id = %d and ate.status = 'A'
+        order by it.data desc
+        limit 1;""" % atendimento.paciente.id)
 
+    if len(list(ats)) > 0:
+        ult_at = ats[0]
+        if ult_at.instancia_tratamento.tratamento.descricao_basica[:4] == "Manu":
+            info_str = info_str + '[1a quinta]'
+
+    # [SÓ TRATAMENTO] - caso dos voluntários que estão só se tratando.
     try:
         voluntario = Voluntario.objects.filter(paciente__id = atendimento.paciente.id, ativo = True)
         if len(voluntario) > 0:
@@ -221,12 +255,19 @@ def retornaInfo(atendimento):
     except DetalhePrioridade.DoesNotExist:
         pass
     
+    # PRIORIDADE SÓ NO DIA
+    if atendimento.prioridade:
+        info_str = info_str + '[Prioridade hoje]'
+    
+    # OBSERVACAO PRIORIDADE
     if atendimento.observacao_prioridade:   
         info_str = info_str + '[' + atendimento.observacao_prioridade + ']' 
 
+    # ACOMPANHA: ...
     if atendimento.paciente.acompanhante:
         dp = DetalhePrioridade.objects.filter(paciente = atendimento.paciente.acompanhante)
-        at = Atendimento.objects.filter(paciente = atendimento.paciente.acompanhante, instancia_tratamento__data = datetime.datetime.today())
+        at = Atendimento.objects.filter(paciente = atendimento.paciente.acompanhante, \
+            instancia_tratamento__data = atendimento.instancia_tratamento.data)
         if dp and at:
             nome_prioridade = atendimento.paciente.acompanhante.nome[:10]+'...'
             info_str = info_str + '[Acompanha: ' + unicode(nome_prioridade) + ']'
@@ -424,22 +465,30 @@ def exibir_listagem(request, pagina = None):
                 if not prioridade_in:
                     atendimentos_previstos = Atendimento.objects.filter(instancia_tratamento__id = tratamentos.id)
                 else:
-                    #atendimentos_previstos = Atendimento.objects.filter(instancia_tratamento__id = tratamentos.id)
-                    atendimentos_previstos1 = Atendimento.objects.raw(""" select ate.* from atendimento_atendimento ate
-	                                                                            join paciente_paciente pac
-		                                                                            on pac.id = ate.paciente_id
-	                                                                            join paciente_detalheprioridade dp
-		                                                                            on pac.id = dp.paciente_id
-	                                                                            where ate.instancia_tratamento_id = %d""" % tratamentos.id)
-                    atendimentos_previstos2 = Atendimento.objects.raw(""" select ate.* from atendimento_atendimento ate
-	                                                                        where ate.prioridade = True and ate.instancia_tratamento_id = %d
-                                                                            order by hora_chegada;""" % tratamentos.id)
+                    # PACIENTES QUE SÃO PRIORIDADE
+                    atendimentos_previstos1 = Atendimento.objects.filter(instancia_tratamento=tratamentos.id). \
+                        exclude(paciente__detalheprioridade=None)
 
+                    # PACIENTES QUE SÃO PRIORIDADE NO DIA
+                    atendimentos_previstos2 = Atendimento.objects.filter(prioridade=True, \
+                        instancia_tratamento__id=tratamentos.id)
+
+                    # ACOMPANHANTES
+                    atendimentos_previstos3 = Atendimento.objects.filter(Q(instancia_tratamento__id=tratamentos.id) \
+                        & ~Q(paciente__acompanhante=None))
+                        
                     atendimentos_previstos = []
                     for at in atendimentos_previstos1:
                         atendimentos_previstos.append(at)
                     for at in atendimentos_previstos2:
                         atendimentos_previstos.append(at)
+                    for at in atendimentos_previstos3:
+                        dps = DetalhePrioridade.objects.filter(paciente = at.paciente.acompanhante)
+                        ats = Atendimento.objects.filter(paciente = at.paciente.acompanhante, \
+                            instancia_tratamento__data = at.instancia_tratamento.data)
+                        # garante que a pessoa que é acompanha é uma prioridade e que ela fez check-in no dia.
+                        if dps and ats:
+                            atendimentos_previstos.append(at)
 
                 for atendimento in atendimentos_previstos:
                     info_str = retornaInfo(atendimento)
