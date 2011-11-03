@@ -216,10 +216,12 @@ def retornaInfo(atendimento):
     manutencao = Atendimento.objects.filter(paciente__id = atendimento.paciente.id, 
         instancia_tratamento__tratamento__descricao_basica__startswith = "Manu", status='A', \
         instancia_tratamento__data__gte=data_limite)
-        
-    atendimentos = Atendimento.objects.filter(paciente__id = atendimento.paciente.id, 
-        instancia_tratamento__tratamento__descricao_basica__startswith ="Sala", status='A')
 
+    atendimentos = Atendimento.objects.filter(paciente__id = atendimento.paciente.id, 
+        instancia_tratamento__tratamento__descricao_basica__startswith ="Sala", status='A', \
+        instancia_tratamento__data__gte=data_limite)
+
+    # último atendimento
     ats = Atendimento.objects.raw("""select ate.* from paciente_paciente as p
         join atendimento_atendimento as ate
             on p.id = ate.paciente_id
@@ -229,7 +231,13 @@ def retornaInfo(atendimento):
         order by it.data desc
         limit 1;""" % atendimento.paciente.id)
 
-    if len(list(ats)) > 0:
+    # condição para que seja [1a quinta]:
+    # - o último atendimento foi de manutenção
+    # - a quantidade de atendimentos nos últimos 3 meses em algum tratamento nas salas 1 a 5 = 0.
+    # - o atendimento (param) é sala 1 a 5.
+    # 
+    if len(list(ats)) > 0 and len(list(atendimentos)) == 0 \
+        and atendimento.instancia_tratamento.tratamento.descricao_basica[:4] == "Sala":
         ult_at = ats[0]
         if ult_at.instancia_tratamento.tratamento.descricao_basica[:4] == "Manu":
             info_str = info_str + '[1a quinta]'
