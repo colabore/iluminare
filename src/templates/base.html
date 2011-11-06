@@ -8,17 +8,18 @@
 		<script type="text/javascript" src="/static/js/jquery.mousewheel-3.0.4.pack.js"></script>
 		<script type="text/javascript" src="/static/js/jquery.fancybox-1.3.4.pack.js"></script>
 		<script type="text/javascript" src="/static/js/iluminare.js"></script>
+		<script type="text/javascript" src="/static/js/menu.js"></script>
 		<link href="/static/css/reset.css" media="screen" rel="stylesheet" type="text/css" />
 		<link href="/static/css/quinta.css" media="screen" rel="stylesheet" type="text/css" />
 		<link href="/static/css/quinta-formato.css" media="screen" rel="stylesheet" type="text/css" />
 		<link href="/static/css/jquery.fancybox-1.3.4.css" media="screen" rel="stylesheet" type="text/css" />
-        
+		<link href="/static/css/menu.css" media="screen" rel="stylesheet" type="text/css" />
     </head>	
 <body>
 <div id="iluminare">
 	<div id="header">
-		<img id="logo" src="../static/img/quinta-logo.png" alt="logo quinta" width="280" height="87" />
-		<div id="navcontainer">
+		<img id="logo" src="/static/img/quinta-logo.png" alt="logo quinta" width="280" height="87" />
+		<!--<div id="navcontainer">
 			<ul id="navlist">
 				<li id="active"><a href="/" id="current">Início</a></li>
 				<li><a href="/paciente/incluir">Novo Paciente</a></li>
@@ -26,7 +27,44 @@
 				<li><a href="/atendimento/confirmacao">Confirmação</a></li>
 				<li><a href="/atendimento/listagem-geral">Listagem Geral</a></li>
 			</ul>
-		</div>
+		</div>-->
+
+<div id="navcontainer">
+<ul id="qm0" class="qmmc">
+
+    <li><a class="qmparent" href="/">Inicial</a>
+</li>
+    <li><a class="qmparent" href="/paciente/incluir">Pacientes</a>
+</li>
+
+    <li><a class="qmparent" href="#">Listagens</a>
+
+        <ul style="width:107px;">
+        <li><a href="/atendimento/listagem">Atendimento</a></li>
+        <li><a href="/atendimento/listagem-geral">Geral</a></li>
+        <li><a href="/atendimento/confirmacao">Confirmacao</a></li>
+        </ul></li>
+
+    <!--<li><a class="qmparent" href="#">Support</a>
+
+        <ul style="width:98px;">
+        <li><a href="#">Annual Meetings</a></li>
+        <li><a href="#">Financial Reports</a></li>
+        <li><a href="#">Nasdaq Quoting</a></li>
+        <li><a href="#">Future Outlook</a></li>
+        </ul></li>
+
+    <li><a class="qmparent" href="#">About</a>
+
+        <ul style="width:86px;">
+        <li><a href="#">Satisfaction</a></li>
+        <li><a href="#">Our Goals</a></li>
+        <li><a href="#">Future Outlook</a></li>
+        </ul></li>-->
+
+<li class="qmclear">&nbsp;</li></ul>
+<script type="text/javascript">qm_create(0,false,0,500,false,false,false,false);</script>
+</div>
 
 	</div>
 	<div id="mensagem">
