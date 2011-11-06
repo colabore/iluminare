@@ -6,6 +6,7 @@ from iluminare.voluntario.models import Voluntario, Trabalho
 from iluminare.paciente.models import DetalhePrioridade, Paciente
 import iluminare.atendimento.logic as logic_atendimento
 import iluminare.tratamento.logic as tratamento_logic
+import iluminare.voluntario.logic as voluntario_logic
 
 
 from django import forms
@@ -104,6 +105,7 @@ class CheckinPacienteForm(forms.ModelForm):
 def ajax_checkin_paciente(request, paciente_id):
     paciente = get_object_or_404(Paciente, pk=paciente_id)
     
+    dic_retorno = {'sucesso_checkin':False, 'sucesso_ponto':False, 'mensagem_checin':'', 'mensagem_ponto':''}
     lista_atendimentos = logic_atendimento.atendimentos_paciente(paciente.id)
     
     voluntarios = Voluntario.objects.filter(paciente = paciente, ativo = True)
@@ -123,9 +125,28 @@ def ajax_checkin_paciente(request, paciente_id):
             ponto_voluntario        = checkin_paciente_form.cleaned_data['ponto_voluntario']
             forcar_checkin          = checkin_paciente_form.cleaned_data['forcar_checkin']
 
+            dic_ponto = None
+            dic_checkin = None
+            msg_validacao = None
+
+            if redirecionar == None and tratamento == None and ponto_voluntario == 'N':
+                msg_validacao = "Favor informar o tratamento ou confirmar o ponto do voluntário"
+
+            if ponto_voluntario == 'S' and (redirecionar != None or tratamento != None):
+                msg_validacao = "Operação não realizada: Para efetuar o ponto de saída do voluntário é necessário que \
+                    todos os outros campos estejam vazios"
+
             try:
-                msg = logic_atendimento.checkin_paciente(paciente, tratamento, senha, redirecionar, prioridade, observacao_prioridade, ponto_voluntario, forcar_checkin)
-                return HttpResponse(msg)
+                if msg_validacao == None and (tratamento or redirecionar):
+                    dic_checkin = logic_atendimento.checkin_paciente(paciente, tratamento, \
+                        senha, redirecionar, prioridade, observacao_prioridade, forcar_checkin)
+                
+                if msg_validacao == None and ponto_voluntario != 'N':
+                    dic_ponto = voluntario_logic.ponto_voluntario(paciente, ponto_voluntario)
+
+                return render_to_response('ajax-checkin-paciente-resultado.html', {'paciente':paciente, \
+                    'voluntario':voluntario, 'dic_checkin':dic_checkin, 'dic_ponto':dic_ponto, \
+                    'msg_validacao':msg_validacao})
                 
             except Exception, e:
                 return HttpResponse("Erro: %s" % str(e))
@@ -133,11 +154,10 @@ def ajax_checkin_paciente(request, paciente_id):
             return HttpResponse("Erro %s" % str(checkin_paciente_form.errors))
     else:
         checkin_paciente_form = CheckinPacienteForm()
-    
-    checkin_paciente_form.update_tratamentos(paciente)
+        checkin_paciente_form.update_tratamentos(paciente)
 
-    return render_to_response('ajax-checkin-paciente.html', {'paciente':paciente, 'form':checkin_paciente_form, 'lista':lista_atendimentos, \
-        'erros':str(checkin_paciente_form.errors), 'voluntario':voluntario})
+    return render_to_response('ajax-checkin-paciente.html', {'paciente':paciente, \
+        'form':checkin_paciente_form, 'lista':lista_atendimentos, 'erros':str(checkin_paciente_form.errors), 'voluntario':voluntario})
 
 def get_info(paciente):
     info = ""

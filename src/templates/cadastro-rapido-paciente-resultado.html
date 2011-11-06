@@ -1,0 +1,25 @@
+<div id="div-cadastro-paciente">
+<h1>{{paciente.nome}}</h1>
+<br>
+<br>
+
+{% for dic in lista_dics %}
+    {% if dic.sucesso %}
+    <table>
+        <tr>
+        <td> <img src="/static/img/sucesso.png"/> </td>
+        <td> <font color=green> {{dic.mensagem}} </font> </td> 
+        </tr>
+    </table>
+    {% else %}
+    <table>
+        <tr>
+        <td> <img src="/static/img/falha.png"/> </td>
+        <td> <font color=red> {{dic.mensagem}} </font> </td> 
+        </tr>
+    </table>
+    {% endif %}
+    <br>
+{% endfor %}
+
+</div>
