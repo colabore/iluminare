@@ -42,7 +42,7 @@ class PontoForm(forms.ModelForm):
     tipo_vol = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'9'}))
     hora_inicio = forms.TimeField(label='Inicio',required=False, widget=forms.TextInput(attrs={'size':'6'}))
     hora_final = forms.TimeField(label='Final',required=False, widget=forms.TextInput(attrs={'size':'6'}))
-
+    data_registro_ponto = None
     
     class Meta:
         model = Voluntario
@@ -56,7 +56,7 @@ class PontoForm(forms.ModelForm):
         # CORRIGIR
         # por enquanto está funcionando com data fixa.
         # preciso aprender a passar o parâmetro para o INIT().
-        data=date(2011,10,27)
+        #data=data_registro_ponto
 #        data = kwargs.pop('data')
         
         self.fields['nome'].initial = voluntario.paciente.nome
@@ -68,7 +68,7 @@ class PontoForm(forms.ModelForm):
         
         self.fields['tipo_vol'].initial = tipo_str
         
-        trabalho = Trabalho.objects.filter(voluntario = voluntario, data=data)
+        trabalho = Trabalho.objects.filter(voluntario = voluntario, data=self.data_registro_ponto)
         
         if len(trabalho) == 1:
             self.fields['confirma'].initial = True
@@ -84,21 +84,23 @@ class PontoForm(forms.ModelForm):
         # CORRIGIR        
         # por enquanto está funcionando com data fixa.
         # preciso aprender a passar o parâmetro para o save().
-        data=date(2011,10,27)
+        #data=global_data_registro_ponto
         
         if confirma_in:
-            trabalhos = Trabalho.objects.filter(voluntario = voluntario, data=data)
+            trabalhos = Trabalho.objects.filter(voluntario = voluntario, data=self.data_registro_ponto)
             if len(trabalhos) == 0:
                 funcao = Funcao.objects.get(descricao='Geral')
-                trabalho = Trabalho(voluntario = voluntario, data=data, funcao=funcao)
+                trabalho = Trabalho(voluntario = voluntario, data=self.data_registro_ponto, funcao=funcao)
             elif len(trabalhos) == 1:
                 trabalho = trabalhos[0]
                 
             trabalho.hora_inicio = hora_inicio_in
             trabalho.hora_final = hora_final_in
-            trabalho.save()
+
+            if trabalho.data == self.data_registro_ponto:
+                trabalho.save()
         else:
-            trabalhos = Trabalho.objects.filter(voluntario = voluntario, data=data)
+            trabalhos = Trabalho.objects.filter(voluntario = voluntario, data=self.data_registro_ponto)
             if len(trabalhos) == 1:
                 trabalhos[0].delete()
 
@@ -109,19 +111,26 @@ def registra_ponto(request):
 
     if request.method == "POST":
         filtro_form = FiltroPontoForm(request.POST)
-        voluntarios = PontoFormSet(request.POST)
 
-        if filtro_form.is_valid() and voluntarios.is_valid:
-            data	   = filtro_form.cleaned_data['data']
-            voluntarios.save()
-            voluntarios = PontoFormSet(queryset=Voluntario.objects.filter(ativo=True))
+        if filtro_form.is_valid():
+            registro_ponto = filtro_form.cleaned_data['data']
+            PontoForm.data_registro_ponto = registro_ponto
+            
+            voluntarios = None
+            try:
+                voluntarios = PontoFormSet(request.POST)
+            except:
+                voluntarios = PontoFormSet(queryset=Voluntario.objects.filter(ativo=True))
+                
+            if voluntarios.is_valid():
+                voluntarios.save()
+                #voluntarios = PontoFormSet(queryset=Voluntario.objects.filter(ativo=True))
 
     else:
         filtro_form = FiltroPontoForm()
-        voluntarios = PontoFormSet(queryset=Voluntario.objects.filter(ativo=True))
+        voluntarios = None
     
     return render_to_response('registra_ponto.html', {'filtro_form':filtro_form, 'voluntarios':voluntarios,\
-        'mensagem':voluntarios.errors})
+        'mensagem': voluntarios and voluntarios.errors})
     
-
 
