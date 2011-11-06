@@ -174,7 +174,7 @@ def consolidar_paciente(lista_ids_pacientes):
             paciente = Paciente.objects.get(id = id_paciente)
             arquivo_log.write(smart_str(paciente.nome)+"\n")
             consolida_atendimentos(paciente_consolidado.id, id_paciente)
-            consolida_tratamentos_paciente(paciente_consolidado.id, id_paciente)
+            #consolida_tratamentos_paciente(paciente_consolidado.id, id_paciente)
             
             vs = Voluntario.objects.filter(paciente = paciente)
             if len(vs) == 1:
