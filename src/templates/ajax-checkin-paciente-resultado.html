@@ -1,0 +1,57 @@
+<div class="paciente_checkin" id="paciente_checkin">
+<h1>{{paciente.nome}}</h1>
+
+{% if voluntario %}
+    {% if voluntario.tipo == 'T' %} Trabalhador 
+    {% else %} {% if voluntario.tipo == 'C' %} Colaborador {% endif %}
+    {% endif %}
+{% endif %}
+
+
+<br>
+<br>
+
+{% if msg_validacao %}
+    <img src="/static/img/falha.png"/>
+    <font color=red>
+    {{msg_validacao}}
+    </font>
+{% endif %}
+
+{% if dic_checkin %}
+    {% if dic_checkin.sucesso %}
+    <table>
+        <tr>
+        <td> <img src="/static/img/sucesso.png"/> </td>
+        <td> <font color=green> {{dic_checkin.mensagem}} </font> </td> 
+        </tr>
+    </table>
+    {% else %}
+    <table>
+        <tr>
+        <td> <img src="/static/img/falha.png"/> </td>
+        <td> <font color=red> {{dic_checkin.mensagem}} </font> </td> 
+        </tr>
+    </table>
+    {% endif %}
+{% endif %}
+
+{% if dic_ponto %}
+    {% if dic_ponto.sucesso %}
+    <table>
+        <tr>
+        <td> <img src="/static/img/sucesso.png"/> </td>
+        <td> <font color=green> {{dic_ponto.mensagem}} </font> </td> 
+        </tr>
+    </table>
+    {% else %}
+    <table>
+        <tr>
+        <td> <img src="/static/img/falha.png"/> </td>
+        <td> <font color=red> {{dic_ponto.mensagem}} </font> </td> 
+        </tr>
+    </table>
+    {% endif %}
+{% endif %}
+
+</div>

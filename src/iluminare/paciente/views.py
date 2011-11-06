@@ -108,26 +108,46 @@ class TratamentoPacienteForm(forms.Form):
         tratamento_logic.encaminhar_paciente(paciente.id, lista_tratamentos_novos)
 
 class TratamentoCadastroRapido(forms.Form):
+    TRATAMENTOS_CHOICES_QUINTA = (
+        (3, u'Sala 4'),
+    )
+    TRATAMENTOS_CHOICES_SEGUNDA = (
+        (1, u'Primeira Vez'),
+        (2, u'Manutenção')
+    )
     TRATAMENTOS_CHOICES = (
         (1, u'Primeira Vez'),
         (2, u'Manutenção'),
         (3, u'Sala 4')
     )
+    
     tratamentos = forms.MultipleChoiceField(choices=TRATAMENTOS_CHOICES, widget=forms.CheckboxSelectMultiple, required=False)
                 
     def update(self):
-        self.fields['tratamentos'].initial=['1','2']
+        if datetime.date.today().weekday() == 0:
+            self.fields['tratamentos'].choices = self.TRATAMENTOS_CHOICES_SEGUNDA 
+            self.fields['tratamentos'].initial=['1','2']
+        if datetime.date.today().weekday() == 3:
+            self.fields['tratamentos'].choices = self.TRATAMENTOS_CHOICES_QUINTA
+            self.fields['tratamentos'].initial=['3']
+        else:
+            self.fields['tratamentos'].choices = self.TRATAMENTOS_CHOICES
         
     def save(self, paciente):
         ts = self.cleaned_data["tratamentos"]
-        mensagem = ''
+        
+        if paciente == None:
+            return []
+        
+        lista_dic = []
         for t in self.TRATAMENTOS_CHOICES:
             if str(t[0]) in ts:
                 # realiza check-in para o tratamento.
                 tratamento = Tratamento.objects.get(descricao_basica = t[1])
-                mensagem = logic_atendimento.checkin_paciente(paciente, tratamento, None, None, False, None, 'N', False)
+                dic = logic_atendimento.checkin_paciente(paciente, tratamento, None, None, False, None, False)
+                lista_dic.append(dic)
 
-        return smart_str(mensagem)
+        return lista_dic
 
 
 def atualizar(request, paciente_id):
@@ -252,10 +272,19 @@ def cadastro_rapido_paciente(request):
         if form.is_valid() and trat_form.is_valid():
             try:
                 paciente = form.save()
-                msg = trat_form.save(paciente)
-                msg_resposta = "Cadastro e Check-in realizados com Sucesso!<br/> Paciente: %s <br><br> " % paciente.nome
-                return HttpResponse(msg_resposta)
+                lista = []
+                dic_paciente = None
+                if paciente:
+                    dic_paciente = {'sucesso':True, 'mensagem':'Paciente cadastrado com sucesso.'}
+                else:
+                    dic_paciente = {'sucesso':False, 'mensagem':'Erro no cadastro do paciente.'}
+                
+                lista.append(dic_paciente)
+                lista_dics_atends = trat_form.save(paciente)
+                lista = lista + lista_dics_atends 
 
+                return render_to_response ('cadastro-rapido-paciente-resultado.html', {'paciente': paciente, 'lista_dics':lista})
+    
             except Exception, e:
                 return HttpResponse("Erro: %s" % e)
         else:
