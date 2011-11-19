@@ -52,7 +52,7 @@ class CheckinPacienteForm(forms.ModelForm):
         volunt_saida = False
         
         # AJUSTANDO PONTO DO VOLUNTÁRIO
-        vs = Voluntario.objects.filter(paciente = paciente)
+        vs = Voluntario.objects.filter(paciente = paciente, ativo = True)
         if len(vs) >= 1: # indica que o paciente é um voluntário da casa
             volunt = True
             ts = Trabalho.objects.filter(voluntario = vs[0], data = datetime.date.today())

@@ -31,6 +31,12 @@ class DetalhePrioridadeForm(forms.ModelForm):
         model = DetalhePrioridade
         exclude = ('paciente', )
 
+    def __init__(self, *args, **kwargs):
+        super(DetalhePrioridadeForm, self).__init__(*args, **kwargs)
+        self.fields['tipo'].label = 'Prioridade'
+        self.fields['data_inicio'].label = 'Data Início (Grav / Lac)'
+
+
     def save(self):
         detalhe_prioridade = forms.ModelForm.save(self, commit=False)
         detalhe_prioridade.paciente = self.paciente
@@ -42,6 +48,11 @@ class PacienteForm(forms.ModelForm):
     class Meta:
         model = Paciente
         exclude = ('saude', )
+
+    def __init__(self, *args, **kwargs):
+        super(PacienteForm, self).__init__(*args, **kwargs)
+        self.fields['acompanhante'].label = 'Acompanha'
+        self.fields['observacao'].label = 'Observação (Tela Check-in)'
 
     def save(self):
         paciente = forms.ModelForm.save(self)
