@@ -286,6 +286,7 @@ def registra_atendimento(paciente, tratamento, data):
         at.save()
 
 
+
 def processa_manutencao(nome_arquivo):
 
     arquivo_log.write("--- Manutencoes: "+nome_arquivo+'\n')
@@ -1100,15 +1101,131 @@ def processa_atendimentos_quinta():
     processa_arquivo(nome_arquivo, tratamento, lista_data_posicao, 3)
     
 
+def processa_trabalho_quinta_mes(nome_arquivo, lista_datas):
+
+    arquivo_log.write("--- Trabalhos: "+nome_arquivo+'\n')
+    print "--- Trabalhos: "+nome_arquivo
+    
+    leitor = le_arquivo(nome_arquivo, 7)
+
+    c_n = 2 # coluna id_paciente
+    c_n1 = 1 # coluna nome
+    c_d = [3,4,5,6,7] # colunas das datas
+    
+            
+    for linha in leitor:
+    
+        ## ID
+        print linha[c_n]
+        if linha[c_n] != '' and linha[c_n] != '0' and linha[c_n] != '-':
+            id_paciente = int(linha[c_n])
+            paciente = Paciente.objects.get(id = id_paciente)
+            
+            arquivo_log.write(smart_str(paciente.nome)+"\n")
+            
+            ## TRABALHO
+            voluntarios = Voluntario.objects.filter(paciente = paciente)
+            
+            if len(voluntarios) == 1:
+                funcao = Funcao.objects.get(descricao="Geral")
+                
+                for i in range(len(lista_datas)):
+                    print str(c_d[i])
+                    print str(linha[c_d[i]])
+                    if linha[c_d[i]] == 'P' or linha[c_d[i]] == 'p':
+                        trabalho = Trabalho(voluntario = voluntarios[0], funcao = funcao, data = lista_datas[i])
+                        print "Novo trabalho" + str(trabalho)
+                        trabalho.save()
+            elif len(voluntarios) == 0:
+                arquivo_log.write("ERRO: paciente não é voluntário ID: "+str(id_paciente)+'\n')
+            elif len(voluntarios) > 1:
+                arquivo_log.write("ERRO: paciente aponta para mais de um voluntario ID: "+str(id_paciente)+'\n')
+        else:
+            arquivo_log.write("ERRO: paciente sem ID: "+smart_str(linha[c_n1])+'\n')
+
+
+def processa_trabalhos_quinta():
+    
+    ## FEV
+    nome_arquivo = dir_csvs + "Trabalhadores-Frequencia-2011-02.csv"
+    lista_datas = [
+        date(2011,2,4),
+        date(2011,2,11),
+        date(2011,2,18),
+        date(2011,2,25)]
+    processa_trabalho_quinta_mes(nome_arquivo, lista_datas)
+
+    ## MAR
+    nome_arquivo = dir_csvs + "Trabalhadores-Frequencia-2011-03.csv"
+    lista_datas = [
+        date(2011,3,3),
+        date(2011,3,10),
+        date(2011,3,17),
+        date(2011,3,24),
+        date(2011,3,31)]
+    processa_trabalho_quinta_mes(nome_arquivo, lista_datas)
+        
+    ## ABR
+    nome_arquivo = dir_csvs + "Trabalhadores-Frequencia-2011-04.csv"
+    lista_datas = [
+        date(2011,4,7),
+        date(2011,4,14),
+        date(2011,4,21),
+        date(2011,4,28)]
+    processa_trabalho_quinta_mes(nome_arquivo, lista_datas)
+
+    ## MAI
+    nome_arquivo = dir_csvs + "Trabalhadores-Frequencia-2011-05.csv"
+    lista_datas = [
+        date(2011,5,5),
+        date(2011,5,12),
+        date(2011,5,19),
+        date(2011,5,26)]
+    processa_trabalho_quinta_mes(nome_arquivo, lista_datas)
+
+    ## JUN
+    nome_arquivo = dir_csvs + "Trabalhadores-Frequencia-2011-06.csv"
+    lista_datas = [
+        date(2011,6,2),
+        date(2011,6,9),
+        date(2011,6,16),
+        date(2011,6,23),
+        date(2011,6,30)]
+    processa_trabalho_quinta_mes(nome_arquivo, lista_datas)
+
+    ## JUL
+    nome_arquivo = dir_csvs + "Trabalhadores-Frequencia-2011-07.csv"
+    lista_datas = [
+        date(2011,7,7),
+        date(2011,7,14),
+        date(2011,7,21),
+        date(2011,7,28)]
+    processa_trabalho_quinta_mes(nome_arquivo, lista_datas)
+
+    ## AGO
+    nome_arquivo = dir_csvs + "Trabalhadores-Frequencia-2011-08.csv"
+    lista_datas = [
+        date(2011,8,4),
+        date(2011,8,11),
+        date(2011,8,18),
+        date(2011,8,25)]
+    processa_trabalho_quinta_mes(nome_arquivo, lista_datas)
+
+    ## SET
+    nome_arquivo = dir_csvs + "Trabalhadores-Frequencia-2011-09.csv"
+    lista_datas = [
+        date(2011,9,1),
+        date(2011,9,8),
+        date(2011,9,15),
+        date(2011,9,22),
+        date(2011,9,29)]
+    processa_trabalho_quinta_mes(nome_arquivo, lista_datas)
+
 
 def processa():
     # IMPORTANTE: RODAR ESSE MÉTODO É NECESSÁRIO CRIAR A BASE iluminare (utf-8 default)
     
-    cria_salas_tratamentos()
-    processa_manutencoes()
-    processa_atendimentos_voluntarios()
-    processa_atendimentos_quinta()
-
+    processa_trabalhos_quinta()
     delta_t = datetime.now() - t0 
     print delta_t
     
