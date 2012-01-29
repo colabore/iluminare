@@ -44,20 +44,128 @@ def retorna_dia_semana(data):
 
     return dia_semana_str
 
+# funcao desenvolvida para carga de dados..
+# no dia 15-12-2011 iniciamos os trabalhos sem os dados do dia 12.
+def carrega_ats_15122011():
+    spamReader = csv.reader(open(dir_log+'ats_15122011.csv', 'rb'), delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    it_s1 = InstanciaTratamento(tratamento = Tratamento.objects.get(descricao_basica='Sala 1'), data='2011-12-15')
+    it_s1.save()
+    it_s2 = InstanciaTratamento(tratamento = Tratamento.objects.get(descricao_basica='Sala 2'), data='2011-12-15')
+    it_s2.save()
+    it_s3 = InstanciaTratamento(tratamento = Tratamento.objects.get(descricao_basica='Sala 3'), data='2011-12-15')
+    it_s3.save()
+    it_s4 = InstanciaTratamento(tratamento = Tratamento.objects.get(descricao_basica='Sala 4'), data='2011-12-15')
+    it_s4.save()
+    it_s5 = InstanciaTratamento(tratamento = Tratamento.objects.get(descricao_basica='Sala 5'), data='2011-12-15')
+    it_s5.save()
+    
+    for row in spamReader:
+        print row[1]
+        pac = Paciente.objects.filter(nome=row[1])
+        if len(pac) == 0:
+            pac = Paciente(nome = row[1])
+            pac.save()
+            print 'NOVO PACIENTE: ' + row[1]
+        elif len(pac) == 1:
+            pac = pac[0]
+        else:
+            print 'MAIS DE UM NOME.. ' + row[1]
+            pac = Paciente.objects.get(id=row[0])
+            
+        sala_str = row[2]
+        it = None
+        if sala_str == 'Sala 1':
+            it = it_s1
+        elif sala_str == 'Sala 2':
+            it = it_s2
+        elif sala_str == 'Sala 3':
+            it = it_s3
+        elif sala_str == 'Sala 4':
+            it = it_s4
+        elif sala_str == 'Sala 5':
+            it = it_s5
+        at = Atendimento(paciente = pac, instancia_tratamento = it, hora_chegada = row[3], status = row[4], \
+            observacao_prioridade = row[5], observacao = row[6])
+        at.save()
+            
+            
 
+    spamReader = csv.reader(open(dir_log+'ts_15122011.csv', 'rb'), delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    for row in spamReader:
+        print row[0]
+        vol = Voluntario.objects.get(id=row[0])
+        f = Funcao.objects.get(descricao='Geral')
+        if len(row[2]) > 0:
+            trabalho = Trabalho(funcao = f, voluntario = vol, data = '2011-12-15', hora_inicio = row[1], hora_final = row[2])
+        else:
+            trabalho = Trabalho(funcao = f, voluntario = vol, data = '2011-12-15', hora_inicio = row[1])
+        trabalho.save()
+    
+
+# funcao desenvolvida para carga de dados..
+# no dia 15-12-2011 iniciamos os trabalhos sem os dados do dia 12.
+def atendimentos_15122011():
+    ats = Atendimento.objects.filter(instancia_tratamento__data='2011-12-15')
+    # 7 campos
+    lista_rotulos = ["Id Paciente", #1
+                    "Nome Paciente", #2
+                    "Tratamento", #3
+                    "Hora chegada",#4
+                    "Status", #5
+                    "Observacao Prioridade", #6
+                    "Observacao"] #7
+    
+    lista_retorno = []
+    for at in ats:
+        lista = []
+        lista.append(at.paciente.id) #1
+        print at.paciente.id
+        
+        lista.append(smart_str(at.paciente.nome)) #2
+        
+        lista.append(smart_str(at.instancia_tratamento.tratamento.descricao_basica)) #3
+
+        lista.append(at.hora_chegada) #4
+        lista.append(at.status) #5
+        lista.append(smart_str(at.observacao_prioridade)) #6
+        lista.append(smart_str(at.observacao)) #7
+        
+        lista_retorno.append(lista)
+        
+    gera_csv(lista_rotulos, lista_retorno, "ats_15122011.csv")
+
+    
+    ts = Trabalho.objects.filter(data = '2011-12-15')
+    lista_rotulos = ["Id Voluntario", #1
+                    "Hora Inicio", #2
+                    "Hora final"] #3
+
+    lista_retorno = []
+    for t in ts:
+        lista = []
+        lista.append(t.voluntario.id) #1
+        print t.voluntario.id
+        
+        lista.append(t.hora_inicio) #2
+        lista.append(t.hora_final) #3
+        
+        lista_retorno.append(lista)
+        
+    gera_csv(lista_rotulos, lista_retorno, "ts_15122011.csv")
 
 def relatorio_trabalhos():
-    ts = Trabalho.objects.all()
+    ts = Trabalho.objects.filter()
     
     lista_rotulos = ["Id Trabalho", #1
-                    "Voluntário", #2
+                    "Nome voluntário", #2
                     "Data", #3
                     "Dia semana", #4
                     "Mes", #5
                     "Ano", #6
                     "Hora inicio", #7
                     "Hora final", #8
-                    "Ativo" #9
+                    "Ativo", #9
+                    "Tipo voluntário" #10
                     ]
 
     lista_retorno = []
@@ -79,6 +187,8 @@ def relatorio_trabalhos():
             lista.append("S") #9
         else:
             lista.append("N") #9
+
+        lista.append(t.voluntario.tipo) #10
         
         lista_retorno.append(lista)
         
@@ -148,7 +258,7 @@ def relatorio_atendimentos_basico():
 
         dia_semana_str = retorna_dia_semana(at.instancia_tratamento.data)
         lista.append(smart_str(dia_semana_str)) #17
-        
+                
         lista_retorno.append(lista)
         
     gera_csv(lista_rotulos, lista_retorno, "relatorio_geral_atendimentos.csv")
