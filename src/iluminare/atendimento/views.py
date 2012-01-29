@@ -146,7 +146,7 @@ def ajax_checkin_paciente(request, paciente_id):
 
                 return render_to_response('ajax-checkin-paciente-resultado.html', {'paciente':paciente, \
                     'voluntario':voluntario, 'dic_checkin':dic_checkin, 'dic_ponto':dic_ponto, \
-                    'msg_validacao':msg_validacao})
+                    'msg_validacao':msg_validacao, 'senha':senha})
                 
             except Exception, e:
                 return HttpResponse("Erro: %s" % str(e))

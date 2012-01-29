@@ -53,5 +53,21 @@
     </table>
     {% endif %}
 {% endif %}
+<br>
+<br>
+
+{% if dic_checkin %}
+    {% if dic_checkin.sucesso %}
+        {% if senha %}
+        <table>
+            <tr>
+            <td> <font color="green" > Senha: {{senha}} </td> 
+            </tr>
+        </table>
+        {% endif %}        
+    {% endif %}
+{% endif %}
 
 </div>
+
+
