@@ -23,14 +23,14 @@
     <table>
         <tr>
         <td> <img src="/static/img/sucesso.png"/> </td>
-        <td><p class="senha-sucesso"> {{dic_checkin.mensagem}} </p> </td> 
+        <td><font color="green"> {{dic_checkin.mensagem}} </font> </td> 
         </tr>
     </table>
     {% else %}
     <table>
         <tr>
         <td> <img src="/static/img/falha.png"/> </td>
-        <td> <p class="senha-falha"> {{dic_checkin.mensagem}} </p> </td> 
+        <td> <font color="red"> {{dic_checkin.mensagem}} </font> </td> 
         </tr>
     </table>
     {% endif %}
