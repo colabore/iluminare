@@ -120,7 +120,7 @@ class TratamentoPacienteForm(forms.Form):
 
 class TratamentoCadastroRapido(forms.Form):
     TRATAMENTOS_CHOICES_QUINTA = (
-        (3, u'Sala 4'),
+        (3, u'Sala 5'),
     )
     TRATAMENTOS_CHOICES_SEGUNDA = (
         (1, u'Primeira Vez'),
@@ -129,7 +129,7 @@ class TratamentoCadastroRapido(forms.Form):
     TRATAMENTOS_CHOICES = (
         (1, u'Primeira Vez'),
         (2, u'Manutenção'),
-        (3, u'Sala 4')
+        (3, u'Sala 5')
     )
     
     tratamentos = forms.MultipleChoiceField(choices=TRATAMENTOS_CHOICES, widget=forms.CheckboxSelectMultiple, required=False)
