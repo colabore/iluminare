@@ -33,14 +33,18 @@ def regras_gerais_atendidas(paciente, tratamento):
     ats = Atendimento.objects.filter(paciente = paciente, status='A').order_by('-instancia_tratamento__data')
     dic_retorno = {'sucesso':False, 'mensagem':None}
 
-    # último atendimento na casa há mais de 3 meses
-    if tratamento.descricao_basica in ['Sala 1', 'Sala 2', 'Sala 3', 'Sala 5']:
+    # somente os tratamentos nas salas 1, 2, 3 e 4 são verificados, pois qualquer paciente pode fazer check-in na
+    # quinta-feira na sala 5.
+    if tratamento.descricao_basica in ['Sala 1', 'Sala 2', 'Sala 3', 'Sala 4']:
         if len(ats) == 0:
             dic_retorno['mensagem']='Paciente sem atendimentos registrados. Deve retornar para as segundas-feiras'
             return dic_retorno
         else:
+            # último atendimento na casa há mais de 3 meses
+            # é necessário ajustar esse regra para ficar mais genérica. No caso do início do ano, quando 
+            # voltamos de 1 mês e meio de recesso, essa regra precisa ser ajustada.
             if ats[0].instancia_tratamento.data < datetime.today().date() - timedelta(days=90):
-                dic_retorno['mensagem']='Último atendimento realizado há mais de 3 meses. Deve retornar para as segundas-feiras'
+                dic_retorno['mensagem']='Último atendimento realizado há mais de 3 meses. Encaminhar paciente para a coordenação.'
                 return dic_retorno
         
         
@@ -60,7 +64,7 @@ def regras_gerais_atendidas(paciente, tratamento):
                    dic_retorno['mensagem']='Paciente ainda não finalizou as manutenções da segunda-feira.'
                    return dic_retorno
     
-    # caso feliz
+    # caso feliz :)
     dic_retorno['sucesso']=True
     return dic_retorno
 
