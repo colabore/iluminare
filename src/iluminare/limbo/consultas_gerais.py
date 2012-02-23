@@ -195,6 +195,62 @@ def relatorio_trabalhos():
     gera_csv(lista_rotulos, lista_retorno, "relatorio_trabalhos.csv")
 
 
+def relatorio_atendimentos_por_sala(ano=2011):
+    """
+        Gera um arquivo CSV com a quantidade atendimentos por sala para cada data.
+        Parametros: 
+        - ano: a partir de..
+    """
+    
+    lista_salas = ["Sala 1", "Sala 2", "Sala 3", "Sala 4", "Sala 5"]
+    lista_rotulos = ["Data"] + lista_salas
+    lista_rotulos = lista_rotulos + ["Todos"]
+    
+    # listar datas
+    # no caso, serão as quintas feiras de 01/01/2011 até agora.
+    lista_datas = []
+    data_inicial = datetime(ano, 1,1).date()
+    data_final = datetime.today().date()
+    
+    a = data_inicial
+    while a <= data_final:
+        if a.weekday()==3:
+            lista_datas.append(a)
+        a = a + timedelta(1)
+    
+    lista_dados = []
+    for d in lista_datas:
+        lista_linha = []
+        lista_linha.append(str(d))
+        total = 0
+        for s in lista_salas:
+            # consulta
+            ats = Atendimento.objects.filter(instancia_tratamento__data = d, \
+                instancia_tratamento__tratamento__descricao_basica = s, status = 'A')
+            lista_linha.append(len(ats))
+            total += len(ats)
+
+        lista_linha.append(total)
+        lista_dados.append(lista_linha)
+    
+    gera_csv(lista_rotulos, lista_dados, "relatorio.csv")
+
+
+def histograma_horarios():
+    """
+        Plota um histograma com os horários de chegada dos pacientes
+    """
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    data = datetime(2011, 12,8)
+    ats = Atendimento.objects.filter(instancia_tratamento__data = data)
+    horas = [a.hora_chegada.hour*60 + a.hora_chegada.minute for a in ats]
+    plt.hist(horas, 25)
+    plt.show()
+    
+
+
 def relatorio_atendimentos_basico():
     ats = Atendimento.objects.all()
     # 17 campos
