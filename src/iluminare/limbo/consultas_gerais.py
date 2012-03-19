@@ -251,8 +251,8 @@ def histograma_horarios():
     
 
 
-def relatorio_atendimentos_basico():
-    ats = Atendimento.objects.all()
+def relatorio_atendimentos_basico(ano=2012):
+    ats = Atendimento.objects.filter(instancia_tratamento__data__year=ano)
     # 17 campos
     lista_rotulos = ["Id Atendimento", #1
                     "Nome Paciente", #2
@@ -387,4 +387,42 @@ def retorna_trabalhos_trabalhadores():
         lista.append(t.hora_inicio)
         lista.append(t.hora_final)
         spamWriter.writerow(lista)
+        
+from django.utils.encoding import smart_str
+
+def retorna_criancas():
+    """
+        Salva arquivo com listagem de crianças com nome, tratamento atual e data de último atendimento.
+    """
+    d = DetalhePrioridade.objects.filter(tipo='C')
+    lista = []
+    f = open(dir_log+'criancas.csv', 'w')
+    for c in d:
+        print c.paciente.nome
+        l1 = []
+        l1.append(c.paciente.nome)
+        l_tp_ativos = []
+        for tp in c.paciente.tratamentopaciente_set.values():
+            if tp['status'] == 'A':
+                l_tp_ativos.append(tp)
+        if len(l_tp_ativos) > 0:
+            l1.append(Tratamento.objects.get(id=l_tp_ativos[0]['tratamento_id']).descricao_basica)
+        else:
+            l1.append('')
+        try:
+            it = InstanciaTratamento.objects.raw("""select it.* from paciente_paciente as p
+                join atendimento_atendimento as ate
+                    on p.id = ate.paciente_id
+                join tratamento_instanciatratamento as it
+                    on ate.instancia_tratamento_id = it.id
+                where p.id = %d and ate.status = 'A'
+                order by it.data desc
+                limit 1;""" % c.paciente.id)[0]
+            l1.append(str(it.data))
+        except:
+            l1.append('')
+        lista.append(l1)
+        f.write(smart_str(l1[0]) + ';' + smart_str(l1[1]) + ';' + l1[2] + '\n')
+        
+    f.close()
 
