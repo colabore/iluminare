@@ -14,7 +14,7 @@ class Funcao(models.Model):
         return self.descricao
 
 class Voluntario(models.Model):
-    TIPO = (('T', "Trabalhador"),('C',"Colaborador"))
+    TIPO = (('T', "Trabalhador"),('C',"Colaborador"),('A',"Apoio"))
     
     paciente        = models.ForeignKey(Paciente, null = False, blank = False)
     tipo            = models.CharField(max_length = 1, choices = TIPO)

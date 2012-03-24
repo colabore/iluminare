@@ -6,8 +6,14 @@
 {% if voluntario %}
     <img src="/static/img/worker-icon.gif"/>
     {% if voluntario.tipo == 'T' %} Trabalhador 
-    {% else %} {% if voluntario.tipo == 'C' %} Colaborador {% endif %}
+    {% else %}
+        {% if voluntario.tipo == 'C' %} Colaborador 
+        {% else %}
+            {% if voluntario.tipo == 'A' %} Apoio {% endif %}        
+        {% endif %}
     {% endif %}
+    
+    
     <br>
 {% endif %}
 
