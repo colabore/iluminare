@@ -12,6 +12,7 @@ from django.core.exceptions import MultipleObjectsReturned
 import re
 from django.utils.encoding import smart_str, smart_unicode
 
+
 dir_log = "/media/DATA/Iluminare/relatorios/"
 
 
@@ -352,49 +353,55 @@ def retorna_tratamentos_trabalhadores():
     gera_csv(lista_rotulos, lista_retorno, "consulta_tratamentos_trabalhadores.csv")
 
 
-def retorna_trabalhos_trabalhadores():
+def retorna_trabalhos_trabalhadores(data_inicial):
+    """
+        Retorna a listagens de objetos do tipo de trabalho para todos os trabalhadores
+        a partir da data_inicial
+        data_inicial é um objeto do tipo datetime.date
+    """
+    
     ts = Trabalho.objects.raw("""
         select tr.id, p.nome, tr.data, tr.hora_inicio, tr.hora_final from voluntario_trabalho tr
             join voluntario_voluntario v on v.id = tr.voluntario_id
             join paciente_paciente p on p.id = v.paciente_id;    
-    """)
+        """)
     
     spamWriter = csv.writer(open(dir_log+"consulta2.csv", 'wb'), delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
     spamWriter.writerow(["Id", "Nome", "Data", "Dia semana" , "Hora Inicio", "Hora Final"])
-    
+
     for t in ts:
-        lista = []
-        lista.append(t.id)
-        lista.append(smart_str(t.voluntario.paciente.nome))
-        lista.append(t.data)
-        dia_semana_int = t.data.weekday()
-        dia_semana_str = ""
-        if dia_semana_int == 0:
-            dia_semana_str = "Segunda"
-        elif dia_semana_int == 1:
-            dia_semana_str = "Terça"
-        elif dia_semana_int == 2:
-            dia_semana_str = "Quarta"
-        elif dia_semana_int == 3:
-            dia_semana_str = "Quinta"
-        elif dia_semana_int == 4:
-            dia_semana_str = "Sexta"
-        elif dia_semana_int == 5:
-            dia_semana_str = "Sábado"
-        elif dia_semana_int == 6:
-            dia_semana_str = "Domingo"
-        lista.append(smart_str(dia_semana_str))
-        lista.append(t.hora_inicio)
-        lista.append(t.hora_final)
-        spamWriter.writerow(lista)
+        if t.data >= data_inicial:
+            lista = []
+            lista.append(t.id)
+            lista.append(smart_str(t.voluntario.paciente.nome))
+            lista.append(t.data)
+            dia_semana_int = t.data.weekday()
+            dia_semana_str = ""
+            if dia_semana_int == 0:
+                dia_semana_str = "Segunda"
+            elif dia_semana_int == 1:
+                dia_semana_str = "Terça"
+            elif dia_semana_int == 2:
+                dia_semana_str = "Quarta"
+            elif dia_semana_int == 3:
+                dia_semana_str = "Quinta"
+            elif dia_semana_int == 4:
+                dia_semana_str = "Sexta"
+            elif dia_semana_int == 5:
+                dia_semana_str = "Sábado"
+            elif dia_semana_int == 6:
+                dia_semana_str = "Domingo"
+            lista.append(smart_str(dia_semana_str))
+            lista.append(t.hora_inicio)
+            lista.append(t.hora_final)
+            spamWriter.writerow(lista)
         
-from django.utils.encoding import smart_str
 
 def retorna_criancas():
     """
         Salva arquivo com listagem de crianças com nome, tratamento atual e data de último atendimento.
     """
-    d = DetalhePrioridade.objects.filter(tipo='C')
+    dpc = DetalhePrioridade.objects.filter(tipo='C')
     lista = []
     f = open(dir_log+'criancas.csv', 'w')
     for c in d:
@@ -426,3 +433,53 @@ def retorna_criancas():
         
     f.close()
 
+
+def _retorna_tratamento_ativo(paciente):
+    """
+        Retorna um tratamento ativo do paciente.
+        Por enquanto, ignoramos o fato de que um paciente pode ter mais de um tratamento ativo.
+    """
+    tps = paciente.tratamentopaciente_set.values()
+    for tp in tps:
+        if tp['status'] == 'A':
+            trat = Tratamento.objects.get(tp['tratamento_id'])
+            return trat
+
+    # se chegar aqui é porque não há tratamentos ativos. Logo, retorna None.
+    return None
+
+
+def retorna_lista_pacientes_fluido():
+    """
+        retorna listagem de pacientes da fluido que estão com mais de 12 tratamentos.
+        Falta ajsutar...
+        Notar que a fluido era sala 4 até 2011. Em 2012 passou a ser a sala 5.
+    """
+    pacientes = Paciente.objects.all()
+
+    # primeiramente eu identifico todos os pacientes que estão ativos na sala 5 (fluido).
+    lista = []
+    for p in pacientes:
+        tps = p.tratamentopaciente_set.values()
+        var = 0
+        for tp in tps:
+            if tp['status'] == 'A' and tp['tratamento_id'] == 5:
+                lista.append(p)
+                break
+
+    spamWriter = csv.writer(open(dir_log+"fluido12.csv", 'wb'), delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    spamWriter.writerow(["Id", "Nome", "Data", "Tratamento"])
+    
+    for paciente in lista:
+        ats = Atendimento.objects.filter(paciente = paciente)
+        #trat = _retorna_tratamento_ativo(paciente)
+        for at in ats:
+            l = []
+            if (at.instancia_tratamento.tratamento.id == 4 and at.instancia_tratamento.data < datetime(2012,1,1).date()) or \
+                (at.instancia_tratamento.tratamento.id == 5 and at.instancia_tratamento.data >= datetime(2012,1,1).date()):
+                l.append(at.id)
+                l.append(smart_str(paciente.nome))
+                l.append(at.instancia_tratamento.data)
+                l.append("Fluido")
+                spamWriter.writerow(l)
+            
