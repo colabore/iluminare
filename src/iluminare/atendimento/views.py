@@ -436,6 +436,16 @@ class ListagemGeralForm(forms.Form):
 
 	data = forms.DateField(initial = datetime.date.today)
 
+class ListagemGeralFechamentoForm(forms.Form):
+
+	def __init__(self, *args, **kwargs):
+        	super(ListagemGeralFechamentoForm, self).__init__(*args, **kwargs)
+        	self.fields['tratamento'].choices = [('-', '----------')] + [(tratamento.id, tratamento.descricao_basica) for tratamento in Tratamento.objects.all()]
+
+	data = forms.DateField(initial = datetime.date.today)
+	tratamento = forms.ChoiceField(choices=())
+
+
 	
 class RelatorioAtendimentoData(forms.Form):
 
@@ -588,6 +598,47 @@ def exibir_listagem_geral(request):
                             'mensagem': mensagem_erro,
                             'retorno':retorno,
                             'tratamento':tratamento})
+
+def exibir_listagem_geral_fechamento(request):
+
+    form_listagem = ListagemGeralFechamentoForm()
+    mensagem_erro = ''
+    retorno = [];
+    tratamento = ''
+
+    if request.method == 'POST':
+        form_listagem = ListagemGeralFechamentoForm(request.POST)
+
+        if form_listagem.is_valid():
+            data_in = form_listagem.cleaned_data['data']
+            tratamento_in = form_listagem.cleaned_data['tratamento']
+
+            if tratamento_in == '-':
+                atendimentos = Atendimento.objects.filter(instancia_tratamento__data = data_in).order_by('-hora_chegada')
+            else:
+                atendimentos = Atendimento.objects.filter(instancia_tratamento__data = data_in, \
+                    instancia_tratamento__tratamento__id = tratamento_in).order_by('-hora_chegada')
+                
+            
+            i = len(atendimentos)
+            for atendimento in atendimentos:
+                info_str = retornaInfo(atendimento)
+                retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 'info': info_str, 'prioridade': False, \
+                    'sala': atendimento.instancia_tratamento.tratamento.descricao_basica, 'cont':i, 'status':atendimento.status, \
+                    'observacao':atendimento.observacao})
+                i=i-1
+                
+
+            if not retorno:
+                mensagem_erro = 'Não há registros'
+        else:
+            mensagem_erro = 'Formulário inválido';
+
+    return render_to_response('listagem-diaria-geral-fechamento.html', {'form_listagem_fechamento':form_listagem, 
+                            'mensagem': mensagem_erro,
+                            'retorno':retorno,
+                            'tratamento':tratamento})
+
 
 def exibir_atendimentos_paciente(request, paciente_id, pagina = None):
 	lista_atendimentos = Atendimento.objects.filter(paciente__id = paciente_id).order_by('-instancia_tratamento__data')
