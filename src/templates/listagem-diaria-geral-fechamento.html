@@ -1,0 +1,94 @@
+{% extends "base.html"%}
+{% block content %}
+
+<style type="text/css">
+
+@PAGE landscape {size: landscape;}
+
+div .listagem_form {
+
+}
+table {
+	border-width: 1px;
+	border-spacing: 2px;
+	border-style: solid;
+	border-color: gray;
+	border-collapse: collapse;
+	background-color: white;    
+}
+
+table th {
+	border-width: 1px;
+	padding: 3px;
+	border-style: dotted;
+	border-color: gray;
+	background-color: white;
+}
+table td {
+	border-width: 1px;
+	padding: 3px;
+	border-style: dotted;
+	border-color: gray;
+	background-color: white;
+}
+
+</style>
+
+<form name="form_listagem_fechamento" method="POST" action="/atendimento/listagem-geral-fechamento/" >
+
+<table>
+       Data : {{ form_listagem_fechamento.data }}
+       Tratamento : {{ form_listagem_fechamento.tratamento }}
+        <input type="submit" value="Pesquisar"/>
+</table>
+<br>
+
+<table>
+
+	<table>
+	    
+		{% for atendimento in retorno %}
+            {% if forloop.first %}
+
+		      <tr>	
+				<th width="30" align="center"> # </th>	
+				<th width="40" align="center"> Conf. </th>	
+			    <th> Hora cheg. </th>
+			    <th> Sala </th>
+			    <th> Nome </th>
+			    <th> Info </th>
+			    <th> Observação </th>
+		      </tr>
+		      
+            {% endif %}
+			
+			  <tr>
+				<td align="center"> {{atendimento.cont}} </td>
+				
+				{% if atendimento.status == 'A' %}
+                    <td align="center"> <img src="/static/img/confirma_atendimento.png"/> </td>
+                {% else %} {% if atendimento.status == 'C' %}
+				    <font color=red>
+				    <td align="center"> <img src="/static/img/nao_confirma_atendimento.png"/> </td>
+                    </font>
+                {% endif %}
+				{% endif %}
+				
+				<td align="center"> {{atendimento.hora}} </td>
+				<td> {{atendimento.sala}} </td>
+				<td> {{atendimento.nome}} </td>
+				<td> {{atendimento.info}} </td>
+				<td> {{atendimento.observacao}} </td>
+			  </tr>
+		{% endfor %}
+	</table>
+</table>
+
+</form>
+
+
+
+
+
+
+{% endblock %}
