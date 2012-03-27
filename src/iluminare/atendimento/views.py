@@ -428,6 +428,7 @@ class ImprimirListagemForm(forms.Form):
 	tratamento = forms.ChoiceField(choices=())
 	data = forms.DateField(initial = datetime.date.today)
 	prioridade = forms.BooleanField(required = False)
+	voluntario = forms.BooleanField(required = False)
 
 class ListagemGeralForm(forms.Form):
 
@@ -496,6 +497,7 @@ def exibir_listagem(request, pagina = None):
             data_in = form_listagem.cleaned_data['data']
             tratamento_in = form_listagem.cleaned_data['tratamento']
             prioridade_in = form_listagem.cleaned_data['prioridade']
+            voluntario_in = form_listagem.cleaned_data['voluntario']
 
             tratamentos_marcados = InstanciaTratamento.objects.filter(tratamento__id  = tratamento_in, data = data_in)
             tratamento = Tratamento.objects.get(id=tratamento_in)
@@ -527,10 +529,24 @@ def exibir_listagem(request, pagina = None):
                         # garante que a pessoa que é acompanha é uma prioridade e que ela fez check-in no dia.
                         if dps and ats:
                             atendimentos_previstos.append(at)
-
+                
+                voluntarios = Voluntario.objects.filter(ativo=True)
+                pacientes_voluntarios = []
+                for v in voluntarios:
+                    pacientes_voluntarios.append(v.paciente)
+                    
                 for atendimento in atendimentos_previstos:
-                    info_str = retornaInfo(atendimento)
-                    retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 'info': info_str, 'prioridade': False})
+                    if voluntario_in:
+                        if atendimento.paciente in pacientes_voluntarios:
+                            info_str = retornaInfo(atendimento)
+                            retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, \
+                                'info': info_str, 'prioridade': False})
+                    else:
+                        info_str = retornaInfo(atendimento)
+                        retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, \
+                            'info': info_str, 'prioridade': False})
+                        
+                            
             retorno_com_hora = [];
             retorno_sem_hora = [];
 
