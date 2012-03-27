@@ -366,16 +366,29 @@ def retorna_trabalhos_trabalhadores(data_inicial):
             join paciente_paciente p on p.id = v.paciente_id;    
         """)
     
-    spamWriter = csv.writer(open(dir_log+"consulta2.csv", 'wb'), delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-    spamWriter.writerow(["Id", "Nome", "Data", "Dia semana" , "Hora Inicio", "Hora Final"])
+    spamWriter = csv.writer(open(dir_log+"trabalhos2.csv", 'wb'), delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    spamWriter.writerow(["Id", #1
+                        "Nome", #2
+                        "Tipo", #3
+                        "Tratamento(s)", #4
+                        "Data", #5
+                        "Dia semana", #6
+                        "Hora Inicio", #7
+                        "Hora Final"]) #8
 
     for t in ts:
         if t.data >= data_inicial:
             lista = []
-            lista.append(t.id)
-            lista.append(smart_str(t.voluntario.paciente.nome))
-            lista.append(t.data)
-            dia_semana_int = t.data.weekday()
+            lista.append(t.id) #1
+            lista.append(smart_str(t.voluntario.paciente.nome)) #2
+            lista.append(smart_str(t.voluntario.tipo)) #3
+            tps = TratamentoPaciente.objects.filter(paciente = t.voluntario.paciente, status = 'A')
+            lista_tratamentos = ''
+            for tp in tps:
+                lista_tratamentos = tp.tratamento.descricao_basica + ', ' + lista_tratamentos
+            lista.append(lista_tratamentos) #4
+            lista.append(t.data) #5
+            dia_semana_int = t.data.weekday() 
             dia_semana_str = ""
             if dia_semana_int == 0:
                 dia_semana_str = "Segunda"
@@ -391,9 +404,9 @@ def retorna_trabalhos_trabalhadores(data_inicial):
                 dia_semana_str = "Sábado"
             elif dia_semana_int == 6:
                 dia_semana_str = "Domingo"
-            lista.append(smart_str(dia_semana_str))
-            lista.append(t.hora_inicio)
-            lista.append(t.hora_final)
+            lista.append(smart_str(dia_semana_str)) #6
+            lista.append(t.hora_inicio) #7
+            lista.append(t.hora_final) #8
             spamWriter.writerow(lista)
         
 
