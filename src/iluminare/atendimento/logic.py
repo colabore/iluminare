@@ -68,13 +68,10 @@ def regras_gerais_atendidas(paciente, tratamento):
     dic_retorno['sucesso']=True
     return dic_retorno
 
-def checkin_paciente(paciente, tratamento, senha_str, redirecionar, prioridade_bool, \
+def checkin_paciente(paciente, tratamento, senha_str, prioridade_bool, \
         observacao_prioridade_str, forcar_checkin):
 
     dic_retorno = {'sucesso':False,'mensagem':None}
-    
-    if redirecionar != None:
-        tratamento = redirecionar
     
     if tratamento != None:
     
