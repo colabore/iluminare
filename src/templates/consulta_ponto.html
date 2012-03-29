@@ -1,0 +1,88 @@
+{% extends "base.html"%}
+{% block content %}
+
+<style type="text/css">
+
+@PAGE landscape {size: landscape;}
+
+div .listagem_form {
+
+}
+table {
+	border-width: 1px;
+	border-spacing: 2px;
+	border-style: solid;
+	border-color: gray;
+	border-collapse: collapse;
+	background-color: white;    
+}
+
+table th {
+	border-width: 1px;
+	padding: 3px;
+	border-style: dotted;
+	border-color: gray;
+	background-color: white;
+}
+table td {
+	border-width: 1px;
+	padding: 3px;
+	border-style: dotted;
+	border-color: gray;
+	background-color: white;
+}
+
+</style>
+
+<form name="form" method="POST" action="/voluntario/consulta-ponto/" >
+
+<table>
+       Data : {{ form.data }}
+        <input type="submit" value="Pesquisar"/>
+</table>
+<br>
+
+<table>
+
+	<table>
+	    
+		{% for voluntario in retorno %}
+            {% if forloop.first %}
+
+		      <tr>	
+				<th width="40" align="center"> P/F </th>	
+			    <th> Nome </th>
+			    <th> Tipo </th>
+			    <th> Hora Chegada </th>
+			    <th> Hora Saída </th>
+		      </tr>
+		      
+            {% endif %}
+			
+			  <tr>
+				{% if voluntario.presente == 'P' %}
+                    <td align="center"> <img src="/static/img/confirma_atendimento.png"/> </td>
+                {% else %} {% if voluntario.presente == 'F' %}
+				    <font color=red>
+				    <td align="center"> <img src="/static/img/nao_confirma_atendimento.png"/> </td>
+                    </font>
+                {% endif %}
+				{% endif %}
+				
+				<td align="center"> {{voluntario.nome}} </td>
+				<td> {{voluntario.tipo}} </td>
+				<td> {{voluntario.hora_chegada}} </td>
+				<td> {{voluntario.hora_saida}} </td>
+			  </tr>
+		{% endfor %}
+	</table>
+</table>
+
+</form>
+
+
+
+
+
+
+{% endblock %}
