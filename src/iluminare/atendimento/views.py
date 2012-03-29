@@ -32,20 +32,16 @@ class CheckinPacienteForm(forms.ModelForm):
         ('E', 'Entrada'),
         ('S', 'Saída'),
     )
-    redirecionar        = forms.ModelChoiceField(queryset=Tratamento.objects.all(), required=False)
     tratamento          = forms.ModelChoiceField(queryset=Tratamento.objects.all(), required=False)
     ponto_voluntario    = forms.ChoiceField(required=False, choices=PONTO_CHOICES)
     forcar_checkin      = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kargs):
         super(CheckinPacienteForm, self).__init__(*args, **kargs)
-        self.fields.keyOrder = ['tratamento', 'redirecionar', 'prioridade', 'observacao_prioridade', \
+        self.fields.keyOrder = ['tratamento', 'prioridade', 'observacao_prioridade', \
             'senha', 'ponto_voluntario', 'forcar_checkin']
 
     def update_tratamentos(self, paciente):
-        tratamentos = [tp.tratamento for tp in paciente.tratamentopaciente_set.filter(status='A')]
-        ids_tratamentos = [t.id for t in tratamentos]
-        self.fields['tratamento'].queryset = Tratamento.objects.filter(id__in=ids_tratamentos)
 
         volunt = False
         volunt_entrada = False
@@ -66,33 +62,34 @@ class CheckinPacienteForm(forms.ModelForm):
         # AJUSTANDO A TELA PARA AS SEGUNDAS
         if datetime.date.today().weekday() == 0:
             lista_trat = Tratamento.objects.filter(dia_semana = 'S')
-            self.fields['redirecionar'].queryset = lista_trat
+            self.fields['tratamento'].queryset = lista_trat
             
-            # só atualiza a opção inicial do campo redirecionar na segunda para Manutenção se não for voluntário.
+            # só atualiza a opção inicial do campo tratamento na segunda para Manutenção se não for voluntário.
             # Em geral, os voluntários não se tratam nas segundas. Logo, só farão os pontos de entrada e saída.
             if not volunt: 
                 trat_manut = Tratamento.objects.filter(descricao_basica__startswith = "Manu")
                 if len(trat_manut) > 0:
                     manut = trat_manut[0]
                     if manut in lista_trat:
-                        self.fields['redirecionar'].initial = manut
+                        self.fields['tratamento'].initial = manut
                     
             
             
         # AJUSTANDO A TELA PARA AS QUINTAS            
         elif datetime.date.today().weekday() == 3:
-            self.fields['redirecionar'].queryset = Tratamento.objects.filter(dia_semana = 'N')
+            self.fields['tratamento'].queryset = Tratamento.objects.filter(dia_semana = 'N')
             
             # só atualiza a opção inicial do campo tratamento na quinta se não for voluntário 
             # ou for um voluntário entrando na casa.
             # A ideia é que na saída só haja para o voluntário a opção ponto de saída.
             if not volunt or volunt_entrada:
+                tratamentos = [tp.tratamento for tp in paciente.tratamentopaciente_set.filter(status='A')]
                 if len(tratamentos) > 0:
                     self.fields['tratamento'].initial = tratamentos[0]
                 
         # AJUSTANDO A TELA PARA OUTROS DIAS (em geral utilizado para os testes)
         else:
-            self.fields['redirecionar'].queryset = Tratamento.objects.all()
+            self.fields['tratamento'].queryset = Tratamento.objects.all()
 
         # ATUALIZANDO LABEL DA OBSERVAÇÃO PRIORIDADE
         self.fields['observacao_prioridade'].label = "Info. Complementar"
@@ -119,7 +116,6 @@ def ajax_checkin_paciente(request, paciente_id):
         if checkin_paciente_form.is_valid():
             tratamento              = checkin_paciente_form.cleaned_data['tratamento']
             senha                   = checkin_paciente_form.cleaned_data['senha']
-            redirecionar            = checkin_paciente_form.cleaned_data['redirecionar']
             prioridade              = checkin_paciente_form.cleaned_data['prioridade']
             observacao_prioridade   = checkin_paciente_form.cleaned_data['observacao_prioridade']
             ponto_voluntario        = checkin_paciente_form.cleaned_data['ponto_voluntario']
@@ -129,17 +125,17 @@ def ajax_checkin_paciente(request, paciente_id):
             dic_checkin = None
             msg_validacao = None
 
-            if redirecionar == None and tratamento == None and ponto_voluntario == 'N':
+            if tratamento == None and ponto_voluntario == 'N':
                 msg_validacao = "Favor informar o tratamento ou confirmar o ponto do voluntário"
 
-            if ponto_voluntario == 'S' and (redirecionar != None or tratamento != None):
+            if ponto_voluntario == 'S' and tratamento != None:
                 msg_validacao = "Operação não realizada: Para efetuar o ponto de saída do voluntário é necessário que \
                     todos os outros campos estejam vazios"
 
             try:
-                if msg_validacao == None and (tratamento or redirecionar):
+                if msg_validacao == None and tratamento:
                     dic_checkin = logic_atendimento.checkin_paciente(paciente, tratamento, \
-                        senha, redirecionar, prioridade, observacao_prioridade, forcar_checkin)
+                        senha, prioridade, observacao_prioridade, forcar_checkin)
                 
                 if msg_validacao == None and ponto_voluntario != 'N':
                     dic_ponto = voluntario_logic.ponto_voluntario(paciente, ponto_voluntario)
