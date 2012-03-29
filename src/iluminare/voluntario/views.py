@@ -35,6 +35,14 @@ class FiltroPontoForm(forms.Form):
 
     data = forms.DateField(initial = datetime.date.today)
 
+class FiltroPontoConsultaForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        	super(FiltroPontoConsultaForm, self).__init__(*args, **kwargs)
+
+    data = forms.DateField(initial = datetime.date.today)
+
+
 class PontoForm(forms.ModelForm):
 
     confirma = forms.BooleanField(required = False, label= 'Conf.')
@@ -133,4 +141,43 @@ def registra_ponto(request):
     return render_to_response('registra_ponto.html', {'filtro_form':filtro_form, 'voluntarios':voluntarios,\
         'mensagem': voluntarios and voluntarios.errors})
     
+
+def consulta_ponto(request):
+
+    form = FiltroPontoConsultaForm()
+    mensagem_erro = ''
+    retorno = [];
+
+    if request.method == "POST":
+        form = FiltroPontoConsultaForm(request.POST)
+
+        if form.is_valid():
+            data = form.cleaned_data['data']
+            
+            voluntarios = Voluntario.objects.filter(ativo = True)
+            
+            for v in voluntarios:
+                trabalho = Trabalho.objects.filter(voluntario = v, data=data)
+                hc = '-'
+                hs = '-'
+                if len(trabalho) == 1:
+                    
+                    if trabalho[0].hora_inicio:
+                        hc = trabalho[0].hora_inicio
+                    if trabalho[0].hora_final:
+                        hs = trabalho[0].hora_final
+                    
+                    retorno.append({'nome': v.paciente.nome, 'tipo': v.tipo, 'presente': 'P', \
+                        'hora_chegada': hc, 'hora_saida': hs})
+                else:
+                    retorno.append({'nome': v.paciente.nome, 'tipo': v.tipo, 'presente': 'F', \
+                        'hora_chegada': hc, 'hora_saida': hs})
+            
+        else:
+            mensagem_erro = 'Formulário inválido'
+
+    
+    return render_to_response('consulta_ponto.html', {'form':form, 'retorno':retorno,'mensagem': mensagem_erro})
+    
+
 
