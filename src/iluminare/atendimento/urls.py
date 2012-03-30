@@ -11,5 +11,7 @@ urlpatterns = patterns('iluminare.atendimento.views',
 	(r'^relatorio/$', 'exibir_relatorio_atendimento'),
 	(r'^listagem-geral/$', 'exibir_listagem_geral'),
 	(r'^listagem-geral-fechamento/$', 'exibir_listagem_geral_fechamento'),
+	(r'^relatorio-atendimentos-dia/$', 'relatorio_atendimentos_dia'),
+	(r'^relatorio-atendimentos-mes/$', 'relatorio_atendimentos_mes'),
 )
 

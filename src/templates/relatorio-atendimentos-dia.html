@@ -1,0 +1,78 @@
+{% extends "base.html"%}
+{% block content %}
+
+<style type="text/css">
+
+@PAGE landscape {size: landscape;}
+
+div .listagem_form {
+
+}
+table {
+	border-width: 1px;
+	border-spacing: 2px;
+	border-style: solid;
+	border-color: gray;
+	border-collapse: collapse;
+	background-color: white;    
+}
+
+table th {
+	border-width: 1px;
+	padding: 3px;
+	border-style: dotted;
+	border-color: gray;
+	background-color: white;
+}
+table td {
+	border-width: 1px;
+	padding: 3px;
+	border-style: dotted;
+	border-color: gray;
+	background-color: white;
+}
+
+</style>
+
+<form name="form" method="POST" action="/atendimento/relatorio-atendimentos-dia/" >
+
+<table>
+       Data : {{ form.data }}
+        <input type="submit" value="Pesquisar"/>
+</table>
+<br>
+
+<table>
+
+	<table>
+	    
+		{% for dado in retorno %}
+            {% if forloop.first %}
+
+		      <tr>	
+				<th align="center"> Tratamento </th>	
+				<th align="center"> Confirmados </th>	
+				<th align="center"> Não Confirmados </th>	
+				<th align="center"> Total </th>	
+		      </tr>
+		      
+            {% endif %}
+			
+			  <tr>
+				<td align="center"> {{dado.tratamento}} </td>
+				<td align="center"> {{dado.numero_conf}} </td>
+				<td align="center"> {{dado.numero_nconf}} </td>
+				<td align="center"> {{dado.numero_total}} </td>
+			  </tr>
+		{% endfor %}
+	</table>
+</table>
+
+</form>
+
+
+
+
+
+
+{% endblock %}

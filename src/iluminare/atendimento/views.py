@@ -25,6 +25,9 @@ from django.utils.encoding import smart_str
 
 from django.db.models import Q
 
+from sets import Set
+from django.db.models import Count
+
 class CheckinPacienteForm(forms.ModelForm):
 
     PONTO_CHOICES = (
@@ -465,8 +468,13 @@ class ListagemGeralFechamentoForm(forms.Form):
 	data = forms.DateField(initial = datetime.date.today)
 	tratamento = forms.ChoiceField(choices=())
 
+class RelatorioAtendimentosConsolidadoDiaForm(forms.Form):
 
-	
+	def __init__(self, *args, **kwargs):
+        	super(RelatorioAtendimentosConsolidadoDiaForm, self).__init__(*args, **kwargs)
+
+	data = forms.DateField(initial = datetime.date.today)
+
 class RelatorioAtendimentoData(forms.Form):
 
 	def __init__(self, *args, **kwargs):
@@ -484,6 +492,8 @@ class RelatorioAtendimentoData(forms.Form):
 
 	data = forms.DateField(initial = datetime.date.today)
 	tratamento = forms.ChoiceField(choices=())
+
+
 	
 
 def exibir_relatorio_atendimento(rquest):
@@ -689,5 +699,75 @@ def exibir_atendimentos_paciente(request, paciente_id, pagina = None):
 	
 	return render_to_response('lista-atendimentos.html',{'mensagem': mensagem_erro, 'pagina_atual': pagina_atual, 'paciente_id': paciente_id, \
 	    'nome_paciente': paciente.nome })	
-	
-		
+
+def relatorio_atendimentos_dia(request):
+
+    form = RelatorioAtendimentosConsolidadoDiaForm()
+    mensagem_erro = ''
+    retorno = [];
+    tratamento = ''
+
+    if request.method == 'POST':
+        form = RelatorioAtendimentosConsolidadoDiaForm(request.POST)
+
+        if form.is_valid():
+            data_in = form.cleaned_data['data']
+
+            # retorna uma lista de dicionários
+            aten_conf = Atendimento.objects.filter(instancia_tratamento__data = data_in, \
+                status='A').values('instancia_tratamento__tratamento').annotate(numero=Count('instancia_tratamento__tratamento'))
+
+            aten_nconf = Atendimento.objects.filter(instancia_tratamento__data = data_in, \
+                status='C').values('instancia_tratamento__tratamento').annotate(numero=Count('instancia_tratamento__tratamento'))
+
+            lista_ids_tratamentos = []
+            for at in aten_conf:
+                if at['instancia_tratamento__tratamento'] not in lista_ids_tratamentos:
+                    lista_ids_tratamentos.append(at['instancia_tratamento__tratamento'])
+
+            for at in aten_nconf:
+                if at['instancia_tratamento__tratamento'] not in lista_ids_tratamentos:
+                    lista_ids_tratamentos.append(at['instancia_tratamento__tratamento'])
+
+            # gera uma única lista com os tratamentos
+            conjunto = Set(lista_ids_tratamentos)
+            lista_ids_tratamentos = list(conjunto)
+            
+            total_conf = 0
+            total_nconf = 0
+            
+            for tratamento_id in lista_ids_tratamentos:
+                numero_conf = 0
+                numero_nconf = 0
+                for at in aten_conf:
+                    if at['instancia_tratamento__tratamento'] == tratamento_id:
+                        numero_conf = at['numero']
+                        total_conf += numero_conf
+                        break
+
+                for at in aten_nconf:
+                    if at['instancia_tratamento__tratamento'] == tratamento_id:
+                        numero_nconf = at['numero']
+                        total_nconf += numero_nconf
+                        break
+
+                tratamento = Tratamento.objects.get(id=tratamento_id)
+                numero_total = numero_conf + numero_nconf
+                
+                retorno.append({'tratamento': tratamento.descricao_basica, 'numero_conf': numero_conf, \
+                    'numero_nconf': numero_nconf, 'numero_total': numero_total})
+            
+            
+            if not retorno:
+                mensagem_erro = 'Não há registros'
+            else:
+                retorno.append({'tratamento': 'Total', 'numero_conf': total_conf, \
+                    'numero_nconf': total_nconf, 'numero_total': total_conf+total_nconf})
+                
+        else:
+            mensagem_erro = 'Formulário inválido';
+
+    return render_to_response('relatorio-atendimentos-dia.html', {'form':form, 
+                            'mensagem': mensagem_erro,
+                            'retorno':retorno})
+
