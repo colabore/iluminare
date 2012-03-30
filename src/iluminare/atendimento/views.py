@@ -39,7 +39,7 @@ class CheckinPacienteForm(forms.ModelForm):
     def __init__(self, *args, **kargs):
         super(CheckinPacienteForm, self).__init__(*args, **kargs)
         self.fields.keyOrder = ['tratamento', 'prioridade', 'observacao_prioridade', \
-            'senha', 'ponto_voluntario', 'forcar_checkin']
+            'ponto_voluntario', 'forcar_checkin']
 
     def update_tratamentos(self, paciente):
 
@@ -97,7 +97,7 @@ class CheckinPacienteForm(forms.ModelForm):
         
     class Meta:
         model = Atendimento
-        exclude = ['observacao', 'status', 'hora_atendimento', 'hora_chegada', 'instancia_tratamento', 'paciente']
+        exclude = ['observacao', 'status', 'hora_atendimento', 'hora_chegada', 'instancia_tratamento', 'paciente', 'senha']
 
 def ajax_checkin_paciente(request, paciente_id):
     paciente = get_object_or_404(Paciente, pk=paciente_id)
@@ -115,7 +115,6 @@ def ajax_checkin_paciente(request, paciente_id):
         checkin_paciente_form = CheckinPacienteForm(request.POST)
         if checkin_paciente_form.is_valid():
             tratamento              = checkin_paciente_form.cleaned_data['tratamento']
-            senha                   = checkin_paciente_form.cleaned_data['senha']
             prioridade              = checkin_paciente_form.cleaned_data['prioridade']
             observacao_prioridade   = checkin_paciente_form.cleaned_data['observacao_prioridade']
             ponto_voluntario        = checkin_paciente_form.cleaned_data['ponto_voluntario']
@@ -131,6 +130,9 @@ def ajax_checkin_paciente(request, paciente_id):
             if ponto_voluntario == 'S' and tratamento != None:
                 msg_validacao = "Operação não realizada: Para efetuar o ponto de saída do voluntário é necessário que \
                     todos os outros campos estejam vazios"
+            
+            # preciso ajustar a senha..
+            senha = 100
 
             try:
                 if msg_validacao == None and tratamento:
