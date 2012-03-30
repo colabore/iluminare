@@ -68,7 +68,7 @@ def regras_gerais_atendidas(paciente, tratamento):
     dic_retorno['sucesso']=True
     return dic_retorno
 
-def checkin_paciente(paciente, tratamento, senha_str, prioridade_bool, \
+def checkin_paciente(paciente, tratamento, senha, prioridade_bool, \
         observacao_prioridade_str, forcar_checkin):
 
     dic_retorno = {'sucesso':False,'mensagem':None}
@@ -94,7 +94,7 @@ def checkin_paciente(paciente, tratamento, senha_str, prioridade_bool, \
             dic_regras = regras_gerais_atendidas(paciente, tratamento)
             if dic_regras['sucesso'] or forcar_checkin:
                 if horario_autorizado(tratamento) or forcar_checkin:
-                    at = Atendimento(instancia_tratamento = it, paciente = paciente, prioridade = prioridade_bool, senha = senha_str, \
+                    at = Atendimento(instancia_tratamento = it, paciente = paciente, prioridade = prioridade_bool, senha = senha, \
                         observacao_prioridade = observacao_prioridade_str, status = 'C')
                     at.hora_chegada=datetime.now()
                     at.save()
