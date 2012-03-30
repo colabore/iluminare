@@ -100,35 +100,35 @@ table td {
             {% if forloop.first %}
 
 		      <tr>	
-				<th width="30" align="center"> # </th>		
-			    <th width="30"> C </th>
-			    <th width="30"> A </th>	
+				<th width="50" align="center"> Senha </th>		
+			    <th width="30"> Ch </th>
 			    <th> Hora cheg. </th>
-			    <th width="200"> Nome </th>
+			    <th width="260"> Nome </th>
 			    <th> Info </th>
 			    <th> Observação </th>
+			    <th width="30"> At </th>	
 		      </tr>
 		      
             {% endif %}
 			
 			 {% if atendimento.prioridade %} 
 			 <tr>
-				<td class = 'prioridade' align="center"> {{atendimento.id}} </td>
+				<td class = 'prioridade' align="center"> {{atendimento.senha}} </td>
 				<td class = 'prioridade' ></td>
-				<td class = 'prioridade'></td>
 				<td class = 'prioridade' align="center"> {{atendimento.hora}} </td>
 				<td class = 'prioridade'> {{atendimento.nome}} </td>
 				<td class = 'prioridade'> {{atendimento.info}} </td>
 				<td class = 'prioridade'></td>
+				<td class = 'prioridade'></td>
 			  </tr>
 			 {% else %}
 			  <tr>
-				<td align="center"> {{atendimento.id}} </td>
-				<td></td>
+				<td align="center"> {{atendimento.senha}} </td>
 				<td></td>
 				<td align="center"> {{atendimento.hora}} </td>
 				<td> {{atendimento.nome}} </td>
 				<td> {{atendimento.info}} </td>
+				<td></td>
 				<td></td>
 			  </tr>
 			 {% endif %}
