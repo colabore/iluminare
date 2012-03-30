@@ -51,7 +51,7 @@ table td {
             {% if forloop.first %}
 
 		      <tr>	
-				<th width="30" align="center"> # </th>	
+				<th width="30" align="center"> Senha </th>	
 				<th width="40" align="center"> Conf. </th>	
 			    <th> Hora cheg. </th>
 			    <th> Sala </th>
@@ -63,7 +63,7 @@ table td {
             {% endif %}
 			
 			  <tr>
-				<td align="center"> {{atendimento.cont}} </td>
+				<td align="center"> {{atendimento.senha}} </td>
 				
 				{% if atendimento.status == 'A' %}
                     <td align="center"> <img src="/static/img/confirma_atendimento.png"/> </td>

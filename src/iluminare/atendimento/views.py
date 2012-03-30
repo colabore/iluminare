@@ -39,7 +39,7 @@ class CheckinPacienteForm(forms.ModelForm):
     def __init__(self, *args, **kargs):
         super(CheckinPacienteForm, self).__init__(*args, **kargs)
         self.fields.keyOrder = ['tratamento', 'prioridade', 'observacao_prioridade', \
-            'senha', 'ponto_voluntario', 'forcar_checkin']
+            'ponto_voluntario', 'forcar_checkin']
 
     def update_tratamentos(self, paciente):
 
@@ -97,7 +97,25 @@ class CheckinPacienteForm(forms.ModelForm):
         
     class Meta:
         model = Atendimento
-        exclude = ['observacao', 'status', 'hora_atendimento', 'hora_chegada', 'instancia_tratamento', 'paciente']
+        exclude = ['observacao', 'status', 'hora_atendimento', 'hora_chegada', 'instancia_tratamento', 'paciente', 'senha']
+
+
+def proxima_senha(tratamento):
+    """
+        Retorna um inteiro que representa a próxima senha a ser cadastrada.
+        Para um mesmo dia, teremos uma contagem para cada tratamento em andamento..
+        
+    """
+    senha = None
+    ult_at = Atendimento.objects.filter(instancia_tratamento__data = datetime.datetime.today().date(), \
+        instancia_tratamento__tratamento = tratamento).order_by('-senha')
+        
+    if len(ult_at) == 0:
+        senha = 1
+    else:
+        senha = ult_at[0].senha + 1
+    
+    return senha
 
 def ajax_checkin_paciente(request, paciente_id):
     paciente = get_object_or_404(Paciente, pk=paciente_id)
@@ -115,7 +133,6 @@ def ajax_checkin_paciente(request, paciente_id):
         checkin_paciente_form = CheckinPacienteForm(request.POST)
         if checkin_paciente_form.is_valid():
             tratamento              = checkin_paciente_form.cleaned_data['tratamento']
-            senha                   = checkin_paciente_form.cleaned_data['senha']
             prioridade              = checkin_paciente_form.cleaned_data['prioridade']
             observacao_prioridade   = checkin_paciente_form.cleaned_data['observacao_prioridade']
             ponto_voluntario        = checkin_paciente_form.cleaned_data['ponto_voluntario']
@@ -131,9 +148,10 @@ def ajax_checkin_paciente(request, paciente_id):
             if ponto_voluntario == 'S' and tratamento != None:
                 msg_validacao = "Operação não realizada: Para efetuar o ponto de saída do voluntário é necessário que \
                     todos os outros campos estejam vazios"
-
+            
             try:
                 if msg_validacao == None and tratamento:
+                    senha = proxima_senha(tratamento)
                     dic_checkin = logic_atendimento.checkin_paciente(paciente, tratamento, \
                         senha, prioridade, observacao_prioridade, forcar_checkin)
                 
@@ -301,7 +319,8 @@ def retornaInfo(atendimento):
     
 class ConfirmacaoAtendimentoForm(forms.ModelForm):
     observacao = forms.CharField(required=False)
-    nome = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly'}))
+    senha = forms.IntegerField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'5'}))
+    nome = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'25'}))
     hora_chegada = forms.TimeField(label='Cheg.',required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'6'}))
     confirma = forms.BooleanField(required = False, label= 'Conf.')
     redireciona = forms.ModelChoiceField(label='Redir.',queryset=Tratamento.objects.none(), required=False)
@@ -310,7 +329,7 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ConfirmacaoAtendimentoForm, self).__init__(*args, **kwargs)
-        self.fields.keyOrder = ['confirma','nome', 'hora_chegada','observacao', 'frequencia', 'redireciona', 'encaminha']
+        self.fields.keyOrder = ['confirma', 'senha', 'nome', 'hora_chegada','observacao', 'frequencia', 'redireciona', 'encaminha']
         atendimento = kwargs.pop('instance')
         
         tratamento_desc = atendimento.instancia_tratamento.tratamento.descricao_basica
@@ -334,6 +353,9 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
         # CARREGA O NOME DO PACIENTE
         self.fields['nome'].initial = atendimento.paciente.nome
         
+        # CARREGA A SENHA DO DIA DO PACIENTE
+        self.fields['senha'].initial = atendimento.senha
+        
         # CARREGA STATUS DO ATENDIMENTO
         if atendimento.status == 'A':
             status = True
@@ -349,11 +371,12 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
         frequencia_in = self.cleaned_data['frequencia']
         
         if redireciona_in:
+            atendimento_atual_str = atendimento.instancia_tratamento.tratamento.descricao_basica
             its = InstanciaTratamento.objects.filter(data=atendimento.instancia_tratamento.data, tratamento__descricao_basica=redireciona_in)
             if its and its[0] != atendimento.instancia_tratamento:
                 atendimento.instancia_tratamento = its[0]
                 obs = atendimento.observacao 
-                atendimento.observacao = obs + '[Hoje foi para '+str(redireciona_in)+']'
+                atendimento.observacao = obs + '[Checkin: ' + atendimento_atual_str + ' / Hoje foi para '+str(redireciona_in)+']'
         
         if encaminha_in:
             tratamento = Tratamento.objects.get(descricao_basica = encaminha_in)
@@ -540,7 +563,7 @@ def exibir_listagem(request, pagina = None):
                     else:
                         info_str = retornaInfo(atendimento)
                         retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, \
-                            'info': info_str, 'prioridade': False})
+                            'info': info_str, 'prioridade': False, 'senha':atendimento.senha})
                         
                             
             retorno_com_hora = [];
@@ -559,10 +582,6 @@ def exibir_listagem(request, pagina = None):
                 mensagem_erro = 'Não há registros'
         else:
             mensagem_erro = 'Formulário inválido';
-
-    i = itertools.count(1)
-    for at in retorno:
-        at["id"]=next(i)
 
     paginacao = Paginator(retorno,25) 
     if pagina == None:
@@ -593,12 +612,10 @@ def exibir_listagem_geral(request):
             tratamentos_marcados = InstanciaTratamento.objects.filter(data = data_in)
             atendimentos_previstos = Atendimento.objects.filter(instancia_tratamento__data = data_in).order_by('-hora_chegada')
             
-            i = len(atendimentos_previstos)
             for atendimento in atendimentos_previstos:
                 info_str = retornaInfo(atendimento)
                 retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 'info': info_str, 'prioridade': False, \
-                    'sala': atendimento.instancia_tratamento.tratamento.descricao_basica, 'cont':i})
-                i=i-1
+                    'sala': atendimento.instancia_tratamento.tratamento.descricao_basica, 'senha':atendimento.senha})
                 
 
             if not retorno:
@@ -631,15 +648,11 @@ def exibir_listagem_geral_fechamento(request):
                 atendimentos = Atendimento.objects.filter(instancia_tratamento__data = data_in, \
                     instancia_tratamento__tratamento__id = tratamento_in).order_by('-hora_chegada')
                 
-            
-            i = len(atendimentos)
             for atendimento in atendimentos:
                 info_str = retornaInfo(atendimento)
                 retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 'info': info_str, 'prioridade': False, \
-                    'sala': atendimento.instancia_tratamento.tratamento.descricao_basica, 'cont':i, 'status':atendimento.status, \
-                    'observacao':atendimento.observacao})
-                i=i-1
-                
+                    'sala': atendimento.instancia_tratamento.tratamento.descricao_basica, 'senha':atendimento.senha, \
+                    'status':atendimento.status, 'observacao':atendimento.observacao})
 
             if not retorno:
                 mensagem_erro = 'Não há registros'

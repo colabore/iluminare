@@ -22,7 +22,7 @@ class Atendimento(models.Model):
     prioridade              = models.BooleanField(blank=True) 
     observacao_prioridade   = models.CharField(max_length = 100, blank = True, null = True)
     observacao              = models.TextField(null = True, blank = True)    
-    senha                   = models.CharField(max_length=10, null = True, blank=True)
+    senha                   = models.IntegerField(null = True, blank=True)
 
     def __unicode__(self):
         return "%s - %s - %s - %s" % (self.paciente.nome, self.hora_chegada, str(self.instancia_tratamento.data), \
