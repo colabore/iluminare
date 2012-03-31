@@ -277,7 +277,7 @@ def relatorio_atendimentos_basico(ano=2012):
     for at in ats:
         lista = []
         lista.append(at.id) #1
-        print at.id
+        #print at.id
         lista.append(smart_str(at.paciente.nome)) #2
         if at.paciente.sexo: 
             lista.append(at.paciente.sexo) #3

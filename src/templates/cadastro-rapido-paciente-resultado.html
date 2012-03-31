@@ -11,6 +11,15 @@
         <td> <font color=green> {{dic.mensagem}} </font> </td> 
         </tr>
     </table>
+    {% if dic.senha %}
+    <table>
+        <tr>
+        <td> <font color="green" > Senha: {{dic.senha}} </td> 
+        </tr>
+    </table>
+    {% endif %}        
+
+
     {% else %}
     <table>
         <tr>
