@@ -1,0 +1,76 @@
+{% extends "base.html"%}
+{% block content %}
+
+<style type="text/css">
+
+@PAGE landscape {size: landscape;}
+
+div .listagem_form {
+
+}
+table {
+	border-width: 1px;
+	border-spacing: 2px;
+	border-style: solid;
+	border-color: gray;
+	border-collapse: collapse;
+	background-color: white;    
+}
+
+table th {
+	border-width: 1px;
+	padding: 3px;
+	border-style: dotted;
+	border-color: gray;
+	background-color: white;
+}
+table td {
+	border-width: 1px;
+	padding: 3px;
+	border-style: dotted;
+	border-color: gray;
+	background-color: white;
+}
+
+</style>
+
+<form name="form" method="POST" action="/atendimento/relatorio-atendimentos-mes/" >
+
+<table>
+       Data : {{ form.data }}
+        <input type="submit" value="Pesquisar"/>
+</table>
+<br>
+
+<table>
+
+	<table>
+	    
+		{% for dado in retorno %}
+            {% if forloop.first %}
+
+			  <tr>
+			    {% for rotulo in lista_rotulos %}
+    				<td align="center"> {{rotulo}} </td>
+                {% endfor %}
+			  </tr>
+		      
+            {% endif %}
+			
+			  <tr>
+			    {% for numero in dado %}
+    				<td align="center"> {{numero}} </td>
+                {% endfor %}
+			  </tr>
+		{% endfor %}
+	</table>
+</table>
+
+</form>
+
+
+
+
+
+
+{% endblock %}
