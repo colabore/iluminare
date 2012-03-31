@@ -58,10 +58,10 @@
 
 {% if dic_checkin %}
     {% if dic_checkin.sucesso %}
-        {% if senha %}
+        {% if dic_checkin.senha %}
         <table>
             <tr>
-            <td> <font color="green" > Senha: {{senha}} </td> 
+            <td> <font color="green" > Senha: {{dic_checkin.senha}} </td> 
             </tr>
         </table>
         {% endif %}        
