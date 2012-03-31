@@ -475,6 +475,12 @@ class RelatorioAtendimentosConsolidadoDiaForm(forms.Form):
 
 	data = forms.DateField(initial = datetime.date.today)
 
+class RelatorioAtendimentosConsolidadoMesForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super(RelatorioAtendimentosConsolidadoMesForm, self).__init__(*args, **kwargs)
+
+    data = forms.DateField(initial = datetime.date.today)
+
 class RelatorioAtendimentoData(forms.Form):
 
 	def __init__(self, *args, **kwargs):
@@ -770,4 +776,84 @@ def relatorio_atendimentos_dia(request):
     return render_to_response('relatorio-atendimentos-dia.html', {'form':form, 
                             'mensagem': mensagem_erro,
                             'retorno':retorno})
+
+def relatorio_atendimentos_mes(request):
+
+    form = RelatorioAtendimentosConsolidadoMesForm()
+    mensagem_erro = ''
+    retorno = [];
+    tratamento = ''
+    lista_datas = []
+    lista_datas_str = []
+    debug = ''
+
+    if request.method == 'POST':
+        form = RelatorioAtendimentosConsolidadoMesForm(request.POST)
+
+        if form.is_valid():
+            data_in = form.cleaned_data['data']
+
+            # retorna uma lista de dicionários
+            atendimentos = Atendimento.objects.filter(instancia_tratamento__data__year = data_in.year, \
+                instancia_tratamento__data__month = data_in.month, \
+                status='A')
+
+            for at in atendimentos:
+                if at.instancia_tratamento.data not in lista_datas:
+                    lista_datas.append(at.instancia_tratamento.data)
+                    lista_datas_str.append(str(at.instancia_tratamento.data))
+
+            lista_ids_tratamentos = []
+            for at in atendimentos:
+                if at.instancia_tratamento.tratamento.id not in lista_ids_tratamentos:
+                    lista_ids_tratamentos.append(at.instancia_tratamento.tratamento.id)
+
+            lista_ids_tratamentos.sort()
+            for tratamento_id in lista_ids_tratamentos:
+                ats_filtro = atendimentos.filter(instancia_tratamento__tratamento__id = tratamento_id)
+                lista = ats_filtro.values('instancia_tratamento__data').annotate(numero=Count('instancia_tratamento__data'))
+                dic = {}
+                for item in lista:
+                    data = item['instancia_tratamento__data']
+                    dic[str(data)] = item['numero']
+
+                lista_interna = []
+                lista_interna.append(Tratamento.objects.get(id=tratamento_id).descricao_basica)
+                soma_tratamento = 0
+                for data in lista_datas:
+                    if str(data) in dic.keys():
+                        lista_interna.append(dic[str(data)])
+                        soma_tratamento += dic[str(data)]
+                    else:
+                        lista_interna.append('-')
+                lista_interna.append(soma_tratamento)
+                retorno.append(lista_interna)
+
+            if not retorno:
+                mensagem_erro = 'Não há registros' +  debug
+            else:
+                lista_soma = ['Total']
+                soma_tratamento = 0
+                lista = atendimentos.values('instancia_tratamento__data').annotate(numero=Count('instancia_tratamento__data'))
+                dic = {}
+                for item in lista:
+                    data = item['instancia_tratamento__data']
+                    dic[str(data)] = item['numero']
+                for data in lista_datas:
+                    if str(data) in dic.keys():
+                        lista_soma.append(dic[str(data)])
+                        soma_tratamento += dic[str(data)]
+                    else:
+                        lista_soma.append('-')
+
+                lista_soma.append(soma_tratamento)
+                retorno.append(lista_soma)
+
+        else:
+            mensagem_erro = 'Formulário inválido';
+
+    return render_to_response('relatorio-atendimentos-mes.html', {'form':form,
+                            'mensagem': mensagem_erro,
+                            'retorno':retorno,
+                            'lista_rotulos':['Tratamento'] + lista_datas_str + ['Total']})
 
