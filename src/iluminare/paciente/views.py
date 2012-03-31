@@ -12,6 +12,7 @@ from django.db.models import Q
 import iluminare.paciente.logic as paciente_logic
 import iluminare.tratamento.logic as tratamento_logic
 import iluminare.atendimento.logic as logic_atendimento
+import iluminare.atendimento.views as view_atendimento
 
 import datetime
 
@@ -155,7 +156,7 @@ class TratamentoCadastroRapido(forms.Form):
             if str(t[0]) in ts:
                 # realiza check-in para o tratamento.
                 tratamento = Tratamento.objects.get(descricao_basica = t[1])
-                dic = logic_atendimento.checkin_paciente(paciente, tratamento, None, False, None, False)
+                dic = logic_atendimento.checkin_paciente(paciente, tratamento, False, None, False)
                 lista_dic.append(dic)
 
         return lista_dic

@@ -103,27 +103,9 @@ class CheckinPacienteForm(forms.ModelForm):
         exclude = ['observacao', 'status', 'hora_atendimento', 'hora_chegada', 'instancia_tratamento', 'paciente', 'senha']
 
 
-def proxima_senha(tratamento):
-    """
-        Retorna um inteiro que representa a próxima senha a ser cadastrada.
-        Para um mesmo dia, teremos uma contagem para cada tratamento em andamento..
-        
-    """
-    senha = None
-    ult_at = Atendimento.objects.filter(instancia_tratamento__data = datetime.datetime.today().date(), \
-        instancia_tratamento__tratamento = tratamento).order_by('-senha')
-        
-    if len(ult_at) == 0:
-        senha = 1
-    else:
-        senha = ult_at[0].senha + 1
-    
-    return senha
-
 def ajax_checkin_paciente(request, paciente_id):
     paciente = get_object_or_404(Paciente, pk=paciente_id)
     
-    dic_retorno = {'sucesso_checkin':False, 'sucesso_ponto':False, 'mensagem_checin':'', 'mensagem_ponto':''}
     lista_atendimentos = logic_atendimento.atendimentos_paciente(paciente.id)
     
     voluntarios = Voluntario.objects.filter(paciente = paciente, ativo = True)
@@ -131,7 +113,7 @@ def ajax_checkin_paciente(request, paciente_id):
     if len(voluntarios) > 0:
         voluntario = voluntarios[0]
     
-    
+    debug = ''
     if request.method == 'POST':
         checkin_paciente_form = CheckinPacienteForm(request.POST)
         if checkin_paciente_form.is_valid():
@@ -154,19 +136,18 @@ def ajax_checkin_paciente(request, paciente_id):
             
             try:
                 if msg_validacao == None and tratamento:
-                    senha = proxima_senha(tratamento)
                     dic_checkin = logic_atendimento.checkin_paciente(paciente, tratamento, \
-                        senha, prioridade, observacao_prioridade, forcar_checkin)
+                        prioridade, observacao_prioridade, forcar_checkin)
                 
                 if msg_validacao == None and ponto_voluntario != 'N':
                     dic_ponto = voluntario_logic.ponto_voluntario(paciente, ponto_voluntario)
 
                 return render_to_response('ajax-checkin-paciente-resultado.html', {'paciente':paciente, \
                     'voluntario':voluntario, 'dic_checkin':dic_checkin, 'dic_ponto':dic_ponto, \
-                    'msg_validacao':msg_validacao, 'senha':senha})
+                    'msg_validacao':msg_validacao})
                 
             except Exception, e:
-                return HttpResponse("Erro: %s" % str(e))
+                return HttpResponse("Erro: %s" % str(e) +  debug)
         else:
             return HttpResponse("Erro %s" % str(checkin_paciente_form.errors))
     else:

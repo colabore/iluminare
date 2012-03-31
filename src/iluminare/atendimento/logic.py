@@ -68,10 +68,26 @@ def regras_gerais_atendidas(paciente, tratamento):
     dic_retorno['sucesso']=True
     return dic_retorno
 
-def checkin_paciente(paciente, tratamento, senha, prioridade_bool, \
+
+def proxima_senha(tratamento):
+    """
+        Retorna um inteiro que representa a próxima senha a ser cadastrada.
+        Para um mesmo dia, teremos uma contagem para cada tratamento em andamento..
+        
+    """
+    senha = 0
+    ult_at = Atendimento.objects.filter(instancia_tratamento__data = datetime.today().date(), \
+        instancia_tratamento__tratamento = tratamento).order_by('-senha')
+    if len(ult_at) == 0 or ult_at[0].senha == None:
+        senha = 1
+    else:
+        senha = ult_at[0].senha + 1
+    return senha
+
+def checkin_paciente(paciente, tratamento, prioridade_bool, \
         observacao_prioridade_str, forcar_checkin):
 
-    dic_retorno = {'sucesso':False,'mensagem':None}
+    dic_retorno = {'sucesso':False,'mensagem':None, 'senha':0}
     
     if tratamento != None:
     
@@ -94,6 +110,7 @@ def checkin_paciente(paciente, tratamento, senha, prioridade_bool, \
             dic_regras = regras_gerais_atendidas(paciente, tratamento)
             if dic_regras['sucesso'] or forcar_checkin:
                 if horario_autorizado(tratamento) or forcar_checkin:
+                    senha = proxima_senha(tratamento)
                     at = Atendimento(instancia_tratamento = it, paciente = paciente, prioridade = prioridade_bool, senha = senha, \
                         observacao_prioridade = observacao_prioridade_str, status = 'C')
                     at.hora_chegada=datetime.now()
@@ -101,6 +118,7 @@ def checkin_paciente(paciente, tratamento, senha, prioridade_bool, \
                     dic_retorno['mensagem'] = smart_str("CHECK-IN realizado com SUCESSO (%s)" \
                         % at.instancia_tratamento.tratamento.descricao_basica)
                     dic_retorno['sucesso'] = True
+                    dic_retorno['senha'] = senha
                 else:
                     dic_retorno['mensagem'] = smart_str("ATENÇÃO! CHECK-IN NÃO REALIZADO: Horário limite de \
                         entrada não atendido.")
