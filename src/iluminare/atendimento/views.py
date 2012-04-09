@@ -556,7 +556,7 @@ def exibir_listagem(request, pagina = None):
                         if atendimento.paciente in pacientes_voluntarios:
                             info_str = retornaInfo(atendimento)
                             retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, \
-                                'info': info_str, 'prioridade': False})
+                                'info': info_str, 'prioridade': False, 'senha':atendimento.senha})
                     else:
                         info_str = retornaInfo(atendimento)
                         retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, \
