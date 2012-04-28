@@ -671,9 +671,17 @@ def exibir_atendimentos_paciente(request, paciente_id, pagina = None):
 	
 	
 	for atendimento in lista_atendimentos:
-		retorno.append({'data':	atendimento.instancia_tratamento.data, 'tratamento': atendimento.instancia_tratamento.tratamento.descricao_basica, 			'hora_chegada': atendimento.hora_chegada, 'observacao': atendimento.observacao, 'status':atendimento.status})
-		
-		
+		hora_chegada = '-'
+		if atendimento.hora_chegada != None:
+		    hora_chegada = atendimento.hora_chegada
+		observacao = '-'
+		if atendimento.observacao != None:
+		    observacao = atendimento.observacao
+
+		retorno.append({'data':	atendimento.instancia_tratamento.data, \
+		    'tratamento':  atendimento.instancia_tratamento.tratamento.descricao_basica, \
+		    'hora_chegada': hora_chegada, 'observacao': observacao, 'status':atendimento.status})
+	
 	if not retorno:
 		mensagem_erro = 'Não foi possível localizar usuário'
 		
@@ -684,8 +692,8 @@ def exibir_atendimentos_paciente(request, paciente_id, pagina = None):
 		num_pagina = int(pagina)
 	pagina_atual = paginacao.page(num_pagina)	
 	
-	return render_to_response('lista-atendimentos.html',{'mensagem': mensagem_erro, 'pagina_atual': pagina_atual, 'paciente_id': paciente_id, \
-	    'nome_paciente': paciente.nome })	
+	return render_to_response('lista-atendimentos.html',{'mensagem': mensagem_erro, \
+	    'pagina_atual': pagina_atual, 'paciente_id': paciente_id, 'nome_paciente': paciente.nome })	
 
 def relatorio_atendimentos_dia(request):
 
