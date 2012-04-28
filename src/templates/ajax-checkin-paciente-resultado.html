@@ -1,69 +1,223 @@
+<style>
+#campos{
+    font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size:12px;
+    background:#fff;
+    border-collapse:collapse;
+    text-align:left;
+    margin:5px;
+    width:90%;
+    border: 1px solid #FFF;
+}
+#campos th{
+    font-size:14px;
+    font-weight:normal;
+    color:#039;
+    padding:2px 2px;
+}
+#campos td{
+    color:#669;
+    padding:2px 3px;
+}
+#observacao {
+	margin: 0px auto;
+	width: 330px;
+	border: 1px solid #FFF;
+	font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size:12px;
+    color: #FF0000;
+    background:#fff;
+    border-collapse:collapse;
+    text-align:left;
+}
+#observacao td{
+	margin: 0px auto;
+	vertical-align:middle;
+    padding:2px 3px;
+}
+#acompanhante {
+	margin: 0px auto;
+	width: 330px;
+	border: 1px solid #FFF;
+	font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size:12px;
+    color: #000000;
+    background:#fff;
+    border-collapse:collapse;
+    text-align:left;
+    margin:10px;
+    
+}
+#acompanhante td{
+	margin: 0px auto;
+	vertical-align:middle;
+    padding:2px 4px;
+    border: 1px solid #FFF;
+}
+#titulo{
+    font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size:14px;
+    background:#fff;
+    border-collapse:collapse;
+    text-align:left;
+    border: 1px solid #FFF;
+
+}
+#titulo td{
+    padding:2px 4px;
+    vertical-align:middle;
+    border: 1px solid #FFF;
+    min-width: 50px;
+}
+#links{
+    font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size:13px;
+    background:#fff;
+    border-collapse:collapse;
+    text-align:left;
+    margin:10px;
+}
+#links td{
+    padding:1px 2px;
+    vertical-align:middle;
+}
+#tabela_resultado {
+    font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size:14px;
+    background:#fff;
+    border-collapse:collapse;
+    text-align:left;
+    margin:5px;
+    border: 1px solid #FFF;
+    font-weight: bold;
+}
+#tabela_resultado td{
+    padding:2px 3px;
+    text-align: left;
+    vertical-align: middle;
+}
+#sucesso {
+    color:#009900;
+    padding:2px 3px;
+    text-align: center;
+}
+#falha {
+    color:#FF0000;
+    padding:2px 3px;
+    text-align: center;
+}
+#tabela_senha {
+    font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size:14px;
+    background:#fff;
+    border-collapse:collapse;
+    text-align:center;
+    margin:5px;
+    border: 1px solid #FFF;
+    font-weight: bold;
+    color: #009900;
+}
+#tabela_senha td{
+    padding:2px 3px;
+    vertical-align: middle;
+}
+#senha {
+    color:#009900;
+    padding:2px 3px;
+    font-size:40px;
+
+}
+
+</style>
 <div class="paciente_checkin" id="paciente_checkin">
-<h1>{{paciente.nome}}</h1>
 
-{% if voluntario %}
-    {% if voluntario.tipo == 'T' %} Trabalhador 
-    {% else %} {% if voluntario.tipo == 'C' %} Colaborador {% endif %}
+
+<table id="titulo">
+    <tr>
+        <td align="center"><img src="/static/img/info.jpg"/> </td>
+        <td><b>REALIZAR CHECK-IN</b> </td>
+    </tr>
+    <tr>
+        <td align="center">
+        {% if voluntario %}
+            <img src="/static/img/worker-icon.gif" width="20" height="20" />
+        {% endif %}
+        {% for prioridade in paciente.detalheprioridade_set.all %}
+            &nbsp;<img src="/static/img/icon_priority.jpg" width="14" height="22" />
+        {% endfor %}
+
+        </td>
+        <td><b>{{paciente.nome}}</b></td>
+    </tr>
+    {%if paciente.acompanhante %}
+        <tr id="acompanhante">
+        <td></td>
+        <td> Acompanha: {{paciente.acompanhante.nome}}</td>
+        <tr>
     {% endif %}
-{% endif %}
-
+    {%if paciente.observacao %}
+        <tr id="observacao">
+        <td align="center"><img src="/static/img/icon_observacao_red.gif"/></td>
+        <td>{{paciente.observacao}}</td>
+        <tr>
+    {% endif %}
+    
+</table>
 
 <br>
-<br>
 
-{% if msg_validacao %}
-    <img src="/static/img/falha.png"/>
-    <font color=red>
-    {{msg_validacao}}
-    </font>
-{% endif %}
-
-{% if dic_checkin %}
-    {% if dic_checkin.sucesso %}
-    <table>
-        <tr>
-        <td> <img src="/static/img/sucesso.png"/> </td>
-        <td><font color="green"> {{dic_checkin.mensagem}} </font> </td> 
+<table id="tabela_resultado">
+    {% if msg_validacao %}
+        <tr id="falha">
+            <td><img src="/static/img/falha.png" width="40" height="40"/></td>
+            <td>{{msg_validacao}}</td>
         </tr>
-    </table>
-    {% else %}
-    <table>
-        <tr>
-        <td> <img src="/static/img/falha.png"/> </td>
-        <td> <font color="red"> {{dic_checkin.mensagem}} </font> </td> 
-        </tr>
-    </table>
     {% endif %}
-{% endif %}
 
-{% if dic_ponto %}
-    {% if dic_ponto.sucesso %}
-    <table>
-        <tr>
-        <td> <img src="/static/img/sucesso.png"/> </td>
-        <td> <font color=green> {{dic_ponto.mensagem}} </font> </td> 
-        </tr>
-    </table>
-    {% else %}
-    <table>
-        <tr>
-        <td> <img src="/static/img/falha.png"/> </td>
-        <td> <font color=red> {{dic_ponto.mensagem}} </font> </td> 
-        </tr>
-    </table>
+    {% if dic_checkin %}
+        {% if dic_checkin.sucesso %}
+            <tr id="sucesso">
+            <td> <img src="/static/img/sucesso.png" width="40" height="40"/> </td>
+            <td> {{dic_checkin.mensagem}} </td> 
+            </tr>
+        {% else %}
+            <tr id="falha">
+            <td> <img src="/static/img/falha.png" width="40" height="40"/> </td>
+            <td> {{dic_checkin.mensagem}} </td> 
+            </tr>
+        {% endif %}
     {% endif %}
-{% endif %}
-<br>
+
+    {% if dic_ponto %}
+        {% if dic_ponto.sucesso %}
+            <tr id="sucesso">
+            <td> <img src="/static/img/sucesso.png" width="40" height="40"/> </td>
+            <td> {{dic_ponto.mensagem}} </td> 
+            </tr>
+        {% else %}
+            <tr id="falha">
+            <td> <img src="/static/img/falha.png" width="40" height="40"/> </td>
+            <td>  {{dic_ponto.mensagem}} </td> 
+            </tr>
+        {% endif %}
+    {% endif %}
+
+</table>
 <br>
 
 {% if dic_checkin %}
     {% if dic_checkin.sucesso %}
         {% if dic_checkin.senha %}
-        <table>
+        <div align="center">
+        <table id=tabela_senha>
             <tr>
-            <td> <font color="green" > Senha: {{dic_checkin.senha}} </td> 
+            <td> Senha </td> 
+            </tr>
+            <tr id="senha">
+            <td> {{dic_checkin.senha}} </td> 
             </tr>
         </table>
+        </div>
         {% endif %}        
     {% endif %}
 {% endif %}
