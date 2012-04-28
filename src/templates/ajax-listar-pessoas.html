@@ -1,28 +1,55 @@
-<div id="lista-pessoas"> 
-    <table>
-        <thead>
-            <th>Nome</th>
-            <th>Data Nasc.</th>
-            <th>Tratamento</th>
-            <th>Atendimento</th>
-            <th>Check-in</th>
-        </thead>
-        <tbody id="tabela-pacientes">
-        {% for dado in lista %}
-            <tr>
-                <td><a href="#" id="{{dado.paciente.id}}">{{dado.paciente.nome}}</a></td>
-                <td>{{dado.paciente.data_nascimento|date:"j/n/Y"}}</td>
-                <td>
-                <ul>
-                {% for tratamentopaciente in dado.tratamentos %}
-                <li>{{tratamentopaciente.tratamento.descricao_basica}}</li>
-                {% endfor %}
-                </ul>
-                </td>
-                <td>{{dado.atendimento.data|date:"j/n/Y"}}</td>
-				<td align="center"><a href="#" class="checkin" id="{{dado.paciente.id}}"><img alt="" src="../static/img/checkin.png" /></a></td>
-			</tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<style>
+#lista-pessoas2 {
+	font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+	font-size: 15px;
+    text-align:left;
+}
+#lista-pessoas2 table {
+	width:100%;
+}
+#lista-pessoas2 table td {
+    border-bottom:1px solid #ccc;
+    color:#669;
+    vertical-align:middle;
+    padding:4px 4px;}
+#lista-pessoas2 table th {
+    font-size:16px;
+    font-weight:normal;
+    color:#039;
+    border-bottom:2px solid #6678b1;
+    padding:4px 4px;
+}
+</style>
+
+<div id="lista-pessoas2"> 
+<table>
+    <tr>
+        <th>Nome</th>
+        <th>Data Nasc.</th>
+        <th>Tratamento</th>
+        <th>Atendimento</th>
+        <th>Check-in</th>
+    </tr>
+    <tbody id="tabela-pacientes">
+    {% for dado in lista %}
+        <tr>
+            <td><a href="#" id="{{dado.paciente.id}}">{{dado.paciente.nome}}</a></td>
+            <td>{{dado.paciente.data_nascimento|date:"j/n/Y"}}</td>
+            <td>
+            <ul>
+            {% for tratamentopaciente in dado.tratamentos %}
+            <li>{{tratamentopaciente.tratamento.descricao_basica}}</li>
+            {% endfor %}
+            </ul>
+            </td>
+            <td>{{dado.atendimento.data|date:"j/n/Y"}}</td>
+			<td align="center">
+			    <a href="#" class="checkin" id="{{dado.paciente.id}}">
+			    <img alt="" src="../static/img/checkin.png" />
+			    </a>
+            </td>
+		</tr>
+    {% endfor %}
+    </tbody>
+</table>
 </div>
