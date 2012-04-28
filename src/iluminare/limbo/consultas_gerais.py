@@ -12,6 +12,7 @@ from django.core.exceptions import MultipleObjectsReturned
 import re
 from django.utils.encoding import smart_str, smart_unicode
 
+from django.db.models import Q
 
 dir_log = "/media/DATA/Iluminare/relatorios/"
 
@@ -252,70 +253,142 @@ def histograma_horarios():
     
 
 
-def relatorio_atendimentos_basico(ano=2012):
-    ats = Atendimento.objects.filter(instancia_tratamento__data__year=ano)
+def relatorio_atendimentos_basico():
+    ats = Atendimento.objects.filter(Q(instancia_tratamento__data__year=2011) | Q(instancia_tratamento__data__year=2012))
+#    ats = Atendimento.objects.all()
     # 17 campos
     lista_rotulos = ["Id Atendimento", #1
                     "Nome Paciente", #2
                     "Sexo", #3
                     "Tratamento", #4
-                    "Tratamento dia", #5
-                    "Data", #6
-                    "Hora chegada",#7
-                    "Status atendimento", #8
-                    "Voluntario", #9
-                    "Prioridade", #10
-                    "Tipo Prioridade", #11
-                    "Prioridade no dia", #12
-                    "Observacao", #13
-                    "Observacao Prioridade", #14
-                    "Mes", #15
-                    "Ano", #16
-                    "Dia semana"] #17
-    
+                    "Tratamento 2", # 5
+                    "Tratamento dia", #6
+                    "Data", #7
+                    "Hora chegada",#8
+                    "Status atendimento", #9
+                    "Voluntario", #10
+                    "Prioridade", #11
+                    "Tipo Prioridade", #12
+                    "Prioridade no dia", #13
+                    "Observacao", #14
+                    "Observacao Prioridade", #15
+                    "Mes", #16
+                    "Ano", #17
+                    "Dia semana", #18
+                    "Mais de um tratamento", #19
+                    "Último atendimento", #20
+                    "Ativo", #21 indica se o paciente está 'ativo'. inativo indica que está há mais de 3 meses sem se tratar.
+                    "Primeiro atendimento - Trat atual", #22
+                    "Id Paciente"] #23
     lista_retorno = []
     for at in ats:
         lista = []
         lista.append(at.id) #1
-        #print at.id
+        print at.id
         lista.append(smart_str(at.paciente.nome)) #2
         if at.paciente.sexo: 
             lista.append(at.paciente.sexo) #3
         else:
             lista.append("")
-        tps = TratamentoPaciente.objects.filter(paciente = at.paciente) 
-        if tps: 
+
+        tps = TratamentoPaciente.objects.filter(paciente = at.paciente, status='A')
+        if len(tps) == 1:
             lista.append(smart_str(tps[0].tratamento.descricao_basica)) #4
-        else:
+            lista.append("") #5
+        elif len(tps) >= 2:
+            lista.append(smart_str(tps[0].tratamento.descricao_basica))
+            lista.append(smart_str(tps[1].tratamento.descricao_basica))
+        else: 
             lista.append("")
-        lista.append(smart_str(at.instancia_tratamento.tratamento.descricao_basica)) #5
-        lista.append(at.instancia_tratamento.data) #6
-        lista.append(at.hora_chegada) #7
-        lista.append(at.status) #8
+            lista.append("")
+            
+        if (at.instancia_tratamento.tratamento.id == 4 and at.instancia_tratamento.data < datetime(2012,1,1).date()) or \
+            (at.instancia_tratamento.tratamento.id == 5 and at.instancia_tratamento.data >= datetime(2012,1,1).date()):
+            lista.append(smart_str("Sala 5 (4 até 2011)")) #6
+        elif (at.instancia_tratamento.tratamento.id == 5 and at.instancia_tratamento.data < datetime(2012,1,1).date()) or \
+            (at.instancia_tratamento.tratamento.id == 4 and at.instancia_tratamento.data >= datetime(2012,1,1).date()):
+            lista.append(smart_str("Sala 4 (5 até 2011)"))
+        else:
+            lista.append(smart_str(at.instancia_tratamento.tratamento.descricao_basica)) 
+
+        lista.append(at.instancia_tratamento.data) #7
+        lista.append(at.hora_chegada) #8
+        lista.append(at.status) #9
         vols = Voluntario.objects.filter(paciente = at.paciente, ativo = True)
         if vols:
-            lista.append(vols[0].tipo) #9
+            lista.append(vols[0].tipo) #10
         else:
             lista.append("")
         dtps = DetalhePrioridade.objects.filter(paciente = at.paciente)
         if len(dtps) > 0:
-            lista.append("P") #10
-            lista.append(dtps[0].tipo) # 11
+            lista.append("P") #11
+            lista.append(dtps[0].tipo) # 12
         else:
             lista.append("N")
             lista.append("")
         if at.prioridade:
-            lista.append("P") #12
+            lista.append("P") #13
         else:
             lista.append("N")
-        lista.append(smart_str(at.observacao)) #13
-        lista.append(smart_str(at.observacao_prioridade)) #14
-        lista.append(at.instancia_tratamento.data.month) #15
-        lista.append(at.instancia_tratamento.data.year) #16
+        lista.append(smart_str(at.observacao)) #14
+        lista.append(smart_str(at.observacao_prioridade)) #15
+        lista.append(at.instancia_tratamento.data.month) #16
+        lista.append(at.instancia_tratamento.data.year) #17
 
         dia_semana_str = retorna_dia_semana(at.instancia_tratamento.data)
-        lista.append(smart_str(dia_semana_str)) #17
-                
+        lista.append(smart_str(dia_semana_str)) #18
+        
+        if len(tps) > 1:
+            lista.append('S') #19
+        else:
+            lista.append('N')
+        
+        it = []
+        try:
+            it = InstanciaTratamento.objects.raw("""select it.* from paciente_paciente as p
+	            join atendimento_atendimento as ate
+		            on p.id = ate.paciente_id
+	            join tratamento_instanciatratamento as it
+		            on ate.instancia_tratamento_id = it.id
+	            where p.id = %d and ate.status = 'A'
+	            order by it.data desc
+	            limit 1;""" % at.paciente.id)[0]
+        except:
+            it = []
+
+        if it:
+            lista.append(it.data) #20
+            if it.data >= datetime(2011,12,1).date():
+                lista.append('A') #21 Ativo
+            else:
+                lista.append('I') #21 Inativo
+        else:
+            lista.append("") #20
+            lista.append('I') #21
+
+        try:
+            if tps:
+                it = InstanciaTratamento.objects.raw("""select it.* from paciente_paciente as p
+	                join atendimento_atendimento as ate
+		                on p.id = ate.paciente_id
+	                join tratamento_instanciatratamento as it
+		                on ate.instancia_tratamento_id = it.id
+                    join tratamento_tratamento as t
+                        on t.id = it.tratamento_id
+	                where p.id = %d and ate.status = 'A' and t.id = %d
+	                order by it.data asc
+	                limit 1;""" % (at.paciente.id,tps[0].tratamento.id))[0]
+                if it:
+                    lista.append(it.data) #22
+                else:
+                    lista.append("") #22
+            else:
+                lista.append("") #22
+        except Exception as e:
+            lista.append("") #22
+            
+        lista.append(at.paciente.id) #23
+        
         lista_retorno.append(lista)
         
     gera_csv(lista_rotulos, lista_retorno, "relatorio_geral_atendimentos.csv")
@@ -495,4 +568,64 @@ def retorna_lista_pacientes_fluido():
                 l.append(at.instancia_tratamento.data)
                 l.append("Fluido")
                 spamWriter.writerow(l)
+
+def retorna_lista_pacientes():
+    """
+        Retorna listagem de pacientes.
+        Notar que a fluido era sala 4 até 2011. Em 2012 passou a ser a sala 5.
+    """
+    pacientes = Paciente.objects.all()
+
+    spamWriter = csv.writer(open(dir_log+"lista_tratamentos.csv", 'wb'), delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    spamWriter.writerow(["Id", "Nome", "Data", "Tratamento 1", "Tratamento 2", "Mais de um Tratamento", "Atendimento"])
+    
+    for paciente in pacientes:
+        ats = Atendimento.objects.filter(paciente = paciente)
+        #trat = _retorna_tratamento_ativo(paciente)
+        for at in ats:
+            l = []
+            if (at.instancia_tratamento.tratamento.id == 4 and at.instancia_tratamento.data < datetime(2012,1,1).date()) or \
+                (at.instancia_tratamento.tratamento.id == 5 and at.instancia_tratamento.data >= datetime(2012,1,1).date()):
+                l.append(at.id)
+                l.append(smart_str(paciente.nome))
+                l.append(at.instancia_tratamento.data)
+                l.append("Fluido")
+                spamWriter.writerow(l)
+
+def redireciona_pacientes():
+    nome_arquivo = '/media/DATA/Iluminare/Arquivos locais/reavaliacoes/reav_sala4_abril_2012.csv'
+    file = open(nome_arquivo)
+    linhas = file.readlines()
+    matriz = []
+    for linha in linhas:
+        linha1 = linha.split(";")
+        linha1 = [i.replace("\"","").replace("\n","") for i in linha1]
+        matriz.append(linha1)
+
+    for elemento in matriz:
+        pacientes = Paciente.objects.filter(nome = elemento[0])
+        if len(pacientes) == 0:
+            raw_input('erro: '+ elemento[0])
+        else:
+            paciente = pacientes[0]
+            tps = TratamentoPaciente.objects.filter(paciente = paciente, status = 'A')
+            for tp in tps:
+                tp.status = 'C'
+                tp.data_fim = datetime(2012,4,12).date()
+                tp.save()
+                print tp
+            descricao_sala = 'Sala '+elemento[1]
+            print descricao_sala
+            novo_trat = Tratamento.objects.get(descricao_basica = descricao_sala)
+            novo_tp = TratamentoPaciente(paciente = paciente, tratamento = novo_trat, data_inicio = datetime(2012,4,12).date(), status='A')
+            novo_tp.save()
+            print novo_tp
+            if paciente.observacao:
+                paciente.observacao = paciente.observacao + ' - Reavaliado(a) dia 12/04 por Nafmenathe para ' + novo_trat.descricao_basica
+            else:
+                paciente.observacao = 'Reavaliado(a) dia 12/04 por Nafmenathe para ' + novo_trat.descricao_basica
+            print paciente.observacao
+            paciente.save()
             
+        
+        
