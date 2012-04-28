@@ -1,6 +1,7 @@
 # coding: utf-8
 from iluminare.paciente.models import *
 from iluminare.tratamento.models import *
+from iluminare.voluntario.models import *
 import re, datetime
 
 class PacienteException(Exception):
@@ -99,12 +100,36 @@ def format_table(pacientes):
 	            limit 1;""" % paciente.id)[0]
         except:
             it = ''
+        try:
+            # para o caso de já ter algum checkin hoje...
+            jtc = False
+            it_jtc = InstanciaTratamento.objects.raw("""select it.* from paciente_paciente as p
+	            join atendimento_atendimento as ate
+		            on p.id = ate.paciente_id
+	            join tratamento_instanciatratamento as it
+		            on ate.instancia_tratamento_id = it.id
+	            where p.id = %d
+	            order by it.data desc
+	            limit 1;""" % paciente.id)[0]
+            if it_jtc.data == datetime.datetime.today().date():
+                jtc = True
+        except:
+            it_jtc = ''
+            
+        voluntario = Voluntario.objects.filter(paciente = paciente, ativo=True)
+        
+        eh_vol = False
+        if voluntario:
+            eh_vol = True
+
         dic = {
 			'tratamentos': tratamentos,
 			'paciente':paciente,
             'atendimento': it,
             'salas': "TODO",
-			'hoje': 'TODO'
+			'hoje': 'TODO',
+			'jtc': jtc,
+			'eh_vol': eh_vol
         }
 
         lista.append(dic)
