@@ -12,23 +12,6 @@
 	width:100%;
 	font-size:25px;
 }
-#lista-pessoas {
-	font-size: 23px;
-}
-#lista-pessoas table {
-	width:100%;
-	border: 1px solid #000;
-}
-#lista-pessoas table td {
-	padding:4px;
-	border: 1px solid #555;
-}
-#lista-pessoas table th {
-	padding: 6px;
-}
-#lista-pessoas table span {
-	font-size:16px;
-}
 #dialog {
 	width: 400px;
 	height: 300px;

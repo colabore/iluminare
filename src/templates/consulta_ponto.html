@@ -1,37 +1,14 @@
 {% extends "base.html"%}
 {% block content %}
 
-<style type="text/css">
-
-@PAGE landscape {size: landscape;}
-
-div .listagem_form {
-
-}
-table {
-	border-width: 1px;
-	border-spacing: 2px;
-	border-style: solid;
-	border-color: gray;
-	border-collapse: collapse;
-	background-color: white;    
-}
-
-table th {
-	border-width: 1px;
-	padding: 3px;
-	border-style: dotted;
-	border-color: gray;
-	background-color: white;
-}
-table td {
-	border-width: 1px;
-	padding: 3px;
-	border-style: dotted;
-	border-color: gray;
-	background-color: white;
-}
-
+<style>
+#hor-minimalist-b{font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;font-size:13px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}
+#hor-minimalist-b th{font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:4px 4px;}
+#hor-minimalist-b td{border-bottom:1px solid #ccc;color:#669;vertical-align:middle;padding:4px 4px;}
+#hor-minimalist-b tbody tr:hover td{color:#009;}
+#titulo{font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;font-size:14px;background:#fff;border-collapse:collapse;text-align:left;margin:10px;}
+#titulo td{padding:2px 4px;vertical-align:middle;}
+#paginacao{font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;font-size:14px;background:#fff;border-collapse:collapse;text-align:left;}
 </style>
 
 <form name="form" method="POST" action="/voluntario/consulta-ponto/" >
@@ -42,47 +19,38 @@ table td {
 </table>
 <br>
 
-<table>
+<table id="hor-minimalist-b">
+    
+	{% for voluntario in retorno %}
+        {% if forloop.first %}
 
-	<table>
-	    
-		{% for voluntario in retorno %}
-            {% if forloop.first %}
-
-		      <tr>	
-				<th width="40" align="center"> P/F </th>	
-			    <th> Nome </th>
-			    <th> Tipo </th>
-			    <th> Hora Chegada </th>
-			    <th> Hora Saída </th>
-		      </tr>
-		      
+	      <tr>	
+			<th width="40" align="center"> P/F </th>	
+		    <th> Nome </th>
+		    <th> Tipo </th>
+		    <th> Hora Chegada </th>
+		    <th> Hora Saída </th>
+	      </tr>
+	      
+        {% endif %}
+		
+		  <tr>
+			{% if voluntario.presente == 'P' %}
+                <td align="center"> <img src="/static/img/confirma_atendimento.png" width="20" height="20" /> </td>
+            {% else %} {% if voluntario.presente == 'F' %}
+			    <font color=red>
+			    <td align="center"> <img src="/static/img/nao_confirma_atendimento.png" width="20" height="20" /> </td>
+                </font>
             {% endif %}
+			{% endif %}
 			
-			  <tr>
-				{% if voluntario.presente == 'P' %}
-                    <td align="center"> <img src="/static/img/confirma_atendimento.png"/> </td>
-                {% else %} {% if voluntario.presente == 'F' %}
-				    <font color=red>
-				    <td align="center"> <img src="/static/img/nao_confirma_atendimento.png"/> </td>
-                    </font>
-                {% endif %}
-				{% endif %}
-				
-				<td align="center"> {{voluntario.nome}} </td>
-				<td> {{voluntario.tipo}} </td>
-				<td> {{voluntario.hora_chegada}} </td>
-				<td> {{voluntario.hora_saida}} </td>
-			  </tr>
-		{% endfor %}
-	</table>
+			<td> {{voluntario.nome}} </td>
+			<td> {{voluntario.tipo}} </td>
+			<td> {{voluntario.hora_chegada}} </td>
+			<td> {{voluntario.hora_saida}} </td>
+		  </tr>
+	{% endfor %}
 </table>
 
 </form>
-
-
-
-
-
-
 {% endblock %}
