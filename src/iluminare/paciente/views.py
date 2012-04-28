@@ -78,7 +78,8 @@ def get_lista_tratamentos_atuais(paciente):
         (3, u'Sala 3'),
         (4, u'Sala 4'),
         (5, u'Sala 5'),
-        (6, u'Manutenção')
+        (6, u'Manutenção'),
+        (7, u'Sala 9')
     )
 
     lista = []    
@@ -101,7 +102,8 @@ class TratamentoPacienteForm(forms.Form):
         (3, u'Sala 3'),
         (4, u'Sala 4'),
         (5, u'Sala 5'),
-        (6, u'Manutenção')
+        (6, u'Manutenção'),
+        (7, u'Sala 9')
     )
     tratamentos = forms.MultipleChoiceField(choices=TRATAMENTOS_CHOICES, widget=forms.CheckboxSelectMultiple, required=False)
 
