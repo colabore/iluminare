@@ -89,9 +89,9 @@ background-color: #D3E3B5;
 }
 #search-results {
 	margin: 0px auto;
-	width: 660px;
+	width: 750px;
 	min-height: 300px;
-	border: 1px solid #e8e;
+	border: 1px solid #fff;
 }
 #footer {
 	margin: 0px auto;
@@ -100,7 +100,7 @@ background-color: #D3E3B5;
 }
 div .paciente_checkin, div .paciente_consulta {
     min-width:400px;
-    height:400px;
+    height:430px;
 }
 #checkin-lista-atendimentos {
     height:100px;
