@@ -19,6 +19,10 @@
     border-bottom:2px solid #6678b1;
     padding:4px 4px;
 }
+#ja_tem_checkin {
+    color:#009900;
+}
+
 </style>
 
 <div id="lista-pessoas2"> 
@@ -33,7 +37,25 @@
     <tbody id="tabela-pacientes">
     {% for dado in lista %}
         <tr>
-            <td><a href="#" id="{{dado.paciente.id}}">{{dado.paciente.nome}}</a></td>
+        
+        
+            {% if dado.jtc %}
+                {% if dado.eh_vol %}
+                    <td><a href="#" style="color: #800000;" id="{{dado.paciente.id}}"> {{dado.paciente.nome}}  
+                    <img src="/static/img/worker-icon.gif" width="20" height="20" /></a> 
+                    </td>
+                {% else %}
+                    <td><a href="#" style="color: #800000;" id="{{dado.paciente.id}}"> {{dado.paciente.nome}} </a> </td>
+                {% endif %}
+            {% else %}
+                {% if dado.eh_vol %}
+                    <td><a href="#" id="{{dado.paciente.id}}"> {{dado.paciente.nome}}  
+                    <img src="/static/img/worker-icon.gif" width="20" height="20" /></a> 
+                    </td>
+                {% else %}
+                    <td><a href="#" id="{{dado.paciente.id}}"> {{dado.paciente.nome}} </a> </td>
+                {% endif %}
+            {% endif %}
             <td>{{dado.paciente.data_nascimento|date:"j/n/Y"}}</td>
             <td>
             <ul>
