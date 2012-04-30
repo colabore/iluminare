@@ -51,10 +51,17 @@ def consultar_paciente(codigo):
            detalhe_prioridade = DetalhePrioridade.objects.get(paciente=codigo)
         except DetalhePrioridade.DoesNotExist:
            detalhe_prioridade = None
+
+        voluntarios = Voluntario.objects.filter(paciente = paciente, ativo=True)
+        voluntario = None
+        if len(voluntarios) > 0:
+            voluntario = voluntarios[0]
         
         dic = {'paciente': paciente,
                'tratamentos': tratamentos,
-               'detalhe_prioridade': detalhe_prioridade} 
+               'detalhe_prioridade': detalhe_prioridade,
+               'voluntario': voluntario
+                } 
 
     except Paciente.DoesNotExist:
         dic = {}

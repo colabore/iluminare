@@ -43,7 +43,7 @@
     margin:10px;
 }
 #links td{
-    padding:1px 2px;
+    padding:4px 15px;
     vertical-align:middle;
 }
 
@@ -51,7 +51,8 @@
 
 <table id="titulo">
 <tr>
-<td><img src="/static/img/info.jpg"/> </td>
+<td><img src="/static/img/icon_info.png" width="25" height="25" /> </td>
+<!--td><img src="/static/img/edit.png"  width="25" height="25"/></td-->
 <td><b>&nbsp;&nbsp;INFORMAÇÕES DO PACIENTE</b> </td>
 </tr>
 <tr>
@@ -126,10 +127,15 @@
 </table>
 <table id=links>
     <tr>
-        <td> <a href="/paciente/{{paciente.id}}"><img src="/static/img/edit.png"  width="25" height="25"/> </a> </td>
-        <td> <a href="/paciente/{{paciente.id}}">Editar </a> </td>
-        <td> &nbsp;&nbsp;&nbsp;&nbsp;<a href="/atendimento/consultar/{{paciente.id}}"><img src="/static/img/list.gif" width="25" height="25"/> </td>
-        <td> <a href="/atendimento/consultar/{{paciente.id}}"> Listar atendimentos</a>  </td>
+        <td> <a href="/paciente/{{paciente.id}}"><img src="/static/img/edit.png"  width="25" height="25"/> Editar </a>  </td>
+        <td> <a href="/atendimento/consultar/{{paciente.id}}">
+            <img src="/static/img/list.gif" width="25" height="25"/> Listar atendimentos </a>
+        </td>
+        {% if voluntario %}
+            <td><a href="/voluntario/{{voluntario.id}}">
+                <img src="/static/img/worker-icon.gif" width="25" height="25" /> Atualizar Voluntário </a>
+            </td>
+        {% endif %}
     </tr>
 </table>
 </div>

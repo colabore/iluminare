@@ -1,0 +1,16 @@
+{% extends "base.html"%}
+{% block content %}
+
+{{nome_paciente}}
+<br>
+<br>
+<form id="crud-voluntario" method="POST" action="">
+<table>
+{{form_voluntario}}
+</table>
+<br>
+
+<input type="submit" value="  OK  " />
+</form>
+
+{% endblock %}

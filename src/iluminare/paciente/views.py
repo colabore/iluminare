@@ -6,6 +6,8 @@ from django import forms
 from iluminare.paciente.models import *
 from iluminare.atendimento.models import *
 from iluminare.tratamento.models import *
+from iluminare.voluntario.models import *
+
 
 from django.db.models import Q
 
