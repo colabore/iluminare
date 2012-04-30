@@ -42,9 +42,8 @@
 
 </form>
 
-
-
-
-
+{% if retorno %}
+    <a href="/atendimento/relatorio-atendimentos-mes-csv/{{data_ordinal}}"><img src="/static/img/csv.png"  width="25" height="25"/> Salvar relatório </a>
+{% endif %}
 
 {% endblock %}

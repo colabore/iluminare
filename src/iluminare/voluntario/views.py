@@ -8,18 +8,33 @@ from django.utils.functional import curry, wraps
 
 import datetime
 from datetime import date
+import csv
+from django.http import HttpResponse
 
-class voluntarioForm(forms.ModelForm):
-	class Meta:
-		model = Voluntario
+
+class VoluntarioForm(forms.ModelForm):
+    class Meta:
+        model = Voluntario
+        exclude = ('paciente','data_inicio','data_fim',)
+
+    def __init__(self, *args, **kwargs):
+        super(VoluntarioForm, self).__init__(*args, **kwargs)
+
+        voluntario = kwargs.pop('instance')
+
+        self.fields['observacao'].widget.attrs['rows'] = 4
+
+    def save(self):
+        voluntario = forms.ModelForm.save(self)
+        return voluntario
 
 def render(request):
 	if request.method == "POST":
-		form_voluntario = voluntarioForm(request.POST)
+		form_voluntario = VoluntarioForm(request.POST)
 		form_voluntario.save()
 		msg = "Novo voluntario cadastrado com sucesso"
 	else:
-		form_voluntario = voluntarioForm()
+		form_voluntario = VoluntarioForm()
 		msg = ""
 
 	return render_to_response('add-voluntario.html',{'form_voluntario': form_voluntario, 'msg': msg})
@@ -178,6 +193,69 @@ def consulta_ponto(request):
 
     
     return render_to_response('consulta_ponto.html', {'form':form, 'retorno':retorno,'mensagem': mensagem_erro})
+
+
+def atualizar(request, voluntario_id):
+    voluntario = Voluntario.objects.get(pk=voluntario_id)
+    nome_paciente = voluntario.paciente.nome
     
+    if request.method == "POST":
+        form_voluntario = VoluntarioForm(request.POST, instance=voluntario)
+        if form_voluntario.is_valid():
+            try:
+                form_voluntario.save()
+                msg = "Voluntário atualizado com sucesso."
+            except v_exc:
+                msg = "Erro na atualização do voluntário... " + v_exc
+        else:
+            msg = "Erro de validação dos dados."
+
+    else:
+        form_voluntario = VoluntarioForm(instance=voluntario)
+        msg = ""
+
+    return render_to_response('crud-voluntario.html', {'form_voluntario':form_voluntario, 'mensagem':msg, \
+        'nome_paciente':nome_paciente})
+   
+def relatorio_trabalhos(request):
+    """
+        Falta terminar...
+    """
+    form = FiltroRelatiorioTrabalhosForm()
+    mensagem_erro = ''
+    retorno = [];
+
+    if request.method == "POST":
+        form = FiltroRelatiorioTrabalhosForm(request.POST)
+
+        if form.is_valid():
+            data_inicial = form.cleaned_data['data_inicial']
+            data_final = form.cleaned_data['data_final']
+            dia_semana = form.cleaned_data['dia_semana']
+            
+            voluntarios = Voluntario.objects.filter(ativo = True)
+            
+            for v in voluntarios:
+                trabalho = Trabalho.objects.filter(voluntario = v, data=data)
+                hc = '-'
+                hs = '-'
+                if len(trabalho) == 1:
+                    
+                    if trabalho[0].hora_inicio:
+                        hc = trabalho[0].hora_inicio
+                    if trabalho[0].hora_final:
+                        hs = trabalho[0].hora_final
+                    
+                    retorno.append({'nome': v.paciente.nome, 'tipo': v.tipo, 'presente': 'P', \
+                        'hora_chegada': hc, 'hora_saida': hs})
+                else:
+                    retorno.append({'nome': v.paciente.nome, 'tipo': v.tipo, 'presente': 'F', \
+                        'hora_chegada': hc, 'hora_saida': hs})
+            
+        else:
+            mensagem_erro = 'Formulário inválido'
+
+    
+    return render_to_response('consulta_ponto.html', {'form':form, 'retorno':retorno,'mensagem': mensagem_erro})
 
 

@@ -28,6 +28,8 @@ from django.db.models import Q
 from sets import Set
 from django.db.models import Count
 
+import csv
+
 class CheckinPacienteForm(forms.ModelForm):
 
     PONTO_CHOICES = (
@@ -766,14 +768,84 @@ def relatorio_atendimentos_dia(request):
                             'mensagem': mensagem_erro,
                             'retorno':retorno})
 
+def relatorio_atendimentos_mes_geral(data_ordinal):
+    mensagem_erro = ''
+    retorno = []
+    tratamento = ''
+    lista_datas = []
+    lista_datas_str = []
+    lista_rotulos = []
+    debug = ''
+
+#    raise Exception("teste" + str(data_ordinal))
+    data_in = datetime.date.fromordinal(int(data_ordinal))
+    # retorna uma lista de dicionários
+    atendimentos = Atendimento.objects.filter(instancia_tratamento__data__year = data_in.year, \
+        instancia_tratamento__data__month = data_in.month, \
+        status='A')
+
+    lista_ids_tratamentos = []
+    for at in atendimentos:
+        if at.instancia_tratamento.tratamento.id not in lista_ids_tratamentos:
+            lista_ids_tratamentos.append(at.instancia_tratamento.tratamento.id)
+        if at.instancia_tratamento.data not in lista_datas:
+            lista_datas.append(at.instancia_tratamento.data)
+            lista_datas_str.append(str(at.instancia_tratamento.data))
+
+    lista_ids_tratamentos.sort()
+    for tratamento_id in lista_ids_tratamentos:
+        ats_filtro = atendimentos.filter(instancia_tratamento__tratamento__id = tratamento_id)
+        lista = ats_filtro.values('instancia_tratamento__data').annotate(numero=Count('instancia_tratamento__data'))
+        dic = {}
+        for item in lista:
+            data = item['instancia_tratamento__data']
+            dic[str(data)] = item['numero']
+
+        lista_interna = []
+        lista_interna.append(smart_str(Tratamento.objects.get(id=tratamento_id).descricao_basica))
+        soma_tratamento = 0
+        for data in lista_datas:
+            if str(data) in dic.keys():
+                lista_interna.append(dic[str(data)])
+                soma_tratamento += dic[str(data)]
+            else:
+                lista_interna.append('-')
+        lista_interna.append(soma_tratamento)
+        retorno.append(lista_interna)
+
+    if not retorno:
+        mensagem_erro = 'Não há registros' +  debug
+    else:
+        lista_soma = ['Total']
+        soma_tratamento = 0
+        lista = atendimentos.values('instancia_tratamento__data').annotate(numero=Count('instancia_tratamento__data'))
+        dic = {}
+        for item in lista:
+            data = item['instancia_tratamento__data']
+            dic[str(data)] = item['numero']
+        for data in lista_datas:
+            if str(data) in dic.keys():
+                lista_soma.append(dic[str(data)])
+                soma_tratamento += dic[str(data)]
+            else:
+                lista_soma.append('-')
+
+        lista_soma.append(soma_tratamento)
+        retorno.append(lista_soma)
+
+    lista_rotulos = ['Tratamento'] + lista_datas_str + ['Total']
+    return mensagem_erro, retorno, lista_rotulos
+
 def relatorio_atendimentos_mes(request):
 
     form = RelatorioAtendimentosConsolidadoMesForm()
     mensagem_erro = ''
-    retorno = [];
+    retorno = []
     tratamento = ''
     lista_datas = []
     lista_datas_str = []
+    data_ordinal = ''
+    lista_rotulos = []
     debug = ''
 
     if request.method == 'POST':
@@ -781,68 +853,25 @@ def relatorio_atendimentos_mes(request):
 
         if form.is_valid():
             data_in = form.cleaned_data['data']
-
-            # retorna uma lista de dicionários
-            atendimentos = Atendimento.objects.filter(instancia_tratamento__data__year = data_in.year, \
-                instancia_tratamento__data__month = data_in.month, \
-                status='A')
-
-            for at in atendimentos:
-                if at.instancia_tratamento.data not in lista_datas:
-                    lista_datas.append(at.instancia_tratamento.data)
-                    lista_datas_str.append(str(at.instancia_tratamento.data))
-
-            lista_ids_tratamentos = []
-            for at in atendimentos:
-                if at.instancia_tratamento.tratamento.id not in lista_ids_tratamentos:
-                    lista_ids_tratamentos.append(at.instancia_tratamento.tratamento.id)
-
-            lista_ids_tratamentos.sort()
-            for tratamento_id in lista_ids_tratamentos:
-                ats_filtro = atendimentos.filter(instancia_tratamento__tratamento__id = tratamento_id)
-                lista = ats_filtro.values('instancia_tratamento__data').annotate(numero=Count('instancia_tratamento__data'))
-                dic = {}
-                for item in lista:
-                    data = item['instancia_tratamento__data']
-                    dic[str(data)] = item['numero']
-
-                lista_interna = []
-                lista_interna.append(Tratamento.objects.get(id=tratamento_id).descricao_basica)
-                soma_tratamento = 0
-                for data in lista_datas:
-                    if str(data) in dic.keys():
-                        lista_interna.append(dic[str(data)])
-                        soma_tratamento += dic[str(data)]
-                    else:
-                        lista_interna.append('-')
-                lista_interna.append(soma_tratamento)
-                retorno.append(lista_interna)
-
-            if not retorno:
-                mensagem_erro = 'Não há registros' +  debug
-            else:
-                lista_soma = ['Total']
-                soma_tratamento = 0
-                lista = atendimentos.values('instancia_tratamento__data').annotate(numero=Count('instancia_tratamento__data'))
-                dic = {}
-                for item in lista:
-                    data = item['instancia_tratamento__data']
-                    dic[str(data)] = item['numero']
-                for data in lista_datas:
-                    if str(data) in dic.keys():
-                        lista_soma.append(dic[str(data)])
-                        soma_tratamento += dic[str(data)]
-                    else:
-                        lista_soma.append('-')
-
-                lista_soma.append(soma_tratamento)
-                retorno.append(lista_soma)
-
+            data_ordinal = data_in.toordinal()
+            mensagem_erro, retorno, lista_rotulos = relatorio_atendimentos_mes_geral(data_ordinal)
         else:
             mensagem_erro = 'Formulário inválido';
 
     return render_to_response('relatorio-atendimentos-mes.html', {'form':form,
                             'mensagem': mensagem_erro,
                             'retorno':retorno,
-                            'lista_rotulos':['Tratamento'] + lista_datas_str + ['Total']})
+                            'lista_rotulos': lista_rotulos,
+                            'data_ordinal':data_ordinal})
 
+def relatorio_atendimentos_mes_csv(request, data_ordinal):
+    response = HttpResponse(mimetype='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=relatorio_atendimentos_mes.csv'
+
+    writer = csv.writer(response)
+    mensagem_erro, retorno, lista_rotulos = relatorio_atendimentos_mes_geral(data_ordinal)
+    writer.writerow(lista_rotulos)
+    for element in retorno:
+        writer.writerow(element)
+
+    return response
