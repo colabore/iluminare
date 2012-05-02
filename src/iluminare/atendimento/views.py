@@ -777,7 +777,6 @@ def relatorio_atendimentos_mes_geral(data_ordinal):
     lista_rotulos = []
     debug = ''
 
-#    raise Exception("teste" + str(data_ordinal))
     data_in = datetime.date.fromordinal(int(data_ordinal))
     # retorna uma lista de dicionários
     atendimentos = Atendimento.objects.filter(instancia_tratamento__data__year = data_in.year, \

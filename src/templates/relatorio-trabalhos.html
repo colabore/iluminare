@@ -1,0 +1,93 @@
+{% extends "base.html"%}
+{% block content %}
+
+<style>
+#hor-minimalist-b{
+    font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size:13px;
+    background:#fff;
+    border-collapse:collapse;
+    text-align:left;
+    margin:20px;
+}
+#hor-minimalist-b th{
+    font-size:14px;
+    font-weight:normal;
+    color:#039;
+    border-bottom:2px solid #6678b1;
+    padding:4px 4px;
+}
+#hor-minimalist-b td{
+    border-bottom:1px solid #ccc;
+    color:#669;
+    vertical-align:middle;
+    padding:2px 3px;
+}
+#hor-minimalist-b tbody tr:hover td{
+    color:#009;
+}
+#titulo{
+    font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size:14px;
+    background:#fff;
+    border-collapse:collapse;
+    text-align:left;
+    margin:10px;
+}
+#titulo td{
+    padding:2px 4px;
+    vertical-align:middle;
+}
+#paginacao{
+    font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size:14px;
+    background:#fff;
+    border-collapse:collapse;
+    text-align:left;
+}
+</style>
+
+<form name="form" method="POST" action="/voluntario/relatorio-trabalhos/" >
+
+<table>
+       Data Inicial : {{ form.data_inicial }}
+       Data Final : {{ form.data_final }}
+       Dia Semana : {{form.dia_semana}}
+        <input type="submit" value="Pesquisar"/>
+</table>
+
+<table id="hor-minimalist-b">
+
+    <tr>
+	{% for elemento in lista_rotulos %}
+        <th align="center"> {{elemento}} </th>
+    {% endfor %}
+    </tr>
+    
+	{% for linha in lista_dados %}
+    		
+		  <tr>
+		  {% for elemento in linha %}
+			{% if elemento == 'P' %}
+                <td align="center"> <img src="/static/img/confirma_atendimento.png" width="15" height="15" /> </td>
+            {% else %} {% if elemento == 'F' %}
+			    <td align="center"> <img src="/static/img/nao_confirma_atendimento.png" width="15" height="15" /> </td>
+			{% else %}
+    			<td align="center"> {{elemento}} </td>
+            {% endif %}
+            {% endif %}
+          {% endfor %}
+		  </tr>
+	{% endfor %}
+</table>
+
+</form>
+
+{% if lista_dados %}
+    <a href="/voluntario/relatorio-trabalhos-csv/{{data_inicial_ordinal}}/{{data_final_ordinal}}/{{dia_semana_int}}">
+        <img src="/static/img/csv.png"  width="25" height="25"/> Salvar relatório 
+    </a>
+{% endif %}
+
+
+{% endblock %}
