@@ -11,6 +11,8 @@ from datetime import date
 import csv
 from django.http import HttpResponse
 
+from django.utils.encoding import smart_str
+
 
 class VoluntarioForm(forms.ModelForm):
     class Meta:
@@ -57,6 +59,25 @@ class FiltroPontoConsultaForm(forms.Form):
 
     data = forms.DateField(initial = datetime.date.today)
 
+class FiltroRelatiorioTrabalhosForm(forms.Form):
+
+    DIA_SEMANA = (
+        ('2', 'Segunda'),
+        ('3', 'Terça'),
+        ('5', 'Quinta'),
+    )
+
+
+    def __init__(self, *args, **kwargs):
+        	super(FiltroRelatiorioTrabalhosForm, self).__init__(*args, **kwargs)
+
+    data = datetime.date.today() - datetime.timedelta(30)
+    data_inicial = forms.DateField(initial = data)
+    data_final = forms.DateField(initial = datetime.date.today())
+    dia_semana =  forms.ChoiceField(required=False, choices=DIA_SEMANA, initial='3')
+
+
+FiltroRelatiorioTrabalhosForm
 
 class PontoForm(forms.ModelForm):
 
@@ -216,14 +237,85 @@ def atualizar(request, voluntario_id):
 
     return render_to_response('crud-voluntario.html', {'form_voluntario':form_voluntario, 'mensagem':msg, \
         'nome_paciente':nome_paciente})
+
+def relatorio_trabalhos_geral(data_inicial_ordinal, data_final_ordinal, dia_semana_int):
+    mensagem = ''
+    lista_rotulos = []
+    lista_dados = []
+    lista_totais = []
+
+    voluntarios = Voluntario.objects.filter(ativo = True)
+    
+    lista_geral = []
+    lista_datas = []
+    
+    data_inicial = datetime.date.fromordinal(int(data_inicial_ordinal))
+    data_final = datetime.date.fromordinal(int(data_final_ordinal))
+    
+    for v in voluntarios:
+        if dia_semana_int != 9:
+            trabalhos = Trabalho.objects.filter(voluntario = v, data__gte=data_inicial, \
+                data__lte=data_final, data__week_day = dia_semana_int)
+        else:
+            trabalhos = Trabalho.objects.filter(voluntario = v, data__gte=data_inicial, \
+                data__lte=data_final)
+
+        lista_voluntario = []
+        lista_voluntario.append(v)
+        for trabalho in trabalhos:
+            lista_voluntario.append(trabalho.data)
+            if trabalho.data not in lista_datas:
+                lista_datas.append(trabalho.data)
+        
+        lista_geral.append(lista_voluntario)
+    
+    lista_totais = [0]*(len(lista_datas)+1)
+    #ordenando as datas e preparando rótulos
+    lista_datas.sort()
+    lista_rotulos.append("Voluntário")
+    lista_rotulos.append("Tipo")
+    for data in lista_datas:
+        lista_rotulos.append(str(data))
+    
+    lista_rotulos.append("Total")
+    
+    for item in lista_geral:
+        linha = []
+        linha.append(smart_str(item[0].paciente.nome))
+        linha.append(item[0].tipo)
+        cont = 0
+        i=0
+        for data in lista_datas:
+            if data in item:
+                linha.append("P")
+                cont +=1
+                lista_totais[i] +=1
+                lista_totais[-1] +=1
+            else:
+                linha.append("F")
+            i+=1
+        
+        linha.append(str(cont))
+        lista_dados.append(linha)
+        
+    lista_totais = ["Total","-"] + lista_totais
+    lista_dados.append(lista_totais)
+
+    return lista_rotulos, lista_dados, mensagem
+
    
 def relatorio_trabalhos(request):
     """
-        Falta terminar...
+        
     """
     form = FiltroRelatiorioTrabalhosForm()
-    mensagem_erro = ''
-    retorno = [];
+    mensagem = ''
+    lista_rotulos = []
+    lista_dados = []
+    lista_totais = []
+    data_inicial_ordinal = ''
+    data_final_ordinal = ''
+    dia_semana_int = 9
 
     if request.method == "POST":
         form = FiltroRelatiorioTrabalhosForm(request.POST)
@@ -232,30 +324,32 @@ def relatorio_trabalhos(request):
             data_inicial = form.cleaned_data['data_inicial']
             data_final = form.cleaned_data['data_final']
             dia_semana = form.cleaned_data['dia_semana']
-            
-            voluntarios = Voluntario.objects.filter(ativo = True)
-            
-            for v in voluntarios:
-                trabalho = Trabalho.objects.filter(voluntario = v, data=data)
-                hc = '-'
-                hs = '-'
-                if len(trabalho) == 1:
-                    
-                    if trabalho[0].hora_inicio:
-                        hc = trabalho[0].hora_inicio
-                    if trabalho[0].hora_final:
-                        hs = trabalho[0].hora_final
-                    
-                    retorno.append({'nome': v.paciente.nome, 'tipo': v.tipo, 'presente': 'P', \
-                        'hora_chegada': hc, 'hora_saida': hs})
-                else:
-                    retorno.append({'nome': v.paciente.nome, 'tipo': v.tipo, 'presente': 'F', \
-                        'hora_chegada': hc, 'hora_saida': hs})
-            
+
+            data_inicial_ordinal = data_inicial.toordinal()
+            data_final_ordinal = data_final.toordinal()
+
+            try:
+                dia_semana_int = int(dia_semana)
+            except:
+                dia_semana_int = 9
+
+            lista_rotulos, lista_dados, mensagem = relatorio_trabalhos_geral(data_inicial_ordinal, data_final_ordinal, dia_semana_int)
+
         else:
-            mensagem_erro = 'Formulário inválido'
+            mensagem = 'Formulário inválido'
 
-    
-    return render_to_response('consulta_ponto.html', {'form':form, 'retorno':retorno,'mensagem': mensagem_erro})
+    return render_to_response('relatorio-trabalhos.html', {'form':form, 'lista_rotulos':lista_rotulos,\
+        'lista_dados':lista_dados,'mensagem': mensagem, 'data_inicial_ordinal':data_inicial_ordinal, \
+        'data_final_ordinal':data_final_ordinal,'dia_semana_int':dia_semana_int})
 
+def relatorio_trabalhos_csv(request, data_inicial_ordinal, data_final_ordinal, dia_semana_int):
+    response = HttpResponse(mimetype='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=relatorio_trabalhos.csv'
 
+    writer = csv.writer(response)
+    lista_rotulos, lista_dados, mensagem = relatorio_trabalhos_geral(data_inicial_ordinal, data_final_ordinal, dia_semana_int)
+    writer.writerow(lista_rotulos)
+    for element in lista_dados:
+        writer.writerow(element)
+
+    return response
