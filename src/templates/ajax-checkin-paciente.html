@@ -188,6 +188,9 @@
                     <th>
                         Tratamento
                     </th>
+                    <th>
+                        Observação
+                    </th>
                 </tr>
 
             {% endif %}
@@ -197,6 +200,9 @@
             </td>
             <td>
                 {{atendimento.instancia_tratamento.tratamento.descricao_basica}}
+            </td>
+            <td>
+                {{atendimento.observacao}}
             </td>
             </tr>
         {% endfor %}

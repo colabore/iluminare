@@ -26,23 +26,18 @@ function checkAll(field)
 //  End -->
 </script>
 
-<form name="at1" method="POST">
-<table>
-<form action="/confimacao/" method="post">
+<form name='lista_voluntarios' action="/voluntario/registra-ponto/" method="POST">
     
     <div class="filtro">
        Data : {{ filtro_form.data }}
-       <input type="submit" value="Pesquisar" />    
+       <input type="submit" name="pesquisar" value="Pesquisar" />    
     </div>
     <br>
     <br>
-    
-   
-</form>
 
-</table>
+{{mensagem}}
 {% if voluntarios.forms %} 
-    <input type="checkbox" name="CheckAll" value="CheckAll" onClick="checkAll(document.at1)"> Selecionar todos
+    <input type="checkbox" name="CheckAll" value="CheckAll" onClick="checkAll(document.lista_voluntarios)"> Selecionar todos
 {% endif %}
 <br>
 <br>
@@ -71,7 +66,7 @@ function checkAll(field)
 </table>
 {% if voluntarios.forms %}
     <br>    
-    <input type="submit" value="Salvar Dados" />
+    <input type="submit" name="salvar" value="Salvar Dados" />
 {% endif %}
 </form>
 
