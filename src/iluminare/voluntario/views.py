@@ -97,18 +97,14 @@ class PontoForm(forms.ModelForm):
         self.fields.keyOrder = ['confirma','nome', 'tipo_vol','hora_inicio', 'hora_final']
         voluntario = kwargs.pop('instance')
         
-        # CORRIGIR
-        # por enquanto está funcionando com data fixa.
-        # preciso aprender a passar o parâmetro para o INIT().
-        #data=data_registro_ponto
-#        data = kwargs.pop('data')
-        
         self.fields['nome'].initial = voluntario.paciente.nome
         tipo_str = ''
         if voluntario.tipo == 'T':
             tipo_str = 'Trabalhador'
         elif voluntario.tipo == 'C':
             tipo_str = 'Colaborador'
+        elif voluntario.tipo == 'A':
+            tipo_str = 'Apoio'
         
         self.fields['tipo_vol'].initial = tipo_str
         
@@ -124,11 +120,6 @@ class PontoForm(forms.ModelForm):
         confirma_in = self.cleaned_data['confirma']
         hora_inicio_in = self.cleaned_data['hora_inicio']
         hora_final_in = self.cleaned_data['hora_final']
-        
-        # CORRIGIR        
-        # por enquanto está funcionando com data fixa.
-        # preciso aprender a passar o parâmetro para o save().
-        #data=global_data_registro_ponto
         
         if confirma_in:
             trabalhos = Trabalho.objects.filter(voluntario = voluntario, data=self.data_registro_ponto)
@@ -153,21 +144,24 @@ PontoFormSet = modelformset_factory(Voluntario, extra=0, form=PontoForm)
 
 def registra_ponto(request):
 
-    if request.method == "POST":
+    debug = ''
+    if request.method == 'POST':
         filtro_form = FiltroPontoForm(request.POST)
-
         if filtro_form.is_valid():
-            registro_ponto = filtro_form.cleaned_data['data']
-            PontoForm.data_registro_ponto = registro_ponto
-            
-            voluntarios = None
+            if 'pesquisar' in request.POST:
+                PontoForm.data_registro_ponto = filtro_form.cleaned_data['data']
+                
+                voluntarios = PontoFormSet(queryset=Voluntario.objects.filter(ativo=True))
+                
+        if 'salvar' in request.POST:
             try:
                 voluntarios = PontoFormSet(request.POST)
             except:
-                voluntarios = PontoFormSet(queryset=Voluntario.objects.filter(ativo=True))
-                
+                voluntarios = None
+
             if voluntarios.is_valid():
                 voluntarios.save()
+                
                 #voluntarios = PontoFormSet(queryset=Voluntario.objects.filter(ativo=True))
 
     else:
@@ -175,7 +169,7 @@ def registra_ponto(request):
         voluntarios = None
     
     return render_to_response('registra_ponto.html', {'filtro_form':filtro_form, 'voluntarios':voluntarios,\
-        'mensagem': voluntarios and voluntarios.errors})
+        'mensagem': voluntarios and voluntarios.errors, 'debug': debug})
     
 
 def consulta_ponto(request):
