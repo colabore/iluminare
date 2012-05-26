@@ -30,16 +30,18 @@ class VoluntarioForm(forms.ModelForm):
         voluntario = forms.ModelForm.save(self)
         return voluntario
 
-def render(request):
-	if request.method == "POST":
-		form_voluntario = VoluntarioForm(request.POST)
-		form_voluntario.save()
-		msg = "Novo voluntario cadastrado com sucesso"
-	else:
-		form_voluntario = VoluntarioForm()
-		msg = ""
+class VoluntarioIncluirForm(forms.ModelForm):
+    class Meta:
+        model = Voluntario
+        exclude = ('data_inicio','data_fim',)
 
-	return render_to_response('add-voluntario.html',{'form_voluntario': form_voluntario, 'msg': msg})
+    def __init__(self, *args, **kwargs):
+        super(VoluntarioIncluirForm, self).__init__(*args, **kwargs)
+        self.fields['observacao'].widget.attrs['rows'] = 4
+
+    def save(self):
+        voluntario = forms.ModelForm.save(self)
+        return voluntario
 
 
 def index(request):
@@ -75,6 +77,28 @@ class FiltroRelatiorioTrabalhosForm(forms.Form):
     data_inicial = forms.DateField(initial = data)
     data_final = forms.DateField(initial = datetime.date.today())
     dia_semana =  forms.ChoiceField(required=False, choices=DIA_SEMANA, initial='3')
+
+class FiltroConsultaVoluntariosForm(forms.Form):
+
+    TIPO = (
+        ('T', 'Trabalhador'),
+        ('C', 'Colaborador'),
+        ('A', 'Apoio'),
+        ('O', 'Todos'),
+    )
+
+    ATIVO = (
+        ('S', 'Sim'),
+        ('N', 'Não'),
+        ('T', 'Todos'),
+    )
+
+
+    def __init__(self, *args, **kwargs):
+        	super(FiltroConsultaVoluntariosForm, self).__init__(*args, **kwargs)
+
+    tipo =  forms.ChoiceField(required=False, choices=TIPO, initial='O')
+    ativo =  forms.ChoiceField(required=False, choices=ATIVO, initial='T')
 
 
 FiltroRelatiorioTrabalhosForm
@@ -232,6 +256,30 @@ def atualizar(request, voluntario_id):
     return render_to_response('crud-voluntario.html', {'form_voluntario':form_voluntario, 'mensagem':msg, \
         'nome_paciente':nome_paciente})
 
+def incluir_voluntario(request):
+    if request.method == "POST":
+        form_voluntario = VoluntarioIncluirForm(request.POST)
+        if form_voluntario.is_valid():
+            try:
+                paciente = form_voluntario.cleaned_data['paciente']
+                voluntarios = Voluntario.objects.filter(paciente = paciente)
+                if not voluntarios:
+                    form_voluntario.save()
+                    msg = "Voluntário incluído com sucesso."
+                else:
+                    msg = "Este paciente já é um voluntário. Verificar se está inativo."
+            except v_exc:
+                msg = "Erro na atualização do voluntário... " + v_exc
+        else:
+            msg = "Erro de validação dos dados. Verificar se todos os campos foram preenchidos corretamente."
+
+    else:
+        form_voluntario = VoluntarioIncluirForm()
+        msg = ""
+
+    return render_to_response('incluir-voluntario.html', {'form_voluntario':form_voluntario, 'mensagem':msg})
+
+
 def relatorio_trabalhos_geral(data_inicial_ordinal, data_final_ordinal, dia_semana_int):
     mensagem = ''
     lista_rotulos = []
@@ -347,3 +395,63 @@ def relatorio_trabalhos_csv(request, data_inicial_ordinal, data_final_ordinal, d
         writer.writerow(element)
 
     return response
+
+def relatorio_voluntarios_geral(tipo, ativo):
+    mensagem = ''
+
+    ativo_param = True
+    if ativo == 'N':
+        ativo_param = False
+    elif ativo == 'S':
+        ativo_param = True
+    
+    voluntarios = []
+    if tipo != 'O' and ativo != 'T':
+        voluntarios = Voluntario.objects.filter(ativo = ativo_param, tipo = tipo)
+    elif tipo != 'O' and ativo == 'T':
+        voluntarios = Voluntario.objects.filter(tipo = tipo)
+    elif tipo == 'O' and ativo != 'T':
+        voluntarios = Voluntario.objects.filter(ativo = ativo_param)
+    else:
+        voluntarios = Voluntario.objects.all()
+    return voluntarios, mensagem
+
+    
+def relatorio_voluntarios(request):
+    """
+        
+    """
+    form = FiltroConsultaVoluntariosForm()
+    mensagem = ''
+    voluntarios = []
+
+    if request.method == "POST":
+        form = FiltroConsultaVoluntariosForm(request.POST)
+
+        if form.is_valid():
+            tipo = form.cleaned_data['tipo']
+            ativo = form.cleaned_data['ativo']
+            voluntarios, mensagem = relatorio_voluntarios_geral(tipo, ativo)
+            if len(voluntarios) == 0:
+                mensagem = 'Nenhum registro'
+        else:
+            mensagem = 'Formulário inválido'
+
+    return render_to_response('relatorio-voluntarios.html', {'form':form, 'mensagem': mensagem, \
+        'voluntarios':voluntarios})
+
+def relatorio_voluntarios_csv(request, tipo, ativo):
+    """
+        Falta corrigir..
+    """
+    response = HttpResponse(mimetype='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=relatorio_voluntarios.csv'
+
+    writer = csv.writer(response)
+    lista_rotulos, lista_dados, mensagem = relatorio_voluntario_geral(tipo, ativo)
+    writer.writerow(lista_rotulos)
+    for element in lista_dados:
+        writer.writerow(element)
+
+    return response
+
