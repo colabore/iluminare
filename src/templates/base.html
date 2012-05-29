@@ -17,49 +17,46 @@
     </head>	
 <body>
 <div id="iluminare">
-	<div id="header">
-		<img id="logo" src="/static/img/quinta-logo.png" alt="logo quinta" width="280" height="87" />
-<div id="navcontainer">
-<ul id="qm0" class="qmmc">
-
-    <li><a class="qmparent" href="/">Inicial</a>
-</li>
-    <li><a class="qmparent" href="#">Pacientes</a>
-   <ul style="width:107px;">
-        <li><a href="/paciente/incluir">incluir</a></li>
-        </ul>  </li>
-
-    <li><a class="qmparent" href="#">Listagens</a>
-
-        <ul style="width:107px;">
-        <li><a href="/atendimento/listagem">Atendimento</a></li>
-        <li><a href="/atendimento/confirmacao">Confirmacao</a></li>
-        <li><a href="/atendimento/listagem-geral">Geral</a></li>
-        <li><a href="/atendimento/listagem-geral-fechamento">Geral - Fechamento</a></li>
-        </ul></li>
-
-    <li><a class="qmparent" href="#">Voluntários</a>
-
-        <ul style="width:97px;">
-        <li><a href="/voluntario/incluir-voluntario">Incluir Voluntário</a></li>
-        <li><a href="/voluntario/relatorio-voluntarios">Relatório Voluntários</a></li>
-        <li><a href="/voluntario/consulta-ponto">Consulta Pontos</a></li>
-        <li><a href="/voluntario/registra-ponto">Registra Pontos</a></li>
-        <li><a href="/voluntario/relatorio-trabalhos">Relatório Trabalhos</a></li>
-        </ul></li>
-
-    <li><a class="qmparent" href="#">Relatórios</a>
-
-        <ul style="width:86px;">
-        <li><a href="/atendimento/relatorio-atendimentos-dia">Atendimentos no dia</a></li>
-        <li><a href="/atendimento/relatorio-atendimentos-mes">Atendimentos no mês</a></li>
-        </ul></li>>
-
-<li class="qmclear">&nbsp;</li></ul>
-<script type="text/javascript">qm_create(0,false,0,500,false,false,false,false);</script>
-</div>
-
-	</div>
+    <div id="header">
+        <img id="logo" src="/static/img/quinta-logo.png" alt="logo quinta" width="280" height="87" />
+    <div id="navcontainer">
+        <ul id="qm0" class="qmmc">
+            <li><a class="qmparent" href="/">Inicial</a> </li>
+            <li><a class="qmparent" href="#">Pacientes</a>
+                <ul style="width:107px;">
+                    <li><a href="/paciente/incluir">Incluir Paciente</a></li>
+                    <li><a id="cadastro_rapido_paciente" href="#"> Incluir Paciente + Checkin</a></li>
+                </ul>
+            </li>
+            <li><a class="qmparent" href="#">Listagens</a>
+                <ul style="width:107px;">
+                    <li><a href="/atendimento/listagem">Atendimento</a></li>
+                    <li><a href="/atendimento/confirmacao">Confirmacao</a></li>
+                    <li><a href="/atendimento/listagem-geral">Geral</a></li>
+                    <li><a href="/atendimento/listagem-geral-fechamento">Geral - Fechamento</a></li>
+                </ul>
+            </li>
+            <li><a class="qmparent" href="#">Voluntários</a>
+                <ul style="width:97px;">
+                    <li><a href="/voluntario/incluir-voluntario">Incluir Voluntário</a></li>
+                    <li><a href="/voluntario/relatorio-voluntarios">Relatório Voluntários</a></li>
+                    <li><a href="/voluntario/consulta-ponto">Consulta Pontos</a></li>
+                    <li><a href="/voluntario/registra-ponto">Registra Pontos</a></li>
+                    <li><a href="/voluntario/relatorio-trabalhos">Relatório Trabalhos</a></li>
+                </ul>
+            </li>
+            <li><a class="qmparent" href="#">Relatórios</a>
+                <ul style="width:86px;">
+                    <li><a href="/atendimento/relatorio-atendimentos-dia">Atendimentos no dia</a></li>
+                    <li><a href="/atendimento/relatorio-atendimentos-mes">Atendimentos no mês</a></li>
+                </ul>
+            </li>
+            <li class="qmclear">&nbsp;</li>
+        </ul>
+        <script type="text/javascript">qm_create(0,false,0,500,false,false,false,false);</script>
+    </div>
+    </div>
+    
 	<div id="mensagem">
     {% if mensagem %}    
         {{mensagem}}
@@ -70,9 +67,9 @@
     
     {% endblock %}
 	</div>
-	<div id="footer">
+	<!--div id="footer">
 		<p>&nbsp; </p>
-	</div>
+	</div-->
 </div>
 </body>
 </html>
