@@ -31,10 +31,44 @@ class Paciente(models.Model):
         ('7', 'Mestrado'),
         ('8', 'Doutorado'))
 
+    ESTADO = (
+        ('AC', 'Acre'),
+        ('AL', 'Alagoas'),
+        ('AM', 'Amanozas'),
+        ('AP', 'Amapá'),
+        ('BA', 'Bahia'),
+        ('CE', 'Ceará'),
+        ('DF', 'Distrito Federal'),
+        ('ES', 'Espírito Santo'),
+        ('GO', 'Goiás'),
+        ('MA', 'Maranhão'),
+        ('MG', 'Minas Gerais'),
+        ('MS', 'Mato Grosso do Sul'),
+        ('MT', 'Mato Grosso'),
+        ('PA', 'Pará'),
+        ('PB', 'Paraíba'),
+        ('PE', 'Pernambuco'),
+        ('PI', 'Piauí'),
+        ('PR', 'Paraná'),
+        ('RJ', 'Rio de Janeiro'),
+        ('RN', 'Rio Grande no Norte'),
+        ('RO', 'Rondônia'),
+        ('RR', 'Roraima'),
+        ('RS', 'Rio Grande do Sul'),
+        ('SC', 'Santa Catarina'),
+        ('SE', 'Sergipe'),
+        ('SP', 'São Paulo'),
+        ('TO', 'Tocantins'))
+
     nome                    = models.CharField(max_length=100, blank = False, null = False)
-    sexo                    = models.CharField(max_length=1, choices = SEXO , null= True, blank = True)    
+    sexo                    = models.CharField(max_length=1, choices = SEXO , null= True, blank = True)
     telefones               = models.CharField(max_length=45, blank = True, null = True)
     endereco                = models.CharField(max_length=300, blank = True, null = True)
+    bairro                  = models.CharField(max_length=300, blank = True, null = True)
+    cidade                  = models.CharField(max_length=300, blank = True, null = True)
+    estado                  = models.CharField(max_length=2, choices = ESTADO , null= True, blank = True)
+    pais                    = models.CharField(max_length=300, blank = True, null = True)
+    cep                     = models.CharField(max_length=15, blank = True, null = True)
     email                   = models.EmailField(max_length=100, null=True, blank=True)    
     data_nascimento         = models.DateField(blank = True, null = True)    
     hora_nascimento         = models.TimeField(blank = True, null = True)
