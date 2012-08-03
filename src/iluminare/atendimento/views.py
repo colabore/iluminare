@@ -359,8 +359,19 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
         if redireciona_in:
             atendimento_atual_str = atendimento.instancia_tratamento.tratamento.descricao_basica
             its = InstanciaTratamento.objects.filter(data=atendimento.instancia_tratamento.data, tratamento__descricao_basica=redireciona_in)
-            if its and its[0] != atendimento.instancia_tratamento:
-                atendimento.instancia_tratamento = its[0]
+            
+            # pode ser que ainda não haja a instancia tratamento para o tratamento no dia.
+            # dificilmente isso ocorrerá em produção, pois esse processo é executado no final do dia.
+            # mas é importante que esteja mais robusto, pois executamos testes com poucos dados.
+            if not its:
+                tratamento = Tratamento.objects.get(descricao_basica=redireciona_in)
+                it = InstanciaTratamento(data=atendimento.instancia_tratamento.data, tratamento=tratamento)
+                it.save()
+            else:
+                it = its[0]
+                
+            if it != atendimento.instancia_tratamento:
+                atendimento.instancia_tratamento = it
                 obs = atendimento.observacao 
                 atendimento.observacao = obs + '[Checkin: ' + atendimento_atual_str + ' / Hoje foi para '+str(redireciona_in)+']'
         
