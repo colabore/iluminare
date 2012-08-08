@@ -33,15 +33,27 @@ class Voluntario(models.Model):
 
 
 class Trabalho(models.Model):
+    
+    STATUS = (
+        ('PR', "Presente"),
+        ('FA', "Falta"),
+        ('FV', "Falta por Viagem"),
+        ('FT', "Falta por Trabalho"),
+        ('FL', "Falta por Licença"),
+        ('FS', "Falta por Saúde"),
+        ('NA', "Não se Aplica"),
+        ('NI', "Não Informado")
+    )
+
     funcao          = models.ForeignKey(Funcao, null = False, blank = False)
     voluntario      = models.ForeignKey(Voluntario, null = False, blank = False)
-    
+    status          = models.CharField(max_length = 2, choices = STATUS, null=True, blank=True)
     data            = models.DateField(null = False, blank = False)
     hora_inicio     = models.TimeField(null=True, blank=True)
     hora_final      = models.TimeField(null=True, blank=True)
 
     def __unicode__(self):
-        return "%s: %s - %s (%s - %s)" % (self.funcao.descricao, self.voluntario.paciente.nome, self. data, self.hora_inicio, self.hora_final)
+        return "%s: %s - %s (%s - %s) - %s" % (self.funcao.descricao, self.voluntario.paciente.nome, self. data, self.hora_inicio, self.hora_final, self.status)
 
 # Dúvida.
 # Mantemos no model essa classe auxiliar ou criamos um relacionamento M-N diretamente em python?

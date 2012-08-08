@@ -13,6 +13,8 @@ from django.http import HttpResponse
 
 from django.utils.encoding import smart_str
 
+from voluntario.models import Trabalho
+
 
 class VoluntarioForm(forms.ModelForm):
     class Meta:
@@ -104,12 +106,16 @@ class FiltroConsultaVoluntariosForm(forms.Form):
 FiltroRelatiorioTrabalhosForm
 
 class PontoForm(forms.ModelForm):
+    STATUS_TRABALHO = Trabalho.STATUS
 
-    confirma = forms.BooleanField(required = False, label= 'Conf.')
+    #confirma = forms.BooleanField(required = False, label= 'Conf.')
+    # pf (Presença ou Falta)
+    pf = forms.ChoiceField(required=False, choices=STATUS_TRABALHO, initial='NI', label='P / F')
     nome = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'30'}))
-    tipo_vol = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'9'}))
+    tipo_vol = forms.CharField(required=False, label='Tipo', widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'9'}))
     hora_inicio = forms.TimeField(label='Inicio',required=False, widget=forms.TextInput(attrs={'size':'6'}))
     hora_final = forms.TimeField(label='Final',required=False, widget=forms.TextInput(attrs={'size':'6'}))
+    info_voluntario = forms.CharField(required=False, label='Info', widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'18'}))
     data_registro_ponto = None
     
     class Meta:
@@ -118,7 +124,7 @@ class PontoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(PontoForm, self).__init__(*args, **kwargs)
-        self.fields.keyOrder = ['confirma','nome', 'tipo_vol','hora_inicio', 'hora_final']
+        self.fields.keyOrder = ['nome', 'tipo_vol', 'info_voluntario','pf','hora_inicio', 'hora_final']
         voluntario = kwargs.pop('instance')
         
         self.fields['nome'].initial = voluntario.paciente.nome
@@ -131,37 +137,39 @@ class PontoForm(forms.ModelForm):
             tipo_str = 'Apoio'
         
         self.fields['tipo_vol'].initial = tipo_str
+        self.fields['info_voluntario'].initial = voluntario.observacao
         
         trabalho = Trabalho.objects.filter(voluntario = voluntario, data=self.data_registro_ponto)
         
         if len(trabalho) == 1:
-            self.fields['confirma'].initial = True
+            if trabalho[0].status:
+                self.fields['pf'].initial = trabalho[0].status
+            else:
+                self.fields['pf'].initial = 'PR'
             self.fields['hora_inicio'].initial = trabalho[0].hora_inicio
             self.fields['hora_final'].initial = trabalho[0].hora_final
+        else:
+            self.fields['pf'].initial = 'FA'
 
     def save(self, commit=True):
         voluntario = super(PontoForm, self).save(commit=False)
-        confirma_in = self.cleaned_data['confirma']
+        #confirma_in = self.cleaned_data['confirma']
+        pf_in = self.cleaned_data['pf']
         hora_inicio_in = self.cleaned_data['hora_inicio']
         hora_final_in = self.cleaned_data['hora_final']
-        
-        if confirma_in:
-            trabalhos = Trabalho.objects.filter(voluntario = voluntario, data=self.data_registro_ponto)
-            if len(trabalhos) == 0:
-                funcao = Funcao.objects.get(descricao='Geral')
-                trabalho = Trabalho(voluntario = voluntario, data=self.data_registro_ponto, funcao=funcao)
-            elif len(trabalhos) == 1:
-                trabalho = trabalhos[0]
-                
-            trabalho.hora_inicio = hora_inicio_in
-            trabalho.hora_final = hora_final_in
 
-            if trabalho.data == self.data_registro_ponto:
-                trabalho.save()
-        else:
-            trabalhos = Trabalho.objects.filter(voluntario = voluntario, data=self.data_registro_ponto)
-            if len(trabalhos) == 1:
-                trabalhos[0].delete()
+        trabalhos = Trabalho.objects.filter(voluntario = voluntario, data=self.data_registro_ponto)
+        if len(trabalhos) == 0:
+            funcao = Funcao.objects.get(descricao='Geral')
+            trabalho = Trabalho(voluntario = voluntario, data=self.data_registro_ponto, funcao=funcao)
+        elif len(trabalhos) == 1:
+            trabalho = trabalhos[0]
+
+        trabalho.hora_inicio = hora_inicio_in
+        trabalho.hora_final = hora_final_in
+        trabalho.status = pf_in
+        if trabalho.data == self.data_registro_ponto:
+            trabalho.save()
 
         
 PontoFormSet = modelformset_factory(Voluntario, extra=0, form=PontoForm)
