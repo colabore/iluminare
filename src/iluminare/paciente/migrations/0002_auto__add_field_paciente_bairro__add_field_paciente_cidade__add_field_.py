@@ -20,7 +20,7 @@ class Migration(SchemaMigration):
 
         # Adding field 'Paciente.estado'
         db.add_column('paciente_paciente', 'estado',
-                      self.gf('django.db.models.fields.CharField')(max_length=1, null=True, blank=True),
+                      self.gf('django.db.models.fields.CharField')(max_length=2, null=True, blank=True),
                       keep_default=False)
 
         # Adding field 'Paciente.pais'
@@ -71,7 +71,7 @@ class Migration(SchemaMigration):
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'endereco': ('django.db.models.fields.CharField', [], {'max_length': '300', 'null': 'True', 'blank': 'True'}),
             'escolaridade': ('django.db.models.fields.CharField', [], {'max_length': '1', 'null': 'True', 'blank': 'True'}),
-            'estado': ('django.db.models.fields.CharField', [], {'max_length': '1', 'null': 'True', 'blank': 'True'}),
+            'estado': ('django.db.models.fields.CharField', [], {'max_length': '2', 'null': 'True', 'blank': 'True'}),
             'estado_civil': ('django.db.models.fields.CharField', [], {'max_length': '1', 'null': 'True', 'blank': 'True'}),
             'frequencia': ('django.db.models.fields.CharField', [], {'max_length': '1', 'null': 'True', 'blank': 'True'}),
             'hora_nascimento': ('django.db.models.fields.TimeField', [], {'null': 'True', 'blank': 'True'}),
