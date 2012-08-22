@@ -481,6 +481,111 @@ def retorna_trabalhos_trabalhadores(data_inicial):
             lista.append(t.hora_inicio) #7
             lista.append(t.hora_final) #8
             spamWriter.writerow(lista)
+
+def retorna_trabalhos_trabalhadores_novo(data_inicial, data_final):
+    """
+        Retorna a listagens de objetos do tipo de trabalho para todos os trabalhadores
+        a partir da data_inicial
+        data_inicial é um objeto do tipo datetime.date
+        data_final é um objeto do tipo datetime.date
+
+        EXECUTAR.
+        
+        from datetime import *
+        from iluminare.limbo import consultas_gerais
+        d1 = datetime(2012, 01, 01)
+        d2 = datetime.today()
+        consultas_gerais.retorna_trabalhos_trabalhadores_novo(d1, d2)
+
+        
+    """
+    import datetime
+    spamWriter = csv.writer(open(dir_log+"trabalhos3.csv", 'wb'), delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    spamWriter.writerow(["Nome", #1
+                        "Tipo", #2
+                        "Tratamento(s)", #3
+                        "Data", #4
+                        "Dia semana", #5
+                        "Hora Inicio", #6
+                        "Hora Final", #7
+                        "Horas de trabalho"]) #8
+
+
+    vols = Voluntario.objects.filter(ativo=True)
+    
+    # criando lista básica de datas
+    lista_datas = []
+    d = data_inicial
+    while d <= data_final:
+        lista_datas.append(d)
+        d = d + datetime.timedelta(days=1)
+    
+    for vol in vols:
+        for data in lista_datas:
+            lista = []
+            
+            lista.append(smart_str(vol.paciente.nome)) #1
+            lista.append(smart_str(vol.tipo)) #2
+            tps = TratamentoPaciente.objects.filter(paciente = vol.paciente, status = 'A')
+            lista_tratamentos = ''
+            for tp in tps:
+                lista_tratamentos = tp.tratamento.descricao_basica + ', ' + lista_tratamentos
+            lista.append(lista_tratamentos) #3
+            lista.append(data) #4
+            dia_semana_int = data.weekday() 
+            dia_semana_str = ""
+            if dia_semana_int == 0:
+                dia_semana_str = "Segunda"
+            elif dia_semana_int == 1:
+                dia_semana_str = "Terça"
+            elif dia_semana_int == 2:
+                dia_semana_str = "Quarta"
+            elif dia_semana_int == 3:
+                dia_semana_str = "Quinta"
+            elif dia_semana_int == 4:
+                dia_semana_str = "Sexta"
+            elif dia_semana_int == 5:
+                dia_semana_str = "Sábado"
+            elif dia_semana_int == 6:
+                dia_semana_str = "Domingo"
+            lista.append(smart_str(dia_semana_str)) #5
+            
+            trabalhos_dia = Trabalho.objects.filter(data = data)
+            # garante que somente dias em que há pelo menos um registro de trabalho sejam apresentados
+            if trabalhos_dia:
+                trabalho = Trabalho.objects.filter(voluntario = vol, data = data)
+                if len(trabalho) == 1:
+                    trabalho = trabalho[0]
+                    
+                    if trabalho.hora_inicio:
+                        lista.append(trabalho.hora_inicio) #6
+                    else:
+                        lista.append("X") #6
+                        
+                    if trabalho.hora_final:
+                        lista.append(trabalho.hora_final) #7
+                    else:
+                        lista.append("X") #7
+                        
+                    if trabalho.hora_inicio and trabalho.hora_final:
+                        diferenca =  datetime.datetime.combine(date.today(), trabalho.hora_final) - \
+                            datetime.datetime.combine(date.today(), trabalho.hora_inicio)
+                        horas_trabalho = diferenca.__str__()
+                        lista.append(horas_trabalho) #8
+                    else:
+                        lista.append("X") #8
+                else:
+                    lista.append("X") #6
+                    lista.append("X") #7
+                    lista.append("X") #8
+            else:
+                lista.append("X") #6
+                lista.append("X") #7
+                lista.append("X") #8
+                
+
+            spamWriter.writerow(lista)
+
         
 
 def retorna_criancas():
