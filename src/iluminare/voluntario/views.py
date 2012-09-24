@@ -13,7 +13,7 @@ from django.http import HttpResponse
 
 from django.utils.encoding import smart_str
 
-from voluntario.models import Trabalho
+from iluminare.voluntario.models import Trabalho
 
 
 class VoluntarioForm(forms.ModelForm):
@@ -104,6 +104,19 @@ class FiltroConsultaVoluntariosForm(forms.Form):
 
 
 FiltroRelatiorioTrabalhosForm
+
+
+class FiltroRelatiorioTercasForm(forms.Form):
+
+    TIPO = (
+        ('T', 'Trabalhador'),
+        ('C', 'Colaborador')
+    )
+
+    def __init__(self, *args, **kwargs):
+        	super(FiltroRelatiorioTercasForm, self).__init__(*args, **kwargs)
+
+    tipo_voluntario =  forms.ChoiceField(required=True, choices=TIPO)
 
 class PontoForm(forms.ModelForm):
     STATUS_TRABALHO = Trabalho.STATUS
@@ -353,7 +366,7 @@ def relatorio_trabalhos_geral(data_inicial_ordinal, data_final_ordinal, dia_sema
 
     return lista_rotulos, lista_dados, mensagem
 
-   
+  
 def relatorio_trabalhos(request):
     """
         
@@ -462,4 +475,168 @@ def relatorio_voluntarios_csv(request, tipo, ativo):
         writer.writerow(element)
 
     return response
+
+
+def relatorio_tercas_geral(tipo):
+    """
+    O único parâmetro é o perfil do voluntário.
+    Nesse caso, só teremos Trabalhadores ou Colaboradores.
+    
+    O objetivo é gerar um relatório de presenças nas terças para o mês atual, 
+    o mês anterior e o mês retrasado.
+
+    """
+    mensagem = ''
+    lista_rotulos = []
+    lista_dados = []
+    lista_totais = []
+
+    voluntarios = Voluntario.objects.filter(ativo = True, tipo = tipo)
+    
+    lista_geral = []
+    lista_datas = []
+    
+    ### identificando os meses #####
+    hoje = datetime.datetime.today()
+    mes_atual = hoje.month
+    ano_atual = hoje.year
+    
+    mes_ant = mes_atual-1
+    ano_ant = ano_atual
+    if mes_ant == 0:
+        mes_ant = 12
+        ano_ant = ano_atual -1
+
+    mes_ret = mes_atual-2
+    ano_ret = ano_atual
+
+    if mes_ret == 0:
+        mes_ret = 12
+        ano_ret = ano_atual -1
+    elif mes_ret == -1:
+        mes_ret = 11
+        ano_ret = ano_atual -1
+
+    ################################
+    
+    data_inicial = datetime.datetime(ano_ret, mes_ret, 1)
+    data_final = hoje
+    for v in voluntarios:
+        trabalhos = Trabalho.objects.filter(voluntario = v, data__gte=data_inicial, \
+            data__lte=data_final, data__week_day = 3)
+        dic_voluntario = {}
+        dic_voluntario['voluntario'] = v
+        for trabalho in trabalhos:
+            dic_voluntario[trabalho.data] = trabalho
+            if trabalho.data not in lista_datas:
+                lista_datas.append(trabalho.data)
+        
+        lista_geral.append(dic_voluntario)
+    
+    # Cria uma lista com zeros. Exemplo: [0,0,0,0]
+    lista_totais = [0]*(len(lista_datas)+1)
+    
+    ### ordenando as datas e preparando rótulos ######
+    lista_datas.sort()
+    lista_rotulos.append("Voluntário")
+    data1 = None
+    mes1 = None
+    if lista_datas:
+        data1 = lista_datas[0]
+        mes1 = data1.month
+        
+    for data in lista_datas:
+        if data.month != mes1:
+            lista_rotulos.append("Relatório do mês "+str(mes1)+" [P, FA, F]")
+            mes1 = data.month
+        lista_rotulos.append(str(data))
+
+    if lista_datas:
+        mes = lista_datas[-1].month
+        lista_rotulos.append("Relatório do mês "+str(mes)+"[P, FA, F]")
+    
+    lista_rotulos.append("Relatório")
+    
+    ##################################################
+    
+    for dic_vol in lista_geral:
+        linha = []
+        linha.append(smart_str(dic_vol['voluntario'].paciente.nome))
+        cont_presencas = 0
+        cont_faltas_abonadas = 0
+        cont_faltas = 0
+
+        data1 = None
+        mes1 = None
+        if lista_datas:
+            data1 = lista_datas[0]
+            mes1 = data1.month
+        
+        for data in lista_datas:
+            if data.month != mes1:
+                linha.append("["+str(cont_presencas)+", "+str(cont_faltas_abonadas)+", "+str(cont_faltas)+"]")
+                mes1 = data.month
+                cont_presencas = 0
+                cont_faltas_abonadas = 0
+                cont_faltas = 0
+        
+            if data in dic_vol.keys():
+                trabalho = dic_vol[data]
+                if trabalho.status == None or trabalho.status == 'PR':
+                    linha.append("P")
+                    cont_presencas +=1
+                elif trabalho.status == 'FS' or trabalho.status == 'FV' or trabalho.status == 'FL':
+                    linha.append("J")
+                    cont_faltas_abonadas +=1
+                else:
+                    linha.append("F")
+                    cont_faltas +=1
+            else:
+                linha.append("F")
+                cont_faltas += 1
+        
+        linha.append("["+str(cont_presencas)+", "+str(cont_faltas_abonadas)+", "+str(cont_faltas)+"]")
+        linha.append("Relatório..")
+        
+        lista_dados.append(linha)
+    
+    return lista_rotulos, lista_dados, mensagem
+
+def relatorio_tercas(request):
+    """
+        
+    """
+    form = FiltroRelatiorioTercasForm()
+    mensagem = ''
+    lista_rotulos = []
+    lista_dados = []
+#    lista_totais = []
+    tipo_voluntario = ''
+
+    if request.method == "POST":
+        form = FiltroRelatiorioTercasForm(request.POST)
+
+        if form.is_valid():
+            tipo_voluntario = form.cleaned_data['tipo_voluntario']
+
+            lista_rotulos, lista_dados, mensagem = relatorio_tercas_geral(tipo_voluntario)
+
+        else:
+            mensagem = 'Formulário inválido'
+
+    return render_to_response('relatorio-tercas.html', {'form':form, 'lista_rotulos':lista_rotulos,\
+        'lista_dados':lista_dados,'mensagem': mensagem, 'tipo_voluntario':tipo_voluntario})
+
+def relatorio_tercas_csv(request, tipo_voluntario):
+    response = HttpResponse(mimetype='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=relatorio_tercas.csv'
+
+    writer = csv.writer(response)
+    lista_rotulos, lista_dados, mensagem = relatorio_tercas_geral(tipo_voluntario)
+    writer.writerow(lista_rotulos)
+    for element in lista_dados:
+        writer.writerow(element)
+
+    return response
+
 
