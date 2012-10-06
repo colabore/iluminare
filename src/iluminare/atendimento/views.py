@@ -25,6 +25,8 @@ from django.utils.encoding import smart_str
 
 from django.db.models import Q
 
+from django.db import transaction
+
 from sets import Set
 from django.db.models import Count
 
@@ -104,7 +106,7 @@ class CheckinPacienteForm(forms.ModelForm):
         model = Atendimento
         exclude = ['observacao', 'status', 'hora_atendimento', 'hora_chegada', 'instancia_tratamento', 'paciente', 'senha']
 
-
+@transaction.autocommit
 def ajax_checkin_paciente(request, paciente_id):
     paciente = get_object_or_404(Paciente, pk=paciente_id)
     
