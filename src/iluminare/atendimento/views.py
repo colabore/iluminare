@@ -204,7 +204,7 @@ def retornaInfo(atendimento):
                 instancia_tratamento__tratamento = tratamento, status='A', \
                 instancia_tratamento__data__gte=data_limite))
            
-            info_str = info_str + '[' + str(cont) + ']'
+            info_str = info_str + '[' + str(cont) + '] '
 
             # LISTA DE TRATAMENTOS
             tps = TratamentoPaciente.objects.filter(paciente = atendimento.paciente, status='A')
@@ -216,7 +216,7 @@ def retornaInfo(atendimento):
             tratamentos = tratamentos[:-2]
             
             if tratamentos != "":
-                info_str = info_str + '[' + tratamentos + ']'
+                info_str = info_str + '[' + tratamentos + '] '
             
             # [1a VEZ]
             # inclui o [1a vez] se o paciente também está realizando um atendimento de 1a vez no mesmo dia.
@@ -225,7 +225,7 @@ def retornaInfo(atendimento):
                 instancia_tratamento__tratamento__descricao_basica__startswith = "Prime", \
                 instancia_tratamento__data = datetime.datetime.today())
             if len(primeira_vez) == 1:
-                info_str = info_str + '[1a vez]'
+                info_str = info_str + '[Consulta de 1a vez] '
             
     except Tratamento.DoesNotExist:
         pass
@@ -256,13 +256,13 @@ def retornaInfo(atendimento):
     # condição para que seja [1a quinta]:
     # - o último atendimento foi de manutenção
     # - a quantidade de atendimentos nos últimos 3 meses em algum tratamento nas salas 1 a 5 = 0.
-    # - o atendimento (param) é sala 1 a 5.
+    # - Está fazendo check-in nas salas 1, 2, 3, 4 ou 5.
     # 
     if len(list(ats)) > 0 and len(list(atendimentos)) == 0 \
         and atendimento.instancia_tratamento.tratamento.descricao_basica[:4] == "Sala":
         ult_at = ats[0]
         if ult_at.instancia_tratamento.tratamento.descricao_basica[:4] == "Manu":
-            info_str = info_str + '[1a quinta]'
+            info_str = info_str + '[1a quinta] '
 
     # [SÓ TRATAMENTO] - caso dos voluntários que estão só se tratando.
     try:
@@ -274,24 +274,24 @@ def retornaInfo(atendimento):
             # [Só tratamento]
             # Dessa forma, a pessoa que estiver chamando não o deixará para o final.
             if len(trabalho) == 0:
-                info_str = info_str + u'[Só tratamento]'
+                info_str = info_str + u'[Só tratamento] '
     except Voluntario.DoesNotExist:
         pass
     
     try:
         prioridade =  DetalhePrioridade.objects.filter(paciente__id = atendimento.paciente.id)
         if len(prioridade) > 0:
-            info_str = info_str + '[' + prioridade[0].get_tipo_display() + ']'
+            info_str = info_str + '[' + prioridade[0].get_tipo_display() + '] '
     except DetalhePrioridade.DoesNotExist:
         pass
     
     # PRIORIDADE SÓ NO DIA
     if atendimento.prioridade:
-        info_str = info_str + '[Prioridade hoje]'
+        info_str = info_str + '[Prioridade hoje] '
     
     # OBSERVACAO PRIORIDADE
     if atendimento.observacao_prioridade:   
-        info_str = info_str + '[' + atendimento.observacao_prioridade + ']' 
+        info_str = info_str + '[' + atendimento.observacao_prioridade + '] ' 
 
     # ACOMPANHA: ...
     if atendimento.paciente.acompanhante:
@@ -299,8 +299,22 @@ def retornaInfo(atendimento):
         at = Atendimento.objects.filter(paciente = atendimento.paciente.acompanhante, \
             instancia_tratamento__data = atendimento.instancia_tratamento.data)
         if dp and at:
-            nome_prioridade = atendimento.paciente.acompanhante.nome[:10]+'...'
-            info_str = info_str + '[Acompanha: ' + unicode(nome_prioridade) + ']'
+            nome_prioridade = atendimento.paciente.acompanhante.nome[:15]+'...'
+            info_str = info_str + '[Acompanha: ' + unicode(nome_prioridade) + '] '
+
+    # É ACOMPANHADO POR: ...
+    # Verifica se o paciente em questão é acompanhado por alguém. Ou seja, se há algum paciente cujo acompanhante seja o 
+    # paciente do atendimento em questão.
+    ps = Paciente.objects.filter(acompanhante = atendimento.paciente)
+    for p in ps:
+        dp = DetalhePrioridade.objects.filter(paciente = atendimento.paciente)
+        at = Atendimento.objects.filter(paciente = p, \
+            instancia_tratamento__data = atendimento.instancia_tratamento.data)
+        # verifica se o paciente de atendimento.paciente é prioridade e se p (o seu acompanhante) fez checkin no dia.
+        if dp and at:
+            nome_acompanhante = p.nome[:15]+'...'
+            info_str = info_str + '[Acompanhada por: ' + unicode(nome_acompanhante) + '] '
+
 
     return info_str
     
@@ -375,7 +389,7 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
             if it != atendimento.instancia_tratamento:
                 atendimento.instancia_tratamento = it
                 obs = atendimento.observacao 
-                atendimento.observacao = obs + '[Checkin: ' + atendimento_atual_str + ' / Hoje foi para '+str(redireciona_in)+']'
+                atendimento.observacao = obs + '[Checkin: ' + atendimento_atual_str + ' / Hoje foi para '+str(redireciona_in)+'] '
         
         if encaminha_in:
             tratamento = Tratamento.objects.get(descricao_basica = encaminha_in)
@@ -384,14 +398,14 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
                 lista_t.append(tratamento)
                 tratamento_logic.encaminhar_paciente(atendimento.paciente.id, lista_t)
                 obs = atendimento.observacao 
-                atendimento.observacao = obs + '[Encaminhado para '+str(encaminha_in)+']'
+                atendimento.observacao = obs + '[Encaminhado para '+str(encaminha_in)+'] '
         
         if frequencia_in != 'X':
             # significa que se trata de um atendimento de primeira vez, pois somente estes podem ser alterados.
             atendimento.paciente.frequencia = frequencia_in
             atendimento.paciente.save()
             obs = atendimento.observacao 
-            atendimento.observacao = obs + '[Freq: '+str(frequencia_in)+']'
+            atendimento.observacao = obs + '[Freq: '+str(frequencia_in)+'] '
 
         
         if confirma_in:
@@ -550,16 +564,19 @@ def exibir_listagem(request, pagina = None):
                         
                     atendimentos_previstos = []
                     for at in atendimentos_previstos1:
-                        atendimentos_previstos.append(at)
+                        if at not in atendimentos_previstos: 
+                            atendimentos_previstos.append(at)
                     for at in atendimentos_previstos2:
-                        atendimentos_previstos.append(at)
+                        if at not in atendimentos_previstos: 
+                            atendimentos_previstos.append(at)
                     for at in atendimentos_previstos3:
                         dps = DetalhePrioridade.objects.filter(paciente = at.paciente.acompanhante)
                         ats = Atendimento.objects.filter(paciente = at.paciente.acompanhante, \
                             instancia_tratamento__data = at.instancia_tratamento.data)
                         # garante que a pessoa que é acompanha é uma prioridade e que ela fez check-in no dia.
                         if dps and ats:
-                            atendimentos_previstos.append(at)
+                            if at not in atendimentos_previstos: 
+                                atendimentos_previstos.append(at)
                 
                 voluntarios = Voluntario.objects.filter(ativo=True)
                 pacientes_voluntarios = []
@@ -567,15 +584,31 @@ def exibir_listagem(request, pagina = None):
                     pacientes_voluntarios.append(v.paciente)
                     
                 for atendimento in atendimentos_previstos:
+
+                    prioridade = False
+                    dps = DetalhePrioridade.objects.filter(paciente = atendimento.paciente)
+                    eh_acompanhante = False
+                    # quando acompanha algum paciente prioridade também é prioridade..
+                    if atendimento.paciente.acompanhante:
+                        dp = DetalhePrioridade.objects.filter(paciente = atendimento.paciente.acompanhante)
+                        at = Atendimento.objects.filter(paciente = atendimento.paciente.acompanhante, \
+                            instancia_tratamento__data = atendimento.instancia_tratamento.data)
+                        if dp and at:
+                            eh_acompanhante = True
+
+                    # 3 casos possíveis de prioridade: prioridade no dia, prioridade em si, acompanha prioridade.
+                    if atendimento.prioridade or dps or eh_acompanhante:
+                        prioridade = True
+
                     if voluntario_in:
                         if atendimento.paciente in pacientes_voluntarios:
                             info_str = retornaInfo(atendimento)
                             retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, \
-                                'info': info_str, 'prioridade': False, 'senha':atendimento.senha})
+                                'info': info_str, 'prioridade': prioridade, 'senha':atendimento.senha})
                     else:
                         info_str = retornaInfo(atendimento)
                         retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, \
-                            'info': info_str, 'prioridade': False, 'senha':atendimento.senha})
+                            'info': info_str, 'prioridade': prioridade, 'senha':atendimento.senha})
                         
                             
             retorno_com_hora = [];

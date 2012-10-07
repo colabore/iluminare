@@ -9,42 +9,96 @@ function pagina(number){
 }
 </script>
 
-<style media="print" type="text/css">
+<style type="text/css">
 
 @PAGE landscape {size: landscape;}
 
 div .listagem_form {
     display: none;
-
-}
-table {
-	border-width: 2px;
-	border-spacing: 2px;
-	border-style: dotted;
-	border-color: gray;
-	border-collapse: collapse;
-	background-color: white;    
 }
 
-table th {
-	border-width: 1px;
-	padding: 1px;
-	border-style: dotted;
-	border-color: gray;
-	background-color: white;
-}
-table td {
-	border-width: 1px;
-	padding: 1px;
-	border-style: dotted;
-	border-color: gray;
-	background-color: white;
+@media print {
+    table {
+        border-width: 2px;
+        border-spacing: 2px;
+        border-style: dotted;
+        border-color: gray;
+        border-collapse: collapse;
+    }
+
+    table th {
+        border-width: 1px;
+        padding: 1px;
+        border-style: dotted;
+        border-color: gray;
+    }
+    table td {
+        border-width: 1px;
+        padding: 1px;
+        border-style: dotted;
+        border-color: gray;
+    }
+
+    #header {
+        display: none;
+    }
+
 }
 
-#header {
-    display: none;
+@media screen {
+    table {
+        border-width: 2px;
+        border-spacing: 2px;
+        border-style: none;
+        border-color: gray;
+        border-collapse: collapse;
+        background-color: white;
+    }
+
+    table th {
+        font-size:15px;
+        font-weight:normal;
+        color:black;
+        border-bottom:2px solid #6678b1;
+        padding:4px 4px;
+    }
+    table td {
+        border-bottom:1px solid #ccc;
+        color:black;
+        vertical-align:middle;
+        padding:2px 3px;
+        font-size:14px
+    }
+
 }
 
+#pagina table {
+        border-width: 0px;
+        border-spacing: 0px;
+        border-style: dotted;
+        border-color: gray;
+        border-collapse: collapse;
+        background-color: white;
+}
+
+#pagina table th {
+        border-width: 0px;
+        padding: 0px;
+        border-style: dotted;
+        border-color: gray;
+        background-color: white;
+}
+
+#pagina table td {
+        border-width: 0px;
+        padding: 0px;
+        border-style: dotted;
+        border-color: gray;
+        background-color: white;
+        font-size:14px;
+        font-weight:normal;
+        color:black;
+}
 </style>
 
 
@@ -57,19 +111,20 @@ table td {
        Tratamento: {{ form_listagem.tratamento }}
        {{ form_listagem.prioridade }} Prioridades
        {{ form_listagem.voluntario }} Voluntários
-        <input type="submit" class="listagem_form" value="Pesquisar"/>
+        <input type="submit" value="Pesquisar"/>
 </table>
 <br>
 
 
 {% if pagina_atual.paginator.object_list|length > 0 %}
+<div id='pagina'>
     <table>
     <td>
     <b>{{ tratamento }} &nbsp;</b>
     </td>
     <td>
     <b>
-    <div class="pagination">
+    <div>
 		    <span class="step-links">
 		    <span class="current"> Página {{ pagina_atual.number }} </span>
             [
@@ -87,48 +142,45 @@ table td {
     </b>
     </td>
     </table>
+</div>
 {% endif %}
 
 <br>
-<table class="listagem_form">
-
+<table>
 	<table>
-		
-
-        
 		{% for atendimento in pagina_atual.object_list %}
             {% if forloop.first %}
 
 		      <tr>	
 				<th width="50" align="center"> Senha </th>		
 			    <th width="30"> Ch </th>
+			    <th width="30"> At </th>
 			    <th> Hora cheg. </th>
 			    <th width="260"> Nome </th>
 			    <th> Info </th>
 			    <th> Observação </th>
-			    <th width="30"> At </th>	
 		      </tr>
 		      
             {% endif %}
 			
 			 {% if atendimento.prioridade %} 
 			 <tr>
-				<td class = 'prioridade' align="center"> {{atendimento.senha}} </td>
-				<td class = 'prioridade' ></td>
-				<td class = 'prioridade' align="center"> {{atendimento.hora}} </td>
-				<td class = 'prioridade'> {{atendimento.nome}} </td>
-				<td class = 'prioridade'> {{atendimento.info}} </td>
-				<td class = 'prioridade'></td>
-				<td class = 'prioridade'></td>
-			  </tr>
-			 {% else %}
-			  <tr>
-				<td align="center"> {{atendimento.senha}} </td>
+				<td align="center"> < {{atendimento.senha}} > </td>
+				<td></td>
 				<td></td>
 				<td align="center"> {{atendimento.hora}} </td>
 				<td> {{atendimento.nome}} </td>
 				<td> {{atendimento.info}} </td>
 				<td></td>
+			  </tr>
+			 {% else %}
+			  <tr>
+				<td align="center"> {{atendimento.senha}} </td>
+				<td></td>
+				<td></td>
+				<td align="center"> {{atendimento.hora}} </td>
+				<td> {{atendimento.nome}} </td>
+				<td> {{atendimento.info}} </td>
 				<td></td>
 			  </tr>
 			 {% endif %}
@@ -137,10 +189,4 @@ table td {
 </table>
 
 </form>
-
-
-
-
-
-
 {% endblock %}
