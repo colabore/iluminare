@@ -111,8 +111,17 @@ def checkin_paciente(paciente, tratamento, prioridade_bool, \
             if dic_regras['sucesso'] or forcar_checkin:
                 if horario_autorizado(tratamento) or forcar_checkin:
                     senha = proxima_senha(tratamento)
-                    at = Atendimento(instancia_tratamento = it, paciente = paciente, prioridade = prioridade_bool, senha = senha, \
-                        observacao_prioridade = observacao_prioridade_str, status = 'C')
+
+                    # Verifica se o paciente já é prioridade.
+                    # se ele já for prioridade e tiver sido marcada prioridade no dia, 
+                    # a prioridade no dia é ignorada.
+                    if prioridade_bool:
+                        dp = DetalhePrioridade.objects.filter(paciente = paciente)
+                        if dp:
+                            prioridade_bool = False
+
+                    at = Atendimento(instancia_tratamento = it, paciente = paciente, prioridade = prioridade_bool, \
+                        senha = senha, observacao_prioridade = observacao_prioridade_str, status = 'C')
                     at.hora_chegada=datetime.now()
                     at.save()
                     dic_retorno['mensagem'] = smart_str("CHECK-IN realizado com SUCESSO (%s)" \
