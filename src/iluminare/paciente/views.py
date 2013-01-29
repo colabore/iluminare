@@ -201,7 +201,7 @@ def atualizar(request, paciente_id):
         msg = ""
 
     return render_to_response('crud-paciente.html', {'form_paciente':form_paciente, 'form_detalhe_prioridade':form_detalhe_prioridade, \
-        'form_tratamento_paciente':form_tratamento_paciente, 'mensagem':msg})
+        'form_tratamento_paciente':form_tratamento_paciente, 'mensagem':msg, 'titulo': 'ATUALIZAR PACIENTE'})
     
 
 def incluir_paciente(request):
@@ -232,7 +232,7 @@ def incluir_paciente(request):
         
 
     return render_to_response('crud-paciente.html', {'form_paciente':form_paciente, 'form_detalhe_prioridade':form_detalhe_prioridade, \
-        'form_tratamento_paciente':form_tratamento_paciente, 'mensagem':msg})
+        'form_tratamento_paciente':form_tratamento_paciente, 'mensagem':msg, 'titulo':'INCLUIR PACIENTE'})
 
 def ajax_consultar_paciente(request, paciente_id):
     try:

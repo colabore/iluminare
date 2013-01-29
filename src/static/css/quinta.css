@@ -1,32 +1,61 @@
 body {
 	background-color: #FFF;
-	background: #FFF url("../img/quinta-bg1.jpg") repeat-x;
+	background: #FFF url("../img/quinta-header-background.jpg") repeat-x;
 	margin: 0px 
 }
 #iluminare {
 	margin: 0px auto;
 	width: 960px;
 	background-color: transparent;
-	font-family: Georgia;
+/*	font-family: Georgia; */
 }
-#header {
+
+#header { /* Header geral */
 	margin: 0px auto;
-	height: 150px;
+	height: 100px;
 	position: relative;
 	background-color: transparent;
 }
-#logo {
+#logo { /* Logo da Quinta de Luz */
 	position: absolute;
-	top: 40px;
-	left: 30px;
+	top: 15px;
+	left: 20px;
 	background-color: transparent;
 }
-
-#navcontainer {
+#navcontainer { /* Menu de navegação */
 	position: absolute;
-	top: 80px;
-	right: 50px;
+	top: 60px;
+	left: 320px;
 }
+#titulo { /* Título de cada página */
+    font-family: verdana, arial, sans-serif;
+    color: #616161;
+    font-weight: 700;
+} 
+
+#footer { /* Footer geral */
+    position:fixed;
+    left: 0;
+    bottom:0;
+    width:100%;
+	background-color: #FFF;
+	background: #FFF url("../img/quinta-bg3.jpg") repeat-x;
+	margin: 0px;
+}
+
+#mensagem_sucesso { /* Mensagem de Sucesso do Sistema */
+    font-family: verdana, arial, sans-serif;
+    font-size: 12px;
+    color: #098800;
+    font-weight: bold;
+} 
+
+#mensagem_erro { /* Mensagem de erro do Sistema */
+    font-family: verdana, arial, sans-serif;
+    font-size: 12px;
+    color: #ff0412;
+    font-weight: bold;
+} 
 
 #navlist
 {
@@ -58,6 +87,7 @@ background-color: #D3E3B5;
 }
 #content {
 	margin: 0px auto;
+	margin-left: 20px;
 	margin-bottom: 40px;
 	position: relative;
 	font-family: Arial;
@@ -69,16 +99,20 @@ background-color: #D3E3B5;
 	height: 50px;
 	position: relative;
 }
+/*
 #search-box button {
 	height: 25px;
 	position: relative;	
 	float: left;
 }
+*/
+
+/* TextBox da busca de pacientes na tela inicial */
 #form-search {
 	background-color: none;
 	margin-right: 10px;
-	float: left;	
-}
+	float: center;
+} /* Formato do texto do textbox da tela inicial. */
 .textInput {
 	margin: 0px auto;	
 	color: #333333;
@@ -87,16 +121,11 @@ background-color: #D3E3B5;
 	font-size: 1.2em;
 	float: left;
 }
-#search-results {
+#search-results { /* Resultado da busca do paciente na tela inicial */
 	margin: 0px auto;
 	width: 750px;
 	min-height: 300px;
 	border: 1px solid #fff;
-}
-#footer {
-	margin: 0px auto;
-	height: 100px;
-	background-color: #3AA;
 }
 div .paciente_checkin {
     max-width:450px;
@@ -121,3 +150,32 @@ p.senha-falha {
     color: red;
     font-size: 30px;
 }
+
+#tabela-padrao {
+    font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size:13px;
+    background:#fff;
+    border-collapse:collapse;
+    text-align:left;
+    margin:20px;}
+#tabela-padrao th {
+    font-size:14px;
+    font-weight:normal;
+    color:#039;
+    border-bottom:2px solid #6678b1;
+    padding:4px 4px;}
+#tabela-padrao td {
+    border-bottom:1px solid #ccc;
+    color:#669;
+    vertical-align:middle;
+    padding:4px 4px;}
+#tabela-padrao tbody tr:hover td {color:#009;}
+
+#paginacao{
+    font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size:14px;
+    background:#fff;
+    border-collapse:collapse;
+    text-align:left;
+}
+

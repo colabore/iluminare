@@ -1,17 +1,6 @@
 {% extends "base.html"%}
 {% block content %}
 
-<style>
-#hor-minimalist-b{font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;font-size:13px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}
-#hor-minimalist-b th{font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:4px 4px;}
-#hor-minimalist-b td{border-bottom:1px solid #ccc;color:#669;vertical-align:middle;padding:2px 3px;}
-#hor-minimalist-b tbody tr:hover td{color:#009;}
-#titulo{font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;font-size:14px;background:#fff;border-collapse:collapse;text-align:left;margin:10px;}
-#titulo td{padding:2px 4px;vertical-align:middle;}
-#paginacao{font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;font-size:14px;background:#fff;border-collapse:collapse;text-align:left;}
-
-</style>
-
 <form name="form_listagem_fechamento" method="POST" action="/atendimento/listagem-geral-fechamento/" >
 
 <table>
@@ -20,7 +9,7 @@
         <input type="submit" value="Pesquisar"/>
 </table>
 
-<table id="hor-minimalist-b">
+<table id="tabela-padrao">
     
 	{% for atendimento in retorno %}
         {% if forloop.first %}
@@ -59,10 +48,4 @@
 </table>
 
 </form>
-
-
-
-
-
-
 {% endblock %}

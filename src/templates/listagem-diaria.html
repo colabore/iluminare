@@ -103,7 +103,6 @@ div .listagem_form {
 
 
 
-
 <form name="listagemdiaria" method="POST" action="/atendimento/listagem/" >
 
 <table>
@@ -118,6 +117,7 @@ div .listagem_form {
 
 {% if pagina_atual.paginator.object_list|length > 0 %}
 <div id='pagina'>
+    
     <table>
     <td>
     <b>{{ tratamento }} &nbsp;</b>

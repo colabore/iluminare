@@ -214,7 +214,7 @@ def registra_ponto(request):
         voluntarios = None
     
     return render_to_response('registra_ponto.html', {'filtro_form':filtro_form, 'voluntarios':voluntarios,\
-        'mensagem': voluntarios and voluntarios.errors, 'debug': debug})
+        'mensagem': voluntarios and voluntarios.errors, 'debug': debug, 'titulo': 'REGISTRAR PONTOS'})
     
 
 def consulta_ponto(request):
@@ -252,7 +252,8 @@ def consulta_ponto(request):
             mensagem_erro = 'Formulário inválido'
 
     
-    return render_to_response('consulta_ponto.html', {'form':form, 'retorno':retorno,'mensagem': mensagem_erro})
+    return render_to_response('consulta_ponto.html', {'form':form, 'retorno':retorno,'mensagem': mensagem_erro,
+                                'titulo':'CONSULTAR PONTOS'})
 
 
 def atualizar(request, voluntario_id):
@@ -275,7 +276,7 @@ def atualizar(request, voluntario_id):
         msg = ""
 
     return render_to_response('crud-voluntario.html', {'form_voluntario':form_voluntario, 'mensagem':msg, \
-        'nome_paciente':nome_paciente})
+        'nome_paciente':nome_paciente, 'titulo': 'ATUALIZAR VOLUNTÁRIO'})
 
 def incluir_voluntario(request):
     if request.method == "POST":
@@ -298,7 +299,8 @@ def incluir_voluntario(request):
         form_voluntario = VoluntarioIncluirForm()
         msg = ""
 
-    return render_to_response('incluir-voluntario.html', {'form_voluntario':form_voluntario, 'mensagem':msg})
+    return render_to_response('incluir-voluntario.html', {'form_voluntario':form_voluntario, 'mensagem':msg,
+                                'titulo': 'INCLUIR VOLUNTÁRIO'})
 
 
 def relatorio_trabalhos_geral(data_inicial_ordinal, data_final_ordinal, dia_semana_int):
@@ -403,7 +405,7 @@ def relatorio_trabalhos(request):
 
     return render_to_response('relatorio-trabalhos.html', {'form':form, 'lista_rotulos':lista_rotulos,\
         'lista_dados':lista_dados,'mensagem': mensagem, 'data_inicial_ordinal':data_inicial_ordinal, \
-        'data_final_ordinal':data_final_ordinal,'dia_semana_int':dia_semana_int})
+        'data_final_ordinal':data_final_ordinal,'dia_semana_int':dia_semana_int, 'titulo': 'RELATÓRIO DE TRABALHOS'})
 
 def relatorio_trabalhos_csv(request, data_inicial_ordinal, data_final_ordinal, dia_semana_int):
     response = HttpResponse(mimetype='text/csv')
@@ -459,7 +461,7 @@ def relatorio_voluntarios(request):
             mensagem = 'Formulário inválido'
 
     return render_to_response('relatorio-voluntarios.html', {'form':form, 'mensagem': mensagem, \
-        'voluntarios':voluntarios})
+        'voluntarios':voluntarios, 'titulo': 'LISTAR VOLUNTÁRIOS'})
 
 def relatorio_voluntarios_csv(request, tipo, ativo):
     """

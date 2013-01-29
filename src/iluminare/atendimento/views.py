@@ -445,7 +445,7 @@ def confirmacao(request):
         filtro_form = FiltroAtendimentosForm()
         atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.none())
     
-    return render_to_response('confirmacao_atendimentos.html', {'filtro_form':filtro_form, 'atendimentos':atendimentos, 'mensagem':atendimentos.errors})
+    return render_to_response('confirmacao_atendimentos.html', {'filtro_form':filtro_form, 'atendimentos':atendimentos, 'mensagem':atendimentos.errors, 'titulo': 'CONFIRMAR ATENDIMENTOS', 'mensagem_sucesso': None, 'mensagem_erro': None})
 
 def index(request):
 	return render_to_response('index.html')
@@ -491,42 +491,6 @@ class RelatorioAtendimentosConsolidadoMesForm(forms.Form):
 
     data = forms.DateField(initial = datetime.date.today)
 
-class RelatorioAtendimentoData(forms.Form):
-
-	def __init__(self, *args, **kwargs):
-		super(RelatorioAtendimentoData,self).__init__(*args, **kwargs)
-		self.fields['tratamento'].choices = [('', '----------')] + [(tratamento.id, tratamento.descricao_basica) for tratamento in 			  			Tratamento.objects.all	()]
-
-	STATUS = (
-		('C','CHECK-IN'), 
-		('I','IMPRESSO'), 
-		('X','CHAMADO'), 
-		('A','ATENDIDO'), 
-		('N','NAO-ATENDIDO'))
-	
-	status = forms.ChoiceField(choices= STATUS)
-
-	data = forms.DateField(initial = datetime.date.today)
-	tratamento = forms.ChoiceField(choices=())
-
-
-	
-
-def exibir_relatorio_atendimento(rquest):
-
-	form_relatorio = RelatorioAtendimentoData()
-	mensagem_erro = ''	
-	
-	if request.method == "POST":
-		
-		if form_listagem.is_valid():
-			data_in = form_listagem.cleaned_data['data']
-			tratamento_in = form_listagem.cleaned_data['tratamento']
-		else:
-			mensagem_erro = 'formulário inválido'	
-		
-
-	return render_to_response('relatorio-atendimento.html', {'form_relatorio':form_relatorio})
 
 def exibir_listagem(request, pagina = None):
 
@@ -639,7 +603,8 @@ def exibir_listagem(request, pagina = None):
     return render_to_response('listagem-diaria.html', {'form_listagem':form_listagem, 
                             'mensagem': mensagem_erro,
                             'pagina_atual':pagina_atual,
-                            'tratamento':tratamento})
+                            'tratamento':tratamento,
+                            'titulo':'IMPRIMIR ATENDIMENTOS'})
 
 def exibir_listagem_geral(request):
 
@@ -671,7 +636,8 @@ def exibir_listagem_geral(request):
     return render_to_response('listagem-diaria-geral.html', {'form_listagem':form_listagem, 
                             'mensagem': mensagem_erro,
                             'retorno':retorno,
-                            'tratamento':tratamento})
+                            'tratamento':tratamento,
+                            'titulo': 'LISTAGEM GERAL DE ATENDIMENTOS'})
 
 def exibir_listagem_geral_fechamento(request):
 
@@ -707,7 +673,8 @@ def exibir_listagem_geral_fechamento(request):
     return render_to_response('listagem-diaria-geral-fechamento.html', {'form_listagem_fechamento':form_listagem, 
                             'mensagem': mensagem_erro,
                             'retorno':retorno,
-                            'tratamento':tratamento})
+                            'tratamento':tratamento,
+                            'titulo': 'LISTAGEM GERAL DE ATENDIMENTOS - FECHAMENTO'})
 
 
 def exibir_atendimentos_paciente(request, paciente_id, pagina = None):
@@ -741,7 +708,8 @@ def exibir_atendimentos_paciente(request, paciente_id, pagina = None):
 	pagina_atual = paginacao.page(num_pagina)	
 	
 	return render_to_response('lista-atendimentos.html',{'mensagem': mensagem_erro, \
-	    'pagina_atual': pagina_atual, 'paciente_id': paciente_id, 'nome_paciente': paciente.nome })	
+	    'pagina_atual': pagina_atual, 'paciente_id': paciente_id, 'nome_paciente': paciente.nome,
+	    'titulo': 'LISTAGEM DE ATENDIMENTOS' })
 
 def relatorio_atendimentos_dia(request):
 
@@ -812,7 +780,8 @@ def relatorio_atendimentos_dia(request):
 
     return render_to_response('relatorio-atendimentos-dia.html', {'form':form, 
                             'mensagem': mensagem_erro,
-                            'retorno':retorno})
+                            'retorno':retorno,
+                            'titulo': 'RELATÓRIO - ATENDIMENTOS POR DIA'})
 
 def relatorio_atendimentos_mes_geral(data_ordinal):
     mensagem_erro = ''
@@ -907,7 +876,8 @@ def relatorio_atendimentos_mes(request):
                             'mensagem': mensagem_erro,
                             'retorno':retorno,
                             'lista_rotulos': lista_rotulos,
-                            'data_ordinal':data_ordinal})
+                            'data_ordinal':data_ordinal,
+                            'titulo': 'RELATÓRIO - ATENDIMENTOS POR MÊS'})
 
 def relatorio_atendimentos_mes_csv(request, data_ordinal):
     response = HttpResponse(mimetype='text/csv')
