@@ -436,23 +436,28 @@ ConfirmacaoAtendimentoFormSet = modelformset_factory(Atendimento, extra=0,
     form=ConfirmacaoAtendimentoForm)
 
 def confirmacao(request):
+    mensagem_erro = None
+    mensagem_sucesso = None
     if request.method == "POST":
         filtro_form = FiltroAtendimentosForm(request.POST)
         atendimentos = ConfirmacaoAtendimentoFormSet(request.POST)
 	
         if atendimentos.is_valid():
             atendimentos.save()
+            mensagem_sucesso = 'Dados salvos com sucesso.'
 	
         if filtro_form.is_valid() and atendimentos.is_valid():
             tratamento = filtro_form.cleaned_data['tratamento']
             data	   = filtro_form.cleaned_data['data']
             atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.filter(instancia_tratamento__data=data,instancia_tratamento__tratamento=tratamento))
+        else:
+            mensagem_erro = 'Erro no formulário.'
 
     else:
         filtro_form = FiltroAtendimentosForm()
         atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.none())
     
-    return render_to_response('confirmacao_atendimentos.html', {'filtro_form':filtro_form, 'atendimentos':atendimentos, 'mensagem':atendimentos.errors, 'titulo': 'CONFIRMAR ATENDIMENTOS', 'mensagem_sucesso': None, 'mensagem_erro': None})
+    return render_to_response('confirmacao_atendimentos.html', {'filtro_form':filtro_form, 'atendimentos':atendimentos, 'mensagem':atendimentos.errors, 'titulo': 'CONFIRMAR ATENDIMENTOS', 'mensagem_sucesso': mensagem_sucesso, 'mensagem_erro': mensagem_erro})
 
 def index(request):
 	return render_to_response('index.html')
