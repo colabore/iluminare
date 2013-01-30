@@ -31,6 +31,7 @@ from sets import Set
 from django.db.models import Count
 
 import csv
+import sys
 
 class CheckinPacienteForm(forms.ModelForm):
 
@@ -281,7 +282,10 @@ def retornaInfo(atendimento):
     try:
         prioridade =  DetalhePrioridade.objects.filter(paciente__id = atendimento.paciente.id)
         if len(prioridade) > 0:
-            info_str = info_str + '[' + prioridade[0].get_tipo_display() + '] '
+            if prioridade[0].tipo == 'C':
+                info_str = info_str + '[C] '
+            else:
+                info_str = info_str + '[' + prioridade[0].get_tipo_display() + '] '
     except DetalhePrioridade.DoesNotExist:
         pass
     
@@ -300,12 +304,16 @@ def retornaInfo(atendimento):
             instancia_tratamento__data = atendimento.instancia_tratamento.data)
         if dp and at:
             nome_prioridade = atendimento.paciente.acompanhante.nome[:15]+'...'
-            info_str = info_str + '[Acompanha: ' + unicode(nome_prioridade) + '] '
+            info_str = info_str + '[Ac. ->: ' + unicode(nome_prioridade) + '] '
 
     # É ACOMPANHADO POR: ...
     # Verifica se o paciente em questão é acompanhado por alguém. Ou seja, se há algum paciente cujo acompanhante seja o 
     # paciente do atendimento em questão.
-    ps = Paciente.objects.filter(acompanhante = atendimento.paciente)
+    # É importante notar que a semântica dos campos acompanhante e acompanhante_crianca é a seguinte: 
+    # Na tela de cadastro do paciente, estamos chamando esses campos de acompanha 1 e acompanha 2.
+    # Isso significa que para no registro do acompanhante, nós podemos incluir 2 acompanhados.
+    # A variável ps receberá os pacientes que acompanham o paciente do atendimento (atendimento.paciente).
+    ps = Paciente.objects.filter(Q(acompanhante = atendimento.paciente) | Q(acompanhante_crianca = atendimento.paciente))
     for p in ps:
         dp = DetalhePrioridade.objects.filter(paciente = atendimento.paciente)
         at = Atendimento.objects.filter(paciente = p, \
@@ -313,8 +321,7 @@ def retornaInfo(atendimento):
         # verifica se o paciente de atendimento.paciente é prioridade e se p (o seu acompanhante) fez checkin no dia.
         if dp and at:
             nome_acompanhante = p.nome[:15]+'...'
-            info_str = info_str + '[Acompanhada por: ' + unicode(nome_acompanhante) + '] '
-
+            info_str = info_str + '[Ac. <-: ' + unicode(nome_acompanhante) + '] '
 
     return info_str
     
@@ -462,6 +469,19 @@ class ImprimirListagemForm(forms.Form):
 	prioridade = forms.BooleanField(required = False)
 	voluntario = forms.BooleanField(required = False)
 
+class ImprimirListagemCriancaForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super(ImprimirListagemCriancaForm, self).__init__(*args, **kwargs)
+        self.fields['tratamento'].choices = [('', '----------')] + \
+            [(tratamento.id, tratamento.descricao_basica) for tratamento in Tratamento.objects.all()]
+        # o id do tratamento Sala 9 é 11. Deixei esse valor na mão.
+        self.fields['tratamento'].initial = 11
+
+    tratamento = forms.ChoiceField(choices=())
+    data = forms.DateField(initial = datetime.date.today)
+    crianca = forms.BooleanField(required = False, initial=True)
+    outros = forms.BooleanField(required = False)
+
 class ListagemGeralForm(forms.Form):
 
 	def __init__(self, *args, **kwargs):
@@ -492,6 +512,43 @@ class RelatorioAtendimentosConsolidadoMesForm(forms.Form):
     data = forms.DateField(initial = datetime.date.today)
 
 
+def get_lista_atendimentos_previstos(instancia_tratamento, prioridade, voluntario):
+    atendimentos_previstos = []
+
+    if instancia_tratamento:
+        if not prioridade:
+            atendimentos_previstos = Atendimento.objects.filter(instancia_tratamento = instancia_tratamento)
+        else:
+            # PACIENTES QUE SÃO PRIORIDADE
+            atendimentos_previstos1 = Atendimento.objects.filter(instancia_tratamento=instancia_tratamento). \
+                exclude(paciente__detalheprioridade=None)
+
+            # PACIENTES QUE SÃO PRIORIDADE NO DIA
+            atendimentos_previstos2 = Atendimento.objects.filter(prioridade=True, \
+                instancia_tratamento=instancia_tratamento)
+
+            # ACOMPANHANTES
+            atendimentos_previstos3 = Atendimento.objects.filter(Q(instancia_tratamento=instancia_tratamento) \
+                & ~Q(paciente__acompanhante=None))
+
+            atendimentos_previstos = []
+            for at in atendimentos_previstos1:
+                if at not in atendimentos_previstos:
+                    atendimentos_previstos.append(at)
+            for at in atendimentos_previstos2:
+                if at not in atendimentos_previstos:
+                    atendimentos_previstos.append(at)
+            for at in atendimentos_previstos3:
+                dps = DetalhePrioridade.objects.filter(paciente = at.paciente.acompanhante)
+                ats = Atendimento.objects.filter(paciente = at.paciente.acompanhante, \
+                    instancia_tratamento__data = at.instancia_tratamento.data)
+                # garante que a pessoa que é acompanha é uma prioridade e que ela fez check-in no dia.
+                if dps and ats:
+                    if at not in atendimentos_previstos:
+                        atendimentos_previstos.append(at)
+
+    return atendimentos_previstos
+
 def exibir_listagem(request, pagina = None):
 
     form_listagem = ImprimirListagemForm()
@@ -507,48 +564,22 @@ def exibir_listagem(request, pagina = None):
             tratamento_in = form_listagem.cleaned_data['tratamento']
             prioridade_in = form_listagem.cleaned_data['prioridade']
             voluntario_in = form_listagem.cleaned_data['voluntario']
-
-            tratamentos_marcados = InstanciaTratamento.objects.filter(tratamento__id  = tratamento_in, data = data_in)
             tratamento = Tratamento.objects.get(id=tratamento_in)
-            for tratamentos in tratamentos_marcados:
-                if not prioridade_in:
-                    atendimentos_previstos = Atendimento.objects.filter(instancia_tratamento__id = tratamentos.id)
-                else:
-                    # PACIENTES QUE SÃO PRIORIDADE
-                    atendimentos_previstos1 = Atendimento.objects.filter(instancia_tratamento=tratamentos.id). \
-                        exclude(paciente__detalheprioridade=None)
 
-                    # PACIENTES QUE SÃO PRIORIDADE NO DIA
-                    atendimentos_previstos2 = Atendimento.objects.filter(prioridade=True, \
-                        instancia_tratamento__id=tratamentos.id)
+            try:
+                instancia_tratamento = InstanciaTratamento.objects.get(tratamento = tratamento, data = data_in)
+            except:
+                instancia_tratamento = None
 
-                    # ACOMPANHANTES
-                    atendimentos_previstos3 = Atendimento.objects.filter(Q(instancia_tratamento__id=tratamentos.id) \
-                        & ~Q(paciente__acompanhante=None))
-                        
-                    atendimentos_previstos = []
-                    for at in atendimentos_previstos1:
-                        if at not in atendimentos_previstos: 
-                            atendimentos_previstos.append(at)
-                    for at in atendimentos_previstos2:
-                        if at not in atendimentos_previstos: 
-                            atendimentos_previstos.append(at)
-                    for at in atendimentos_previstos3:
-                        dps = DetalhePrioridade.objects.filter(paciente = at.paciente.acompanhante)
-                        ats = Atendimento.objects.filter(paciente = at.paciente.acompanhante, \
-                            instancia_tratamento__data = at.instancia_tratamento.data)
-                        # garante que a pessoa que é acompanha é uma prioridade e que ela fez check-in no dia.
-                        if dps and ats:
-                            if at not in atendimentos_previstos: 
-                                atendimentos_previstos.append(at)
+            if instancia_tratamento:
+                # lista de atendimentos previstos para o tratamento no dia.
+                atendimentos_previstos = get_lista_atendimentos_previstos(instancia_tratamento,  prioridade_in, 
+                    voluntario_in)
                 
                 voluntarios = Voluntario.objects.filter(ativo=True)
-                pacientes_voluntarios = []
-                for v in voluntarios:
-                    pacientes_voluntarios.append(v.paciente)
+                pacientes_voluntarios = [v.paciente for v in voluntarios]
                     
                 for atendimento in atendimentos_previstos:
-
                     prioridade = False
                     dps = DetalhePrioridade.objects.filter(paciente = atendimento.paciente)
                     eh_acompanhante = False
@@ -605,6 +636,78 @@ def exibir_listagem(request, pagina = None):
                             'pagina_atual':pagina_atual,
                             'tratamento':tratamento,
                             'titulo':'IMPRIMIR ATENDIMENTOS'})
+
+def exibir_listagem_criancas(request, pagina = None):
+    form_listagem = ImprimirListagemCriancaForm()
+    mensagem_erro = ''
+    retorno = [];
+    tratamento = ''
+
+    if request.method == 'POST':
+        form_listagem = ImprimirListagemCriancaForm(request.POST)
+        if form_listagem.is_valid():
+            data_in = form_listagem.cleaned_data['data']
+            tratamento_in = form_listagem.cleaned_data['tratamento']
+            crianca = form_listagem.cleaned_data['crianca']
+            outros = form_listagem.cleaned_data['outros']
+
+            tratamento = Tratamento.objects.get(id=tratamento_in)
+
+            try:
+                instancia_tratamento = InstanciaTratamento.objects.get(tratamento = tratamento, data = data_in)
+            except:
+                instancia_tratamento = None
+
+            if instancia_tratamento:
+                # lista de atendimentos previstos para o tratamento no dia.
+                atendimentos_previstos = []
+                if crianca:
+                    atendimentos_previstos = Atendimento.objects.filter(instancia_tratamento = instancia_tratamento, 
+                        paciente__detalheprioridade__tipo='C')
+                    for atendimento in atendimentos_previstos:
+                        info_str = retornaInfo(atendimento)
+                        retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, \
+                            'info': info_str, 'prioridade': True, 'senha':atendimento.senha})
+
+                if outros:
+                    atendimentos_previstos = Atendimento.objects.filter(instancia_tratamento=instancia_tratamento). \
+                        exclude(paciente__detalheprioridade__tipo='C')
+                    for atendimento in atendimentos_previstos:
+                        info_str = retornaInfo(atendimento)
+                        retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, \
+                            'info': info_str, 'prioridade': False, 'senha':atendimento.senha})
+      
+            retorno_com_hora = [];
+            retorno_sem_hora = [];
+
+            for elemento in retorno:
+                if (elemento['hora'] == None):
+                    retorno_sem_hora.append(elemento)
+                else:
+                    retorno_com_hora.append(elemento)
+
+            retorno_com_hora = sorted(retorno_com_hora, key= itemgetter('hora'))
+            retorno = retorno_com_hora + retorno_sem_hora
+
+            if not retorno:
+                mensagem_erro = 'Não há registros'
+        else:
+            mensagem_erro = 'Formulário inválido';
+
+    paginacao = Paginator(retorno,25)
+    if pagina == None:
+        num_pagina = 1
+    else:
+        num_pagina = int(pagina)
+    pagina_atual = paginacao.page(num_pagina)
+
+
+    return render_to_response('listagem-impressao-criancas.html', {'form_listagem':form_listagem, 
+                            'mensagem': mensagem_erro,
+                            'pagina_atual':pagina_atual,
+                            'tratamento':tratamento,
+                            'titulo':'IMPRIMIR ATENDIMENTOS DAS CRIANÇAS'})
+
 
 def exibir_listagem_geral(request):
 

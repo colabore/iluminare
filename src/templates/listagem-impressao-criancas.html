@@ -1,0 +1,192 @@
+{% extends "base.html"%}
+{% block content %}
+
+<script type="text/javascript">
+function pagina(number){
+	var url = "/atendimento/listagem-criancas/" + number + '/';
+	document.listagemdiaria.action = url;
+	document.listagemdiaria.submit();
+}
+</script>
+
+<style type="text/css">
+
+@PAGE landscape {size: landscape;}
+
+div .listagem_form {
+    display: none;
+}
+
+@media print {
+    table {
+        border-width: 2px;
+        border-spacing: 2px;
+        border-style: dotted;
+        border-color: gray;
+        border-collapse: collapse;
+    }
+
+    table th {
+        border-width: 1px;
+        padding: 1px;
+        border-style: dotted;
+        border-color: gray;
+    }
+    table td {
+        border-width: 1px;
+        padding: 1px;
+        border-style: dotted;
+        border-color: gray;
+    }
+
+    #header {
+        display: none;
+    }
+
+}
+
+@media screen {
+    table {
+        border-width: 2px;
+        border-spacing: 2px;
+        border-style: none;
+        border-color: gray;
+        border-collapse: collapse;
+        background-color: white;
+    }
+
+    table th {
+        font-size:15px;
+        font-weight:normal;
+        color:black;
+        border-bottom:2px solid #6678b1;
+        padding:4px 4px;
+    }
+    table td {
+        border-bottom:1px solid #ccc;
+        color:black;
+        vertical-align:middle;
+        padding:2px 3px;
+        font-size:14px
+    }
+
+}
+
+#pagina table {
+        border-width: 0px;
+        border-spacing: 0px;
+        border-style: dotted;
+        border-color: gray;
+        border-collapse: collapse;
+        background-color: white;
+}
+
+#pagina table th {
+        border-width: 0px;
+        padding: 0px;
+        border-style: dotted;
+        border-color: gray;
+        background-color: white;
+}
+
+#pagina table td {
+        border-width: 0px;
+        padding: 0px;
+        border-style: dotted;
+        border-color: gray;
+        background-color: white;
+        font-size:14px;
+        font-weight:normal;
+        color:black;
+}
+</style>
+
+
+
+<form name="listagemdiaria" method="POST" action="/atendimento/listagem-criancas/" >
+
+<table>
+       Data : {{ form_listagem.data }}
+       Tratamento: {{ form_listagem.tratamento }}
+       {{ form_listagem.crianca }} Criança
+       {{ form_listagem.outros }} Outros
+        <input type="submit" value="Pesquisar"/>
+</table>
+<br>
+
+
+{% if pagina_atual.paginator.object_list|length > 0 %}
+<div id='pagina'>
+    
+    <table>
+    <td>
+    <b>{{ tratamento }} &nbsp;</b>
+    </td>
+    <td>
+    <b>
+    <div>
+		    <span class="step-links">
+		    <span class="current"> Página {{ pagina_atual.number }} </span>
+            [
+            {% for num_pagina in pagina_atual.paginator.page_range %}
+                {% ifequal num_pagina pagina_atual %}
+                    <span class="current">{{ num_pagina }}</span>
+                {% else %}
+                    <span><a href="#" onclick="pagina({{ num_pagina }});">{{ num_pagina }}</a></span>
+                {% endifequal %}
+            {% endfor %}
+            ]
+		    </span>
+		       		
+    </div>
+    </b>
+    </td>
+    </table>
+</div>
+{% endif %}
+
+<br>
+<table>
+	<table>
+		{% for atendimento in pagina_atual.object_list %}
+            {% if forloop.first %}
+
+		      <tr>	
+				<th width="50" align="center"> Senha </th>		
+			    <th width="30"> Ch </th>
+			    <th width="30"> At </th>
+			    <th> Hora cheg. </th>
+			    <th width="260"> Nome </th>
+			    <th> Info </th>
+			    <th> Observação </th>
+		      </tr>
+		      
+            {% endif %}
+			
+			 {% if atendimento.prioridade %} 
+			 <tr>
+				<td align="center"> < {{atendimento.senha}} > </td>
+				<td></td>
+				<td></td>
+				<td align="center"> {{atendimento.hora}} </td>
+				<td> {{atendimento.nome}} </td>
+				<td> {{atendimento.info}} </td>
+				<td></td>
+			  </tr>
+			 {% else %}
+			  <tr>
+				<td align="center"> {{atendimento.senha}} </td>
+				<td></td>
+				<td></td>
+				<td align="center"> {{atendimento.hora}} </td>
+				<td> {{atendimento.nome}} </td>
+				<td> {{atendimento.info}} </td>
+				<td></td>
+			  </tr>
+			 {% endif %}
+		{% endfor %}
+	</table>
+</table>
+
+</form>
+{% endblock %}

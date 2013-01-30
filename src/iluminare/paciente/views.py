@@ -54,7 +54,8 @@ class PacienteForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(PacienteForm, self).__init__(*args, **kwargs)
-        self.fields['acompanhante'].label = 'Acompanha'
+        self.fields['acompanhante'].label = 'Acompanha 1'
+        self.fields['acompanhante_crianca'].label = 'Acompanha 2'
         self.fields['observacao'].label = 'Observação (Tela Check-in)'
         self.fields['pais'].label = 'País'
 
