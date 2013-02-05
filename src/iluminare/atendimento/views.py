@@ -327,18 +327,20 @@ def retornaInfo(atendimento):
     
     
 class ConfirmacaoAtendimentoForm(forms.ModelForm):
+    """
+        Esta confirmação é para todos os tratamentos, com exceção da primeira vez.
+    """
     observacao = forms.CharField(required=False)
     senha = forms.IntegerField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'5'}))
     nome = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'25'}))
     hora_chegada = forms.TimeField(label='Cheg.',required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'6'}))
     confirma = forms.BooleanField(required = False, label= 'Conf.')
     redireciona = forms.ModelChoiceField(label='Redir.',queryset=Tratamento.objects.none(), required=False)
-    encaminha = forms.ModelChoiceField(label='Enc.', queryset=Tratamento.objects.none(), required=False)
-    frequencia = forms.ChoiceField(label='Freq', choices=(('X','---------'),) , required=False)
+    encaminha = forms.ModelChoiceField(label='Mud. Sala', queryset=Tratamento.objects.none(), required=False)
 
     def __init__(self, *args, **kwargs):
         super(ConfirmacaoAtendimentoForm, self).__init__(*args, **kwargs)
-        self.fields.keyOrder = ['confirma', 'senha', 'nome', 'hora_chegada','observacao', 'frequencia', 'redireciona', 'encaminha']
+        self.fields.keyOrder = ['confirma', 'senha', 'nome', 'hora_chegada','observacao', 'redireciona', 'encaminha']
         atendimento = kwargs.pop('instance')
         
         tratamento_desc = atendimento.instancia_tratamento.tratamento.descricao_basica
@@ -354,7 +356,6 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
             self.fields['redireciona'].queryset=Tratamento.objects.none()
             self.fields['encaminha'].queryset=Tratamento.objects.filter(descricao_basica__startswith='Sala')
             opcoes = (('X','---------'),) + Paciente.FREQUENCIA
-            self.fields['frequencia'].choices=opcoes
         else:
             self.fields['redireciona'].queryset=Tratamento.objects.none()
             self.fields['encaminha'].queryset=Tratamento.objects.none()
@@ -377,7 +378,6 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
         confirma_in = self.cleaned_data['confirma']
         redireciona_in = self.cleaned_data['redireciona']
         encaminha_in = self.cleaned_data['encaminha']
-        frequencia_in = self.cleaned_data['frequencia']
         
         if redireciona_in:
             atendimento_atual_str = atendimento.instancia_tratamento.tratamento.descricao_basica
@@ -407,14 +407,6 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
                 obs = atendimento.observacao 
                 atendimento.observacao = obs + '[Encaminhado para '+str(encaminha_in)+'] '
         
-        if frequencia_in != 'X':
-            # significa que se trata de um atendimento de primeira vez, pois somente estes podem ser alterados.
-            atendimento.paciente.frequencia = frequencia_in
-            atendimento.paciente.save()
-            obs = atendimento.observacao 
-            atendimento.observacao = obs + '[Freq: '+str(frequencia_in)+'] '
-
-        
         if confirma_in:
             atendimento.status = 'A'
             
@@ -431,33 +423,172 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
         model = Atendimento
         exclude = ['prioridade', 'instancia_tratamento', 'senha', 'observacao_prioridade', 'paciente', 'hora_atendimento', 'status']
           
+class ConfirmacaoAtendimentoPrimeiraVezForm(forms.ModelForm):
+    observacao = forms.CharField(required=False)
+    senha = forms.IntegerField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'5'}))
+    nome = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'25'}))
+    hora_chegada = forms.TimeField(label='Cheg.',required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'6'}))
+    confirma = forms.BooleanField(required = False, label= 'Conf.')
+    encaminha = forms.ModelChoiceField(label='Enc.', queryset=Tratamento.objects.none(), required=False)
+    frequencia = forms.ChoiceField(label='Freq', choices=(('X','---------'),) , required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(ConfirmacaoAtendimentoPrimeiraVezForm, self).__init__(*args, **kwargs)
+        self.fields.keyOrder = ['confirma', 'senha', 'nome', 'hora_chegada','observacao', 'frequencia', 'encaminha']
+        atendimento = kwargs.pop('instance')
+        
+        tratamento_desc = atendimento.instancia_tratamento.tratamento.descricao_basica
+        
+        # CAREREGA O ENCAMINHA
+        if tratamento_desc[:4] == 'Sala':
+            self.fields['encaminha'].queryset=Tratamento.objects.filter(descricao_basica__startswith='Sala')
+        elif tratamento_desc[:4] == 'Manu':
+            self.fields['encaminha'].queryset=Tratamento.objects.none()
+        elif tratamento_desc[:4] == 'Prim':
+            self.fields['encaminha'].queryset=Tratamento.objects.filter(descricao_basica__startswith='Sala')
+            opcoes = (('X','---------'),) + Paciente.FREQUENCIA
+            self.fields['frequencia'].choices=opcoes
+        else:
+            self.fields['encaminha'].queryset=Tratamento.objects.none()
+                
+        # CARREGA O NOME DO PACIENTE
+        self.fields['nome'].initial = atendimento.paciente.nome
+        
+        # CARREGA A SENHA DO DIA DO PACIENTE
+        self.fields['senha'].initial = atendimento.senha
+        
+        # CARREGA STATUS DO ATENDIMENTO
+        if atendimento.status == 'A':
+            status = True
+        else:
+            status = False
+        self.fields['confirma'].initial = status
+
+    def save(self, commit=True):
+        atendimento = super(ConfirmacaoAtendimentoPrimeiraVezForm, self).save(commit=False)
+        confirma_in = self.cleaned_data['confirma']
+        encaminha_in = self.cleaned_data['encaminha']
+        frequencia_in = self.cleaned_data['frequencia']
+             
+        if encaminha_in:
+            tratamento = Tratamento.objects.get(descricao_basica = encaminha_in)
+            if tratamento:
+                lista_t = []
+                lista_t.append(tratamento)
+                tratamento_logic.encaminhar_paciente(atendimento.paciente.id, lista_t)
+                obs = atendimento.observacao 
+                atendimento.observacao = obs + '[Encaminhado para '+str(encaminha_in)+'] '
+        
+        if frequencia_in != 'X':
+            # significa que se trata de um atendimento de primeira vez, pois somente estes podem ser alterados.
+            atendimento.paciente.frequencia = frequencia_in
+            atendimento.paciente.save()
+            obs = atendimento.observacao 
+            atendimento.observacao = obs + '[Freq: '+str(frequencia_in)+'] '
+
+
+        if confirma_in:
+            atendimento.status = 'A'
+            
+            # se o tratamento for primeira vez, aproveitamos para atualizar o campo tem ficha.
+            if atendimento.instancia_tratamento.tratamento.descricao_basica[:4] == 'Prim':
+                atendimento.paciente.tem_ficha = True
+                atendimento.paciente.save()
+        else:
+            atendimento.status = 'C'
+        if commit:
+            atendimento.save()
+
+    class Meta:
+        model = Atendimento
+        exclude = ['prioridade', 'instancia_tratamento', 'senha', 'observacao_prioridade', 'paciente', 'hora_atendimento', 'status']
+
 
 ConfirmacaoAtendimentoFormSet = modelformset_factory(Atendimento, extra=0,
     form=ConfirmacaoAtendimentoForm)
 
+ConfirmacaoAtendimentoPrimeiraVezFormSet = modelformset_factory(Atendimento, extra=0,
+    form=ConfirmacaoAtendimentoPrimeiraVezForm)
+
+
 def confirmacao(request):
-    mensagem_erro = None
-    mensagem_sucesso = None
-    if request.method == "POST":
+    """
+    O que preciso melhorar nesta função?
+    Ela precisa se tornar dinâmica, isto é, o segundo form (lista de atendimentos) precisa ser dependente da escolha 
+    do atendimento.
+    Os atendimentos de primeira vez terão campos específicos, como o diagnosticador.. 
+
+    Consegui torna-la dinâmica, mas com um código não muito otimizado.
+    Estou criando dois formsets quase idênticos e utilizando os dois. Em função da confirmação que está sendo feita,
+    um dos formsets será nulo.
+    """
+    mensagem_erro = ""
+    mensagem_sucesso = ""
+    if request.method == 'POST':
         filtro_form = FiltroAtendimentosForm(request.POST)
-        atendimentos = ConfirmacaoAtendimentoFormSet(request.POST)
-	
-        if atendimentos.is_valid():
-            atendimentos.save()
-            mensagem_sucesso = 'Dados salvos com sucesso.'
-	
-        if filtro_form.is_valid() and atendimentos.is_valid():
-            tratamento = filtro_form.cleaned_data['tratamento']
-            data	   = filtro_form.cleaned_data['data']
-            atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.filter(instancia_tratamento__data=data,instancia_tratamento__tratamento=tratamento))
+        atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.none())
+        atendimentos_pv = ConfirmacaoAtendimentoPrimeiraVezFormSet(queryset=Atendimento.objects.none())
+        
+        if 'pesquisar' in request.POST:
+            if filtro_form.is_valid():
+                tratamento = filtro_form.cleaned_data['tratamento']
+                data	   = filtro_form.cleaned_data['data']
+                
+                if tratamento.descricao_basica[:4] == 'Prim':
+                    atendimentos_pv = ConfirmacaoAtendimentoPrimeiraVezFormSet(queryset= \
+                        Atendimento.objects.filter(instancia_tratamento__data=data,instancia_tratamento__tratamento=tratamento))
+                    atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.none())
+                else:
+                    atendimentos = ConfirmacaoAtendimentoFormSet(queryset= \
+                        Atendimento.objects.filter(instancia_tratamento__data=data,instancia_tratamento__tratamento=tratamento))
+                    atendimentos_pv = ConfirmacaoAtendimentoPrimeiraVezFormSet(queryset=Atendimento.objects.none())
+                
+                if not atendimentos and not atendimentos_pv:
+                    mensagem_erro = 'Nenhum atendimento nesta data.'
+            else:
+                mensagem_erro = 'Erro no formulário. Verificar se todos os campos ' + \
+                    'foram devidamente preenchidos e se a data está correta.'
+
+        elif 'salvar' in request.POST:
+            """
+                PRECISA MELHORAR..
+                Imaginei que somente um dos formsets (atendimentos ou atendimentos_pv) 
+                fossem vir com dados.. Mas os dois estão vindo com dados, e idênticos.
+                O que vou fazer é ver qual o tratamento e forçar o outro formset para nulo.
+            """
+            atendimentos = ConfirmacaoAtendimentoFormSet(request.POST)
+            atendimentos_pv = ConfirmacaoAtendimentoPrimeiraVezFormSet(request.POST)
+            try:
+                if atendimentos.total_form_count() != 0 and atendimentos_pv.total_form_count() != 0:
+                    if atendimentos_pv[0].instance.instancia_tratamento.tratamento.descricao_basica[:4] == 'Prim':
+                        atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.none())
+                        if atendimentos_pv.is_valid():
+                            atendimentos_pv.save()
+                            mensagem_sucesso = mensagem_sucesso + 'Dados salvos com sucesso.'
+                        else:
+                            mensagem_erro = mensagem_erro + 'Erro. Verificar dados inseridos. 1'
+                    else:
+                        atendimentos_pv = ConfirmacaoAtendimentoPrimeiraVezFormSet(queryset=Atendimento.objects.none())
+                        if atendimentos.is_valid():
+                            atendimentos.save()
+                            mensagem_sucesso = mensagem_sucesso + 'Dados salvos com sucesso.'
+                        else:
+                            mensagem_erro = mensagem_erro + 'Erro. Verificar dados inseridos. 2'
+            except:
+                mensagem_erro = str(atendimentos_pv.queryset) + '- ' + str(atendimentos_pv.total_form_count()) + \
+                    str(atendimentos.queryset) + '-' + str(atendimentos.total_form_count())
         else:
-            mensagem_erro = 'Erro no formulário.'
+            mensagem_erro = mensagem_erro + 'Erro na página. Contactar suporte.'
 
     else:
         filtro_form = FiltroAtendimentosForm()
         atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.none())
+        atendimentos_pv = ConfirmacaoAtendimentoPrimeiraVezFormSet(queryset=Atendimento.objects.none())
     
-    return render_to_response('confirmacao_atendimentos.html', {'filtro_form':filtro_form, 'atendimentos':atendimentos, 'mensagem':atendimentos.errors, 'titulo': 'CONFIRMAR ATENDIMENTOS', 'mensagem_sucesso': mensagem_sucesso, 'mensagem_erro': mensagem_erro})
+    return render_to_response('confirmacao_atendimentos.html', {'filtro_form':filtro_form, 
+        'atendimentos':atendimentos, 'mensagem':'', 'titulo': 'CONFIRMAR ATENDIMENTOS', 
+        'mensagem_sucesso': mensagem_sucesso, 'mensagem_erro': mensagem_erro, 'atendimentos_pv':atendimentos_pv
+        })
 
 def index(request):
 	return render_to_response('index.html')

@@ -29,54 +29,85 @@ function checkAll(field)
 
 <form name="at1" method="POST">
 <table>
-<form action="/confimacao/" method="post">
     
     <div class="filtro">
        Data : {{ filtro_form.data }}
        Tratamento: {{ filtro_form.tratamento }}    
-       <input type="submit" value="Pesquisar" />    
+       <input type="submit" name="pesquisar" value="Pesquisar" />    
     </div>
     <br>
     <br>
-    
-   
-</form>
 
 </table>
+
 {% if atendimentos.forms %} 
     <input type="checkbox" name="CheckAll" value="CheckAll" onClick="checkAll(document.at1)"> Selecionar todos
-{% endif %}
-<br>
-<br>
-<table>
-{{atendimentos.management_form}}
-{% for atendimento in atendimentos.forms %}
-    {% if forloop.first %}
-    <tr>
-    {% for coluna in atendimento %}
-        {% if coluna.label == 'Id' %}
-        <th> &nbsp; </th>
-        {% else %}
-        <th>{{coluna.label}}</th>
+    <br>
+    <br>
+    <table>
+    {{atendimentos.management_form}}
+    {% for atendimento in atendimentos.forms %}
+        {% if forloop.first %}
+        <tr>
+        {% for coluna in atendimento %}
+            {% if coluna.label == 'Id' %}
+            <th> &nbsp; </th>
+            {% else %}
+            <th>{{coluna.label}}</th>
+            {% endif %}
+        {% endfor %}
+        </tr>
         {% endif %}
+        <tr>
+        {% for coluna in atendimento %}
+            <td>
+            {{coluna}}
+            </td>
+        {% endfor %}
+        </tr>
     {% endfor %}
-    </tr>
-    {% endif %}
-    <tr>
-    {% for coluna in atendimento %}
-        <td>
-        {{coluna}}
-        </td>
-    {% endfor %}
-    </tr>
-{% endfor %}
-</table>
-{% if atendimentos.forms %}
+    </table>
     <br>    
-    <input type="submit" value="Salvar Dados" />
+    <input type="submit" name="salvar" value="Salvar Dados" />
+    </form>
 {% endif %}
+
+
+{% if atendimentos_pv.forms %}
+    <input type="checkbox" name="CheckAll" value="CheckAll" onClick="checkAll(document.at1)"> Selecionar todos
+    <br>
+    <br>
+    <table>
+    {{atendimentos_pv.management_form}}
+    {% for atendimento in atendimentos_pv.forms %}
+        {% if forloop.first %}
+        <tr>
+        {% for coluna in atendimento %}
+            {% if coluna.label == 'Id' %}
+            <th> &nbsp; </th>
+            {% else %}
+            <th>{{coluna.label}}</th>
+            {% endif %}
+        {% endfor %}
+        </tr>
+        {% endif %}
+        <tr>
+        {% for coluna in atendimento %}
+            <td>
+            {{coluna}}
+            </td>
+        {% endfor %}
+        </tr>
+    {% endfor %}
+    </table>
+
+    <br>    
+    <input type="submit" name="salvar" value="Salvar Dados" />
+    </form>
+{% endif %}
+
+{% if not atendimentos_pv.forms and not atendimentos.forms%}
 </form>
-
-
+{% endif %}
 
 {% endblock %}
