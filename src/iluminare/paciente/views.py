@@ -287,10 +287,11 @@ def cadastro_rapido_paciente(request):
     if request.method == "POST":
         form = PacienteForm(request.POST)
         trat_form = TratamentoCadastroRapido(request.POST)
+        lista = []
         if form.is_valid() and trat_form.is_valid():
             try:
                 paciente = form.save()
-                lista = []
+                
                 dic_paciente = None
                 if paciente:
                     dic_paciente = {'sucesso':True, 'mensagem':'Paciente cadastrado com sucesso.'}
@@ -304,10 +305,17 @@ def cadastro_rapido_paciente(request):
                 return render_to_response ('cadastro-rapido-paciente-resultado.html', {'paciente': paciente, 'lista_dics':lista})
     
             except Exception, e:
-                return HttpResponse("Erro: %s" % e)
+                dic_paciente = {'sucesso':False, 'mensagem':'Erro: '+e}
+                lista.append(dic_paciente)
+                paciente = None
+                return render_to_response ('cadastro-rapido-paciente-resultado.html', {'paciente': paciente, 'lista_dics':lista})
+
         else:
-            return HttpResponse("Erro %s" % str(form.errors) + str(trat_form.errors))
-            
+            erro = "Erro. Digite o nome do paciente."
+            dic_paciente = {'sucesso':False, 'mensagem': erro}
+            paciente = None
+            lista.append(dic_paciente)
+            return render_to_response ('cadastro-rapido-paciente-resultado.html', {'paciente': paciente, 'lista_dics':lista})
     else:
         form = PacienteForm()
         trat_form = TratamentoCadastroRapido()

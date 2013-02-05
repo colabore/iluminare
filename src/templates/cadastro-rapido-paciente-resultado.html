@@ -1,34 +1,92 @@
-<div id="div-cadastro-paciente">
-<h1>{{paciente.nome}}</h1>
-<br>
-<br>
+<style>
+#campos{
+    font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size:24px;
+    background:#fff;
+    border-collapse:collapse;
+    text-align:left;
+    margin: 5px 5px 5px 5px;
+    width:95%;
+    border: 1px solid #FFF;
+    padding:2px 2px;
 
+}
+#campos td{
+    font-size:13px;
+    font-weight:bold;
+    color:#669;
+    padding:2px 2px;
+    color: green;
+    vertical-align: middle;
+}
+#campos tr{
+    padding:2px 2px;
+    vertical-align: middle;
+}
+#titulo{
+    font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size:14px;
+    text-align:left;
+    margin: 10px 10px 10px 10px;
+}
+#borda{
+    background:#fff;
+    border: 2px solid #BBBBBB;
+    margin: 1px 1px 1px 1px;
+}
+#tabela_senha {
+    font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size:14px;
+    background:#fff;
+    border-collapse:collapse;
+    text-align:center;
+    border: 1px solid #FFF;
+    font-weight: bold;
+    color: #009900;
+}
+#tabela_senha td{
+    vertical-align: middle;
+}
+#senha {
+    color:#009900;
+    font-size:40px;
+
+}
+</style>
+
+<div id="div-cadastro-paciente">
+{% if paciente %}
+<div id='titulo'>{{paciente.nome}}</div>
+{% endif %}
 {% for dic in lista_dics %}
     {% if dic.sucesso %}
-    <table>
+    <table id="campos">
         <tr>
         <td> <img src="/static/img/sucesso.png"/> </td>
-        <td> <font color=green> {{dic.mensagem}} </font> </td> 
+        <td> {{dic.mensagem}} </td> 
         </tr>
     </table>
     {% if dic.senha %}
-    <table>
-        <tr>
-        <td> <font color="green" > Senha: {{dic.senha}} </td> 
-        </tr>
-    </table>
+        <div align="center">
+        <table id=tabela_senha>
+            <tr>
+            <td> Senha </td> 
+            </tr>
+            <tr id="senha">
+            <td> {{dic.senha}} </td> 
+            </tr>
+        </table>
+        </div>
     {% endif %}        
-
-
-    {% else %}
-    <table>
+    {% endif %}        
+    {% if not dic.sucesso %}
+    <table id='campos'>
         <tr>
         <td> <img src="/static/img/falha.png"/> </td>
-        <td> <font color=red> {{dic.mensagem}} </font> </td> 
+        <td> <font color='red'>{{dic.mensagem}} </font></td> 
         </tr>
     </table>
     {% endif %}
-    <br>
 {% endfor %}
 
 </div>

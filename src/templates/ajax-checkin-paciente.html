@@ -62,6 +62,7 @@
     border-collapse:collapse;
     text-align:left;
     border: 1px solid #FFF;
+    padding:2px 4px;
 
 }
 #titulo td{
@@ -70,6 +71,13 @@
     border: 1px solid #FFF;
     min-width: 50px;
 }
+#titulo tr{
+    padding:2px 4px;
+}
+#titulo th{
+    padding:2px 4px;
+}
+
 #links{
     font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
     font-size:13px;
@@ -116,10 +124,18 @@
     text-align: center;
     vertical-align:middle;
 }
-
+#borda{
+    background:#fff;
+    border: 2px solid #BBBBBB;
+    margin: 5px 5px 5px 5px;
+}
 
 
 </style>
+
+<table id="borda">
+<tr>
+<th>
 <div class="paciente_checkin" id="paciente_checkin">
 
 
@@ -227,3 +243,6 @@
 <p>{{erros}}</p>
 <br>
 </div>
+</th>
+</tr>
+</table>

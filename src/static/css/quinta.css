@@ -179,3 +179,28 @@ p.senha-falha {
     text-align:left;
 }
 
+
+#lista-pessoas {
+	font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+	font-size: 15px;
+    text-align:left;
+}
+#lista-pessoas table {
+	width:100%;
+}
+#lista-pessoas table td {
+    border-bottom:1px solid #ccc;
+    color:#669;
+    vertical-align:middle;
+    padding:4px 4px;}
+#lista-pessoas table th {
+    font-size:16px;
+    font-weight:normal;
+    color:#039;
+    border-bottom:2px solid #6678b1;
+    padding:4px 4px;
+}
+#ja_tem_checkin {
+    color:#009900;
+}
+

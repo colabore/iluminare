@@ -90,7 +90,7 @@ def checkin_paciente(paciente, tratamento, prioridade_bool, \
     dic_retorno = {'sucesso':False,'mensagem':None, 'senha':0}
     
     if tratamento != None:
-    
+        tratamento_smart = smart_str(tratamento.descricao_basica)
         hoje = date.today()
         its = InstanciaTratamento.objects.filter(tratamento = tratamento, data = hoje)
         
@@ -125,18 +125,20 @@ def checkin_paciente(paciente, tratamento, prioridade_bool, \
                     at.hora_chegada=datetime.now()
                     at.save()
                     dic_retorno['mensagem'] = smart_str("CHECK-IN realizado com SUCESSO (%s)" \
-                        % at.instancia_tratamento.tratamento.descricao_basica)
+                        % tratamento_smart)
                     dic_retorno['sucesso'] = True
                     dic_retorno['senha'] = senha
                 else:
-                    dic_retorno['mensagem'] = smart_str("ATENÇÃO! CHECK-IN NÃO REALIZADO: Horário limite de \
-                        entrada não atendido.")
+                    
+                    dic_retorno['mensagem'] = smart_str("ATENÇÃO! CHECK-IN NÃO REALIZADO (%s): Horário limite de \
+                        entrada não atendido." % tratamento_smart)
             else:
-                dic_retorno['mensagem'] = smart_str("ATENÇÃO! CHECK-IN NÃO REALIZADO: %s." % dic_regras['mensagem'])    
+                dic_retorno['mensagem'] = smart_str("ATENÇÃO! CHECK-IN NÃO REALIZADO (%s): %s." % 
+                    (tratamento_smart, dic_regras['mensagem']))
         else:
-            dic_retorno['mensagem'] = smart_str("ATENÇÃO! Check-in do paciente JÁ REALIZADO para este tratamento.")
+            dic_retorno['mensagem'] = smart_str("ATENÇÃO! Check-in do paciente JÁ REALIZADO (%s)." % tratamento_smart)
     else:
-        dic_retorno['mensagem'] = smart_str("CHECK-IN não realizado.")
+        dic_retorno['mensagem'] = smart_str("CHECK-IN não realizado. Tratamento não informado.")
 
     return dic_retorno
 

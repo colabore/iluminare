@@ -1,6 +1,47 @@
+<style>
+.campos{
+    font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size:14px;
+    background:#fff;
+    border-collapse:collapse;
+    text-align:left;
+    margin: 5px 5px 5px 5px;
+    width:95%;
+    border: 1px solid #FFF;
+    padding:2px 2px;
+
+}
+.campos td{
+    font-size:13px;
+    font-weight:bold;
+    color:#669;
+    padding:2px 2px;
+}
+.campos tr{
+    padding:2px 2px;
+}
+#titulo{
+    font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size:14px;
+    text-align:left;
+    margin: 10px 10px 10px 10px;
+}
+#borda{
+    background:#fff;
+    border: 2px solid #BBBBBB;
+    margin: 1px 1px 1px 1px;
+}
+
+</style>
+<table id="borda">
+<tr>
+<td>
+<div id="titulo">
+CHECK-IN RÁPIDO
+</div>
 <div id="div-cadastro-paciente">
 	<form method="post" name="cadastro-paciente" id="form-cadastro-paciente" action="{% url cadastro_rapido_paciente %}">
-		<table>
+		<table class="campos">
 		    <tr>
 			    <td>
 				    <label for="input-name">Nome:</label>
@@ -16,9 +57,10 @@
                 </td>
 			</tr>
 		</table>
-		<br>
-		<a href="#" id="cadastro_checkin_rapido"> Confirma </a>
-		<br>
+        <div align="center"><button type="button" id="cadastro_checkin_rapido">Confirmar</button></div>
+        <br>
 	</form>
-	<br>
 </div>
+</td>
+</tr>
+</table>
