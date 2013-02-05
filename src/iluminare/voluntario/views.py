@@ -190,6 +190,9 @@ PontoFormSet = modelformset_factory(Voluntario, extra=0, form=PontoForm)
 def registra_ponto(request):
 
     debug = ''
+    mensagem_sucesso = ''
+    mensagem_erro = ''
+    mensagem = ''
     if request.method == 'POST':
         filtro_form = FiltroPontoForm(request.POST)
         if filtro_form.is_valid():
@@ -206,15 +209,20 @@ def registra_ponto(request):
 
             if voluntarios.is_valid():
                 voluntarios.save()
-                
+                mensagem_sucesso = "Dados atualizados com sucesso."
+                mesagem = ''
                 #voluntarios = PontoFormSet(queryset=Voluntario.objects.filter(ativo=True))
+            else:
+                mensagem_erro = "Dados não atualizados. Verificar campos com erro."
+                mensagem = voluntarios.errors
 
     else:
         filtro_form = FiltroPontoForm()
         voluntarios = None
     
     return render_to_response('registra_ponto.html', {'filtro_form':filtro_form, 'voluntarios':voluntarios,\
-        'mensagem': voluntarios and voluntarios.errors, 'debug': debug, 'titulo': 'REGISTRAR PONTOS'})
+        'mensagem': mensagem, 'debug': debug, 'titulo': 'REGISTRAR PONTOS', 
+        'mensagem_sucesso':mensagem_sucesso, 'mensagem_erro':mensagem_erro})
     
 
 def consulta_ponto(request):
@@ -259,26 +267,32 @@ def consulta_ponto(request):
 def atualizar(request, voluntario_id):
     voluntario = Voluntario.objects.get(pk=voluntario_id)
     nome_paciente = voluntario.paciente.nome
-    
+    mensagem_sucesso = ''
+    mensagem_erro = ''
+    mensagem = ''
     if request.method == "POST":
         form_voluntario = VoluntarioForm(request.POST, instance=voluntario)
         if form_voluntario.is_valid():
             try:
                 form_voluntario.save()
-                msg = "Voluntário atualizado com sucesso."
+                mensagem_sucesso = "Voluntário atualizado com sucesso."
             except v_exc:
-                msg = "Erro na atualização do voluntário... " + v_exc
+                mensagem_erro = "Erro na atualização do voluntário... " + v_exc
         else:
-            msg = "Erro de validação dos dados."
+            mensagem_erro = "Voluntário não atualizado. Erro de validação dos dados."
 
     else:
         form_voluntario = VoluntarioForm(instance=voluntario)
-        msg = ""
+        mensagem = ''
 
-    return render_to_response('crud-voluntario.html', {'form_voluntario':form_voluntario, 'mensagem':msg, \
-        'nome_paciente':nome_paciente, 'titulo': 'ATUALIZAR VOLUNTÁRIO'})
+    return render_to_response('crud-voluntario.html', {'form_voluntario':form_voluntario, 'mensagem':mensagem, 
+        'nome_paciente':nome_paciente, 'titulo': 'ATUALIZAR VOLUNTÁRIO', 'mensagem_sucesso': mensagem_sucesso, 
+        'mensagem_erro':mensagem_erro})
 
 def incluir_voluntario(request):
+    mensagem_sucesso = ''
+    mensagem_erro = ''
+    mensagem = ''
     if request.method == "POST":
         form_voluntario = VoluntarioIncluirForm(request.POST)
         if form_voluntario.is_valid():
@@ -287,20 +301,21 @@ def incluir_voluntario(request):
                 voluntarios = Voluntario.objects.filter(paciente = paciente)
                 if not voluntarios:
                     form_voluntario.save()
-                    msg = "Voluntário incluído com sucesso."
+                    mensagem_sucesso = "Voluntário incluído com sucesso."
                 else:
-                    msg = "Este paciente já é um voluntário. Verificar se está inativo."
+                    mensagem_erro = "Este paciente já é um voluntário. Verificar se está inativo."
             except v_exc:
-                msg = "Erro na atualização do voluntário... " + v_exc
+                mensagem_erro = "Erro na atualização do voluntário... " + v_exc
         else:
-            msg = "Erro de validação dos dados. Verificar se todos os campos foram preenchidos corretamente."
+            mensagem_erro = "Erro de validação dos dados. Verificar se todos os campos foram preenchidos corretamente."
 
     else:
         form_voluntario = VoluntarioIncluirForm()
-        msg = ""
+        mensagem = ""
 
-    return render_to_response('incluir-voluntario.html', {'form_voluntario':form_voluntario, 'mensagem':msg,
-                                'titulo': 'INCLUIR VOLUNTÁRIO'})
+    return render_to_response('incluir-voluntario.html', {'form_voluntario':form_voluntario, 'mensagem':mensagem,
+                                'titulo': 'INCLUIR VOLUNTÁRIO', 'mensagem_sucesso': mensagem_sucesso,
+                                'mensagem_erro':mensagem_erro})
 
 
 def relatorio_trabalhos_geral(data_inicial_ordinal, data_final_ordinal, dia_semana_int):
