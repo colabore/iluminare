@@ -1,66 +1,24 @@
-<style>
-#campos{
-    font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
-    font-size:24px;
-    background:#fff;
-    border-collapse:collapse;
-    text-align:left;
-    margin: 5px 5px 5px 5px;
-    width:95%;
-    border: 1px solid #FFF;
-    padding:2px 2px;
-
-}
-#campos td{
-    font-size:13px;
-    font-weight:bold;
-    color:#669;
-    padding:2px 2px;
-    color: green;
-    vertical-align: middle;
-}
-#campos tr{
-    padding:2px 2px;
-    vertical-align: middle;
-}
-#titulo{
-    font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
-    font-size:14px;
-    text-align:left;
-    margin: 10px 10px 10px 10px;
-}
-#borda{
-    background:#fff;
-    border: 2px solid #BBBBBB;
-    margin: 1px 1px 1px 1px;
-}
-#tabela_senha {
-    font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
-    font-size:14px;
-    background:#fff;
-    border-collapse:collapse;
-    text-align:center;
-    border: 1px solid #FFF;
-    font-weight: bold;
-    color: #009900;
-}
-#tabela_senha td{
-    vertical-align: middle;
-}
-#senha {
-    color:#009900;
-    font-size:40px;
-
-}
+<style type="text/css">
+@import url("/static/css/quinta.css");
 </style>
+
+<!--
+Ainda não entendi por que o título da página está vindo da página anterior...
+CHECKIN RÁPIDO.
+De qualquer maneira, está funcionando.
+-->
 
 <div id="div-cadastro-paciente">
 {% if paciente %}
-<div id='titulo'>{{paciente.nome}}</div>
+<table id="ajax_titulo">
+    <tr>
+        <td>{{paciente.nome}}</td>
+    </tr>
+</table>
 {% endif %}
 {% for dic in lista_dics %}
     {% if dic.sucesso %}
-    <table id="campos">
+    <table class="ajax_resultado_checkin_rapido">
         <tr>
         <td> <img src="/static/img/sucesso.png"/> </td>
         <td> {{dic.mensagem}} </td> 
@@ -68,11 +26,11 @@
     </table>
     {% if dic.senha %}
         <div align="center">
-        <table id=tabela_senha>
+        <table class=ajax_tabela_senha>
             <tr>
             <td> Senha </td> 
             </tr>
-            <tr id="senha">
+            <tr class="ajax_senha">
             <td> {{dic.senha}} </td> 
             </tr>
         </table>
@@ -80,7 +38,7 @@
     {% endif %}        
     {% endif %}        
     {% if not dic.sucesso %}
-    <table id='campos'>
+    <table class='ajax_resultado_checkin_rapido'>
         <tr>
         <td> <img src="/static/img/falha.png"/> </td>
         <td> <font color='red'>{{dic.mensagem}} </font></td> 
