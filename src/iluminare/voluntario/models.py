@@ -3,8 +3,7 @@
 
 from django.db import models
 from iluminare.paciente.models import Paciente
-from iluminare.atendimento.models import Tratamento
-
+from iluminare.tratamento.models import Tratamento
 
 class Funcao(models.Model):
     descricao       = models.TextField(null = False, blank = False)

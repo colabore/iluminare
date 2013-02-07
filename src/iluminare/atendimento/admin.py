@@ -7,5 +7,12 @@ class AtendimentoAdmin(admin.ModelAdmin):
     list_display = ('paciente', 'instancia_tratamento', 'hora_chegada', 'status')
     #admin.ModelAdmin.actions_on_bottom
 
-admin.site.register(Atendimento, AtendimentoAdmin)
+class AgendaAtendimentoAdmin(admin.ModelAdmin):
+    exclude = ('atendimento_origem', 'atendimento_realizado')
 
+class NotificacaoAdmin(admin.ModelAdmin):
+    exclude = ('atendimento',)
+
+admin.site.register(Atendimento, AtendimentoAdmin)
+admin.site.register(AgendaAtendimento, AgendaAtendimentoAdmin)
+admin.site.register(Notificacao, NotificacaoAdmin)

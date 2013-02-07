@@ -83,6 +83,7 @@ class Paciente(models.Model):
     saude                   = models.TextField(null=True, blank=True)    	
     acompanhante            = models.ForeignKey('self', null=True, blank=True)
     acompanhante_crianca    = models.ForeignKey('self', null=True, blank=True, related_name='acompanhantecrianca')
+    casado_com              = models.ForeignKey('self', null=True, blank=True, related_name='casadocom')
 
     class Meta:
         ordering = ['nome']

@@ -1,7 +1,6 @@
 # coding: utf-8
 from django.db import models
-from iluminare.paciente.models import *
-from iluminare.atendimento.models import *
+from iluminare.paciente.models import Paciente
 
 class Sala(models.Model):
     descricao   = models.CharField(max_length = 45, blank = False, null = False)
@@ -60,11 +59,11 @@ class InstanciaTratamento(models.Model):
         return u'%s em %s' % (self.tratamento, self.data)
 		
 class AgendaTratamento(models.Model):
-    paciente        = models.ForeignKey(Paciente, null = False, blank = False)
-
-    tratamento      = models.ForeignKey(Tratamento, null = False, blank = False)
-    data            = models.DateField(null = True, blank = True)
+    tratamento          = models.ForeignKey(Tratamento, null = False, blank = False)
+    # A data nula indica uma agenda de tratamento genérica
+    data                = models.DateField(null = True, blank = True)
+    max_agendamentos    = models.SmallIntegerField(null = True, blank = True)
     
     def __unicode__(self):
-        return u'%s %s %s' % (self.paciente, self.tratamento, self.data)
+        return u'%s %s %s' % (self.tratamento, self.data, self.max_agendamentos)
 
