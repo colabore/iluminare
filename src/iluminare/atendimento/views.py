@@ -627,15 +627,12 @@ class ListagemGeralForm(forms.Form):
 
 class ListagemGeralFechamentoForm(forms.Form):
 
-	data = forms.DateField(initial = datetime.date.today, required=True)
-	tratamento = forms.ChoiceField(choices=(), required=False)
-	paciente = forms.CharField(required = False, widget=forms.TextInput(attrs={'size':'20'}))
-
 	def __init__(self, *args, **kwargs):
         	super(ListagemGeralFechamentoForm, self).__init__(*args, **kwargs)
         	self.fields['tratamento'].choices = [('-', '----------')] + [(tratamento.id, tratamento.descricao_basica) for tratamento in Tratamento.objects.all()]
-        	self.fields.keyOrder = ['paciente', 'tratamento', 'data']
 
+	data = forms.DateField(initial = datetime.date.today)
+	tratamento = forms.ChoiceField(choices=())
 
 class RelatorioAtendimentosConsolidadoDiaForm(forms.Form):
 
@@ -894,22 +891,12 @@ def exibir_listagem_geral_fechamento(request):
         if form_listagem.is_valid():
             data_in = form_listagem.cleaned_data['data']
             tratamento_in = form_listagem.cleaned_data['tratamento']
-            paciente_in = form_listagem.cleaned_data['paciente']
 
             if tratamento_in == '-':
-                if paciente_in:
-                    atendimentos = Atendimento.objects.filter(instancia_tratamento__data = data_in, \
-                        paciente__nome__contains=paciente_in).order_by('-hora_chegada')
-                else:
-                    atendimentos = Atendimento.objects.filter(instancia_tratamento__data = data_in).order_by('-hora_chegada')
+                atendimentos = Atendimento.objects.filter(instancia_tratamento__data = data_in).order_by('-hora_chegada')
             else:
-                if paciente_in:
-                    atendimentos = Atendimento.objects.filter(instancia_tratamento__data = data_in, \
-                        instancia_tratamento__tratamento__id = tratamento_in, 
-                        paciente__nome__contains=paciente_in).order_by('-hora_chegada')
-                else:
-                    atendimentos = Atendimento.objects.filter(instancia_tratamento__data = data_in, \
-                        instancia_tratamento__tratamento__id = tratamento_in).order_by('-hora_chegada')
+                atendimentos = Atendimento.objects.filter(instancia_tratamento__data = data_in, \
+                    instancia_tratamento__tratamento__id = tratamento_in).order_by('-hora_chegada')
                 
             for atendimento in atendimentos:
                 info_str = retornaInfo(atendimento)

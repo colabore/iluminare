@@ -1,26 +1,13 @@
 {% extends "base.html"%}
 {% block content %}
-<body OnLoad="document.form_listagem_fechamento.paciente.focus();">
+
 <form name="form_listagem_fechamento" method="POST" action="/atendimento/listagem-geral-fechamento/" >
 
 <table>
-    <tr>
-    <td>Paciente:</td>
-    <td>{{ form_listagem_fechamento.paciente }}
-    </td>
-    </tr>
-    <tr>
-    <td> Data: </td>
-    <td> {{ form_listagem_fechamento.data }} </td>
-    </tr>
-    <tr>
-    <td>Tratamento: </td>
-    <td>{{ form_listagem_fechamento.tratamento }} </td>
-    </tr>
+       Data : {{ form_listagem_fechamento.data }}
+       Tratamento : {{ form_listagem_fechamento.tratamento }}
+        <input type="submit" value="Pesquisar"/>
 </table>
-<br>
-<input type="submit" value="Pesquisar"/>
-
 
 <table id="tabela-padrao">
     
@@ -35,7 +22,6 @@
 		    <th> Nome </th>
 		    <th> Info </th>
 		    <th> Observação </th>
-		    <th> Link </th>
 	      </tr>
 	      
         {% endif %}
@@ -57,7 +43,6 @@
 			<td> {{atendimento.nome}} </td>
 			<td> {{atendimento.info}} </td>
 			<td> {{atendimento.observacao}} </td>
-			<td> link </td>
 		  </tr>
 	{% endfor %}
 </table>
