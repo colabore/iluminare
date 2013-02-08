@@ -35,6 +35,17 @@ $(document).ready(function(){
         });
             
     }
+    function bindfancybox2(atendimento){
+        $("#atualiza_paciente_confirma_submit").click(function(){
+            $.post('/atendimento/atualizar-paciente-confirmacao/'+atendimento,
+            $("#form_atualiza_paciente_confirma").serialize(),
+            function(data){
+                $("#atualiza_paciente_confirma").html(data);
+                bindfancybox2(atendimento);
+            });
+        });
+
+    }
 
     $("#q-paciente").keyup(function(key){
         var nome = $(this).val();
@@ -55,7 +66,15 @@ $(document).ready(function(){
             $('#id_nome').val($('#q-paciente').val());
         });
     });
-    
-    
+
+    $("#tabela-fechamento a").click(function(){
+        var atendimento = $(this).attr('id');
+        var classe      = $(this).attr('class');
+        var url = '/atendimento/atualizar-paciente-confirmacao/' + atendimento;
+        var motion = {'transitionIn':'elastic', 'transitionOut':'elastic'};
+        $.get(url,function (data){$.fancybox(data, motion);bindfancybox2(atendimento);});
+    });
+
+
 });
 

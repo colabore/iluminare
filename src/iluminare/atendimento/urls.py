@@ -15,6 +15,6 @@ urlpatterns = patterns('iluminare.atendimento.views',
 	(r'^relatorio-atendimentos-dia/$', 'relatorio_atendimentos_dia'),
 	(r'^relatorio-atendimentos-mes/$', 'relatorio_atendimentos_mes'),
 	(r'^relatorio-atendimentos-mes-csv/(?P<data_ordinal>[0-9]+)$', 'relatorio_atendimentos_mes_csv'),
-	
+    (r'^atualizar-paciente-confirmacao/(?P<atendimento_id>[0-9]+)$', 'ajax_atualizar_paciente_confirmacao'),
 )
 

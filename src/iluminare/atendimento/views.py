@@ -914,7 +914,7 @@ def exibir_listagem_geral_fechamento(request):
                 info_str = retornaInfo(atendimento)
                 retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 'info': info_str, 'prioridade': False, \
                     'sala': atendimento.instancia_tratamento.tratamento.descricao_basica, 'senha':atendimento.senha, \
-                    'status':atendimento.status, 'observacao':atendimento.observacao})
+                    'status':atendimento.status, 'observacao':atendimento.observacao, 'id':atendimento.id})
 
             if not retorno:
                 mensagem_erro = 'Não há registros'
@@ -1141,3 +1141,34 @@ def relatorio_atendimentos_mes_csv(request, data_ordinal):
         writer.writerow(element)
 
     return response
+
+class AtualizarPaciente_Confirmacao(forms.Form):
+    tratamento              = forms.ModelChoiceField(queryset=Tratamento.objects.all(),required=False)
+    frequencia              = forms.ChoiceField(required=False, choices=Paciente.FREQUENCIA)
+    prioridade              = forms.ChoiceField(required=False, choices=DetalhePrioridade.TIPO)
+    observacao_atendimento  = forms.CharField(max_length=200, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(AtualizarPaciente_Confirmacao, self).__init__(*args, **kwargs)
+        self.fields.keyOrder = ['tratamento', 'frequencia', 'prioridade', 'observacao_atendimento']
+
+    def update(self, atendimento):
+
+        self.fields['observacao_atendimento'].initial = atendimento.observacao
+
+def ajax_atualizar_paciente_confirmacao(request, atendimento_id):
+    atendimento = get_object_or_404(Atendimento, pk=atendimento_id)
+
+    debug = ''
+    if request.method == 'POST':
+        atualizar_paciente_form = AtualizarPaciente_Confirmacao(request.POST)
+
+        return render_to_response('ajax-atualizar-paciente-confirmacao-resultado.html', {'paciente':paciente, \
+                    'voluntario':voluntario, 'dic_checkin':dic_checkin, 'dic_ponto':dic_ponto, \
+                    'msg_validacao':msg_validacao})
+    else:
+        atualizar_paciente_form = AtualizarPaciente_Confirmacao()
+
+    return render_to_response('ajax-atualizar-paciente-confirmacao.html', {'atendimento':atendimento, \
+        'form':atualizar_paciente_form,})
+

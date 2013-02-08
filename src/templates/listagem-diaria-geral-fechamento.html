@@ -39,8 +39,9 @@
 		    <th> Nome </th>
 		    <th> Info </th>
 		    <th> Observação </th>
-		    <th> Link </th>
+		    <th> Atualizar </th>
 	      </tr>
+            <tbody id="tabela-fechamento">
 	      
         {% endif %}
 		
@@ -60,11 +61,17 @@
 			<td> {{atendimento.sala}} </td>
 			<td> {{atendimento.nome}} </td>
 			<td> {{atendimento.info}} </td>
-			<td> {{atendimento.observacao}} </td>
-			<td> Link </td>
+			<td> {{atendimento.id}} </td>
+			<td align="center">
+                <a href="#" class="alterar" id="{{atendimento.id}}">
+                <img alt="" width="20" height="20" src="/static/img/update.png" />
+                </a>
+            </td>
 		  </tr>
 	{% endfor %}
+	</tbody>
 </table>
+</div>
 
 </form>
 {% endblock %}

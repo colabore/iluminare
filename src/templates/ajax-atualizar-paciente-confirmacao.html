@@ -1,0 +1,39 @@
+<style type="text/css">
+@import url("/static/css/quinta.css");
+</style>
+
+<table id="borda_fancybox">
+<tr>
+<th>
+<div class="atualiza_paciente_confirma" id="atualiza_paciente_confirma">
+<form method="POST" id="form_atualiza_paciente_confirma">
+    <table id="ajax_titulo">
+        <tr>
+            <td align="center"><img src="/static/img/icon_info.png" width="25" height="25" /> </td>
+            <td><b>ATUALIZAR PACIENTE</b> </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>{{atendimento.paciente.nome}}</td>
+        </tr>
+    </table>
+    <table class="ajax_campos">
+        {{form}}
+    </table>
+    <table id="confirma">
+        <tr>
+            <!--td>
+                <img src="/static/img/sucesso.png" width="35" heigth="35" />
+            </td-->
+            <td>
+                <button type="button" id="atualiza_paciente_confirma_submit">Confirmar</button>
+                <!--a href="#" id="checkin_submit">Confirmar</a-->
+            </td>
+        <tr>
+    </table>
+
+</form>
+</div>
+</th>
+</tr>
+</table>
