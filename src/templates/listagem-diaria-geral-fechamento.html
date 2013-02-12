@@ -19,12 +19,10 @@
     Tratamento:</td>
     <td>{{ form_listagem_fechamento.tratamento }}</td>
     </tr>
-    <tr>
-    <td>
-        <input type="submit" value="Pesquisar"/>
-    </td>
-    </tr>
 </table>
+<br>
+<input type="submit" value="Pesquisar"/>
+
 
 <table id="tabela-padrao">
     
@@ -61,7 +59,7 @@
 			<td> {{atendimento.sala}} </td>
 			<td> {{atendimento.nome}} </td>
 			<td> {{atendimento.info}} </td>
-			<td> {{atendimento.id}} </td>
+			<td> {{atendimento.observacao}} </td>
 			<td align="center">
                 <a href="#" class="alterar" id="{{atendimento.id}}">
                 <img alt="" width="20" height="20" src="/static/img/update.png" />

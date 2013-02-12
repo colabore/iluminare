@@ -1,0 +1,33 @@
+<style type="text/css">
+@import url("/static/css/quinta.css");
+</style>
+
+<div class="atualiza_paciente_confirma" id="atualiza_paciente_confirma">
+    <table id="ajax_titulo">
+        <tr>
+            <td align="center"><img src="/static/img/icon_info.png" width="25" height="25" /> </td>
+            <td><b>ATUALIZAR PACIENTE</b> </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>{{paciente.nome}}</td>
+        </tr>
+    </table>
+
+    <table class="ajax_resultado_checkin_rapido">
+        {% for mensagem in mensagens %}
+        {% if mensagem.sucesso %}
+        <tr>
+            <td><img src="/static/img/sucesso.png" width="25" height="25"/> </td>
+            <td><font color='green'>{{mensagem.texto}}</font></td>
+        </tr>
+        {% else %}
+        <tr>
+            <td><img src="/static/img/falha.png" width="25" height="25"/></td>
+            <td><font color='red'>{{mensagem.texto}}</font></td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </table>
+</div>
+

@@ -17,21 +17,66 @@
             <td>{{atendimento.paciente.nome}}</td>
         </tr>
     </table>
+    Dados Gerais
     <table class="ajax_campos">
         {{form}}
     </table>
+    Agendamentos
+    <table class="ajax_campos">
+        <tr>
+            <td>Acolhimento: </td>
+            <td>{{agendamento_form.agenda_tratamento_acolhimento}} </td>
+            <td>{{agendamento_form.fone}} </td>
+        </tr>
+        <tr>
+            <td>Desobsessão: </td>
+            <td>{{agendamento_form.agenda_tratamento_desobsessao}} </td>
+        </tr>
+        <tr>
+            <td>Atend. Fraterno: </td>
+            <td>{{agendamento_form.agenda_tratamento_af}} </td>
+        </tr>
+    </table>
+    Notificações
+    <table class="ajax_campos">
+        <tr>
+        <td colspan=4> Descrição: {{notificacao_form.descricao}} </td>
+        <td> </td>
+        <td> </td>
+        <td> </td>
+        </tr>
+        <td colspan=4> Tela Impressão: {{notificacao_form.tela_impressao}} &nbsp; &nbsp; &nbsp; 
+            Tela Checkin: {{notificacao_form.tela_checkin}} </td>
+        <td> </td>
+        <td> </td>
+        <td> </td>
+        <tr>
+        <td> Fixo: {{notificacao_form.fixo}} </td>
+        <td> Data Validade: </td>
+        <td> Prazo: </td>
+        <td> Qtd. Atendimentos: </td>
+        </tr>
+        <tr>
+        <td>
+        </td>
+        <td> {{notificacao_form.data_validade}}  </td>
+        <td> {{notificacao_form.prazo_num}} {{notificacao_form.prazo_unidade}} </td>
+        <td> {{notificacao_form.qtd_atendimentos}} </td>
+        </tr>
+        <tr>
+        </tr>
+    </table>
+    <br>
+    <div align="center">
     <table id="confirma">
         <tr>
-            <!--td>
-                <img src="/static/img/sucesso.png" width="35" heigth="35" />
-            </td-->
             <td>
                 <button type="button" id="atualiza_paciente_confirma_submit">Confirmar</button>
-                <!--a href="#" id="checkin_submit">Confirmar</a-->
             </td>
         <tr>
     </table>
-
+    </div>
+    <br>
 </form>
 </div>
 </th>

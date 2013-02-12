@@ -1,37 +1,34 @@
 # -*- coding: utf-8 -*-
-from iluminare.tratamento.models import Tratamento, InstanciaTratamento, TratamentoPaciente
-from iluminare.atendimento.models import Atendimento
-from iluminare.voluntario.models import Voluntario, Trabalho
+from    iluminare.tratamento.models     import Tratamento, InstanciaTratamento, TratamentoPaciente, AgendaTratamento
+from    iluminare.atendimento.models    import Atendimento, Notificacao, AgendaAtendimento
+from    iluminare.voluntario.models     import Voluntario, Trabalho
 
-from iluminare.paciente.models import DetalhePrioridade, Paciente
-import iluminare.atendimento.logic as logic_atendimento
-import iluminare.tratamento.logic as tratamento_logic
-import iluminare.voluntario.logic as voluntario_logic
+from    iluminare.paciente.models       import DetalhePrioridade, Paciente
+import  iluminare.atendimento.logic     as logic_atendimento
+import  iluminare.tratamento.logic      as tratamento_logic
+import  iluminare.voluntario.logic      as voluntario_logic
+
+from    django                          import forms
+from    django.shortcuts                import render_to_response, get_object_or_404
+from    django.forms.models             import modelformset_factory, BaseModelFormSet
+from    django.core.paginator           import Paginator
+from    django.http                     import HttpResponse
+from    django.db.models                import Q
+from    django.db                       import transaction
+from    django.db.models                import Count
+from    django.utils.encoding           import smart_str
+
+from    operator                        import itemgetter
+from    sets                            import Set
+
+from    exceptions                      import Exception
+
+import  csv
+import  sys
+import  datetime
+import  itertools
 
 
-from django import forms
-from django.shortcuts import render_to_response, get_object_or_404
-from django.forms.models import modelformset_factory, BaseModelFormSet
-from django.core.paginator import Paginator
-from django.http import HttpResponse
-
-import datetime
-
-from operator import itemgetter
-
-import itertools
-
-from django.utils.encoding import smart_str
-
-from django.db.models import Q
-
-from django.db import transaction
-
-from sets import Set
-from django.db.models import Count
-
-import csv
-import sys
 
 class CheckinPacienteForm(forms.ModelForm):
 
@@ -1142,33 +1139,165 @@ def relatorio_atendimentos_mes_csv(request, data_ordinal):
 
     return response
 
-class AtualizarPaciente_Confirmacao(forms.Form):
+class AtualizarPaciente_ConfirmacaoForm(forms.Form):
     tratamento              = forms.ModelChoiceField(queryset=Tratamento.objects.all(),required=False)
-    frequencia              = forms.ChoiceField(required=False, choices=Paciente.FREQUENCIA)
-    prioridade              = forms.ChoiceField(required=False, choices=DetalhePrioridade.TIPO)
+    frequencia              = forms.ChoiceField(required=False)
+    prioridade              = forms.ChoiceField(required=False)
     observacao_atendimento  = forms.CharField(max_length=200, required=False)
 
     def __init__(self, *args, **kwargs):
-        super(AtualizarPaciente_Confirmacao, self).__init__(*args, **kwargs)
+        super(AtualizarPaciente_ConfirmacaoForm, self).__init__(*args, **kwargs)
         self.fields.keyOrder = ['tratamento', 'frequencia', 'prioridade', 'observacao_atendimento']
+        self.fields['tratamento'].queryset=Tratamento.objects.filter(descricao_basica__startswith='Sala')
+        self.fields['frequencia'].choices=opcoes = (('X','---------'),) + Paciente.FREQUENCIA
+        self.fields['prioridade'].choices=opcoes = (('X','---------'),) + DetalhePrioridade.TIPO
+
+    def save(self, atendimento):
+        tratamento_in = self.cleaned_data['tratamento']
+        frequencia_in = self.cleaned_data['frequencia']
+        prioridade_in = self.cleaned_data['prioridade']
+        observacao_atendimento_in = self.cleaned_data['observacao_atendimento']
+        if tratamento_in:
+            tratamento = Tratamento.objects.get(descricao_basica = tratamento_in)
+            if tratamento:
+                lista_t = []
+                lista_t.append(tratamento)
+                tratamento_logic.encaminhar_paciente(atendimento.paciente.id, lista_t)
+                obs = atendimento.observacao 
+                if not obs:
+                    obs = ''
+                atendimento.observacao = obs + '[Encaminhado para '+str(tratamento_in)+'] '
+
+        if frequencia_in != 'X':
+            atendimento.paciente.frequencia = frequencia_in
+            atendimento.paciente.save()
+            obs = atendimento.observacao 
+            if not obs:
+                obs = ''
+            atendimento.observacao = obs + '[Freq: '+str(frequencia_in)+'] '
+
+        if prioridade_in != 'X':
+            try:
+                detalhe_prioridade = DetalhePrioridade.objects.get(paciente=atendimento.paciente)
+            except:
+                detalhe_prioridade = None
+            if detalhe_prioridade:
+                detalhe_prioridade.tipo = prioridade_in
+            else:
+                detalhe_prioridade = DetalhePrioridade(paciente = atendimento.paciente, tipo=prioridade_in)
+            detalhe_prioridade.save()
+            obs = atendimento.observacao 
+            if not obs:
+                obs = ''
+            atendimento.observacao = obs + '[Prior: '+detalhe_prioridade.get_tipo_display()+'] '
+        if observacao_atendimento_in:
+            print observacao_atendimento_in
+            obs = atendimento.observacao 
+            if not obs:
+                obs = ''
+            atendimento.observacao = obs + '['+observacao_atendimento_in+'] '
+
+        atendimento.save()
+        return atendimento.paciente
+        
+class AgendamentoForm(forms.Form):
+    fone                            = forms.CharField(max_length=30, required=False, initial="Fone")
+    agenda_tratamento_acolhimento   = forms.ChoiceField(choices=(),required=False)
+    agenda_tratamento_desobsessao   = forms.ChoiceField(choices=(),required=False)
+    agenda_tratamento_af            = forms.ChoiceField(choices=(),required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(AgendamentoForm, self).__init__(*args, **kwargs)
+        acolhimento = Tratamento.objects.get(descricao_basica__startswith='Acolh')
+        ats = AgendaTratamento.objects.filter(tratamento = acolhimento, data__gte=datetime.date.today())
+        choices = (('X','---------'),) + tuple([(at.id,at.data) for at in ats]) + (('N','Sem data'),)
+        self.fields['agenda_tratamento_acolhimento'].choices= choices
+        
+        desob = Tratamento.objects.get(descricao_basica__startswith='Desob')
+        ats = AgendaTratamento.objects.filter(tratamento = desob, data__gte=datetime.date.today())
+        choices = (('X','---------'),) + tuple([(at.id,at.data) for at in ats]) + (('N','Sem data'),)
+        self.fields['agenda_tratamento_desobsessao'].choices=choices
+        
+        af = Tratamento.objects.get(descricao_basica__startswith='Atend')
+        ats = AgendaTratamento.objects.filter(tratamento = af, data__gte=datetime.date.today())
+        choices = (('X','---------'),) + tuple([(at.id,at.data) for at in ats]) + (('N','Sem data'),)
+        self.fields['agenda_tratamento_af'].choices=choices
+
+    def save(self, atendimento):
+        agenda_tratamento_acolhimento_in = self.cleaned_data['agenda_tratamento_acolhimento']
+        agenda_tratamento_desobsessao_in = self.cleaned_data['agenda_tratamento_desobsessao']
+        agenda_tratamento_af_in = self.cleaned_data['agenda_tratamento_acolhimento']
+        fone_in = self.cleaned_data['fone']
+        print atendimento
+        if agenda_tratamento_acolhimento_in != 'X':
+            print '1'
+            if agenda_tratamento_acolhimento_in != 'N':
+                agenda_tratamento = AgendaTratamento.objects.get(id=agenda_tratamento_acolhimento_in)
+                print '2'
+            else:
+                print '3'
+                acolhimento = Tratamento.objects.get(descricao_basica__startswith='Acolh')
+                agenda_tratamentos = AgendaTratamento.objects.filter(data=None, tratamento=acolhimento)
+                print '3.1'
+                if not agenda_tratamentos:
+                    agenda_tratamento = AgendaTratamento(tratamento = acolhimento, data=None)
+                    print '4'
+                else:
+                    agenda_tratamento = agenda_tratamentos[0]
+                    print '4.1'
+            print '4.2'
+            agenda_atendimento = AgendaAtendimento(paciente = atendimento.paciente, agenda_tratamento = agenda_tratamento)
+            print agenda_atendimento
+            print '4.3'
+            agenda_atendimento.save()
+            print '5'
+        atendimento.save()
+        return None
+
+
+
+class NotificacaoForm(forms.Form):
+    descricao                       = forms.CharField(max_length=200, required=False, widget=forms.TextInput( \
+        attrs={'size':'40'}))
+    tela_impressao                  = forms.BooleanField(required=False)
+    tela_checkin                    = forms.BooleanField(required=False)
+    fixo                            = forms.BooleanField(required=False)
+    data_validade                   = forms.DateField(required=False, widget=forms.TextInput(attrs={'size':'8'}))
+    prazo_num                       = forms.IntegerField(required=False, widget=forms.TextInput(attrs={'size':'4'}))
+    prazo_unidade                   = forms.ChoiceField(choices=Notificacao.UNIDADE, required=False)
+    qtd_atendimentos                = forms.IntegerField(required=False, widget=forms.TextInput(attrs={'size':'4'}))
+
+    def __init__(self, *args, **kwargs):
+        super(NotificacaoForm, self).__init__(*args, **kwargs)
+        #self.fields['agenda_tratamento_acolhimento'].queryset=AgendaTratamento.objects.all()
+        #self.fields['agenda_tratamento_desobsesssao'].queryset=AgendaTratamento.objects.all()
+        #self.fields['agenda_tratamento_af'].queryset=AgendaTratamento.objects.all()
 
     def update(self, atendimento):
+        pass
 
-        self.fields['observacao_atendimento'].initial = atendimento.observacao
 
 def ajax_atualizar_paciente_confirmacao(request, atendimento_id):
     atendimento = get_object_or_404(Atendimento, pk=atendimento_id)
 
     debug = ''
     if request.method == 'POST':
-        atualizar_paciente_form = AtualizarPaciente_Confirmacao(request.POST)
-
+        atualizar_paciente_form = AtualizarPaciente_ConfirmacaoForm(request.POST)
+        agendamento_form = AgendamentoForm(request.POST)
+        notificacao_form = NotificacaoForm(request.POST)
+        mensagens = []
+        
+        if atualizar_paciente_form.is_valid():
+            paciente = atualizar_paciente_form.save(atendimento)
+        
+        if agendamento_form.is_valid():
+            agendamento_form.save(atendimento)
         return render_to_response('ajax-atualizar-paciente-confirmacao-resultado.html', {'paciente':paciente, \
-                    'voluntario':voluntario, 'dic_checkin':dic_checkin, 'dic_ponto':dic_ponto, \
-                    'msg_validacao':msg_validacao})
+                    'mensagens':mensagens})
     else:
-        atualizar_paciente_form = AtualizarPaciente_Confirmacao()
+        atualizar_paciente_form = AtualizarPaciente_ConfirmacaoForm()
+        agendamento_form = AgendamentoForm()
+        notificacao_form = NotificacaoForm()
 
     return render_to_response('ajax-atualizar-paciente-confirmacao.html', {'atendimento':atendimento, \
-        'form':atualizar_paciente_form,})
-
+        'form':atualizar_paciente_form, 'agendamento_form': agendamento_form, 'notificacao_form':notificacao_form})
