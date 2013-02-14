@@ -1,15 +1,14 @@
 
 # coding: utf-8
 
-from iluminare.paciente.models import *
-from iluminare.tratamento.models import *
-from iluminare.atendimento.models import *
-from iluminare.voluntario.models import *
-from datetime import date
-from datetime import datetime
-from datetime import timedelta
-import re
-from django.utils.encoding import smart_str
+from    iluminare.paciente.models       import *
+from    iluminare.tratamento.models     import *
+from    iluminare.atendimento.models    import *
+from    iluminare.voluntario.models     import *
+from    datetime                        import date, datetime, timedelta
+from    django.utils.encoding           import smart_str
+
+import  re
 
 class AtendimentoException(Exception):
     def __init__(self, msg):
@@ -28,6 +27,22 @@ def horario_autorizado(tratamento):
     else:
         return True
 
+
+def get_data_limite():
+    """
+        Essa função precisa ser atualizada anualmente, pois só saberemos o período do recesso ao final de cada ano.
+        Outra opção é criar um arquivo ou um registro na base com esses dados para não precisar mais atualizar o código.
+    """
+    data_base = datetime.today().date()
+    NUMERO_DIAS = 90
+    inicio_recesso = datetime(2012,12,13).date()
+    final_recesso = datetime(2013,02,14).date()
+    diferenca_depois = data_base - final_recesso
+    if diferenca_depois.days > NUMERO_DIAS:
+        return data_base - timedelta(days=NUMERO_DIAS)
+    else:
+        return inicio_recesso - timedelta(days=NUMERO_DIAS-diferenca_depois.days)
+
 def regras_gerais_atendidas(paciente, tratamento):
     
     ats = Atendimento.objects.filter(paciente = paciente, status='A').order_by('-instancia_tratamento__data')
@@ -41,14 +56,9 @@ def regras_gerais_atendidas(paciente, tratamento):
             return dic_retorno
         else:
             # último atendimento na casa há mais de 3 meses
-            # é necessário ajustar esse regra para ficar mais genérica. No caso do início do ano, quando 
-            # voltamos de 1 mês e meio de recesso, essa regra precisa ser ajustada.
-            if ats[0].instancia_tratamento.data < datetime.today().date() - timedelta(days=90):
+            if ats[0].instancia_tratamento.data < get_data_limite():
                 dic_retorno['mensagem']='Último atendimento realizado há mais de 3 meses. Encaminhar paciente para a coordenação.'
                 return dic_retorno
-        
-        
-
 
     # ainda não finalizou as manutenções
     # talvez ainda seja necessário ajustar essa lógica.
@@ -56,7 +66,7 @@ def regras_gerais_atendidas(paciente, tratamento):
         if ats:
             if ats[0].instancia_tratamento.tratamento.descricao_basica[:4] == "Manu" or \
                 ats[0].instancia_tratamento.tratamento.descricao_basica[:4] == "Prim":
-                data_limite = datetime.today().date() - timedelta(days=90)
+                data_limite = get_data_limite()
                 manuts = Atendimento.objects.filter(paciente = paciente, status='A', \
                     instancia_tratamento__tratamento__descricao_basica__startswith="Manu", \
                     instancia_tratamento__data__gte=data_limite)
