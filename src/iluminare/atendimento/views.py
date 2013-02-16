@@ -27,6 +27,7 @@ import  csv
 import  sys
 import  datetime
 import  itertools
+import  traceback
 
 
 
@@ -1157,25 +1158,46 @@ class AtualizarPaciente_ConfirmacaoForm(forms.Form):
         frequencia_in = self.cleaned_data['frequencia']
         prioridade_in = self.cleaned_data['prioridade']
         observacao_atendimento_in = self.cleaned_data['observacao_atendimento']
+
+        mensagens_list = []
+
         if tratamento_in:
             tratamento = Tratamento.objects.get(descricao_basica = tratamento_in)
             if tratamento:
                 lista_t = []
                 lista_t.append(tratamento)
-                tratamento_logic.encaminhar_paciente(atendimento.paciente.id, lista_t)
-                obs = atendimento.observacao 
-                if not obs:
-                    obs = ''
-                atendimento.observacao = obs + '[Encaminhado para '+str(tratamento_in)+'] '
+                try:
+                    # ainda preciso ajustar as mensagens.. quando caracteres como ç ou acentos, dá problemas..
+                    # mesmo com o smart_str, que utilizo em outras partes do código, está dando problemas.
+                    tratamento_logic.encaminhar_paciente(atendimento.paciente.id, lista_t)
+                    dic_retorno = {}
+                    dic_retorno['sucesso'] = True
+                    dic_retorno['mensagem'] = smart_str("Mudanca de tratamento realizada com sucesso: \
+                        %s " % tratamento.descricao_basica)
+                    obs = atendimento.observacao
+                    if not obs:
+                        obs = ''
+                    atendimento.observacao = obs + "[Encaminhado para "+str(tratamento_in)+"] "
+                except:
+                    mensagem = smart_str("Erro na mudanca do tratamento.")
+                    dic_retorno = {'sucesso':False, 'mensagem':mensagem}
+                    traceback.print_exc()
+                mensagens_list.append(dic_retorno)
 
         if frequencia_in != 'X':
             atendimento.paciente.frequencia = frequencia_in
-            atendimento.paciente.save()
-            obs = atendimento.observacao 
-            if not obs:
-                obs = ''
-            atendimento.observacao = obs + '[Freq: '+str(frequencia_in)+'] '
-
+            try:
+                atendimento.paciente.save()
+                dic_retorno = {'sucesso':True, 'mensagem':'Ajuste da frequencia realizada com sucesso. Frequencia ' + \
+                    atendimento.paciente.get_frequencia_display()}
+                obs = atendimento.observacao
+                if not obs:
+                    obs = ''
+                atendimento.observacao = obs + '[Freq: '+str(frequencia_in)+'] '
+            except:
+                dic_retorno = {'sucesso':False, 'mensagem':'Erro no ajuste da frequencia.'}
+                traceback.print_exc()
+            mensagens_list.append(dic_retorno)
         if prioridade_in != 'X':
             try:
                 detalhe_prioridade = DetalhePrioridade.objects.get(paciente=atendimento.paciente)
@@ -1185,23 +1207,35 @@ class AtualizarPaciente_ConfirmacaoForm(forms.Form):
                 detalhe_prioridade.tipo = prioridade_in
             else:
                 detalhe_prioridade = DetalhePrioridade(paciente = atendimento.paciente, tipo=prioridade_in)
-            detalhe_prioridade.save()
-            obs = atendimento.observacao 
-            if not obs:
-                obs = ''
-            atendimento.observacao = obs + '[Prior: '+detalhe_prioridade.get_tipo_display()+'] '
+            try:
+                detalhe_prioridade.save()
+                dic_retorno = {'sucesso':True, 'mensagem':'Prioridade ajustada com sucesso: ' \
+                    + detalhe_prioridade.get_tipo_display()}
+                obs = atendimento.observacao
+                if not obs:
+                    obs = ''
+                atendimento.observacao = obs + '[Prior: '+detalhe_prioridade.get_tipo_display()+'] '
+            except:
+                dic_retorno = {'sucesso':False, 'mensagem':'Erro no estabelecimento da prioridade.'}
+                traceback.print_exc()
+            mensagens_list.append(dic_retorno)
         if observacao_atendimento_in:
-            print observacao_atendimento_in
-            obs = atendimento.observacao 
-            if not obs:
-                obs = ''
-            atendimento.observacao = obs + '['+observacao_atendimento_in+'] '
+            try:
+                obs = atendimento.observacao
+                if not obs:
+                    obs = ''
+                atendimento.observacao = obs + '['+observacao_atendimento_in+'] '
+                dic_retorno = {'sucesso':True, 'mensagem':'Observacao ajustada com sucesso: '+obs}
+            except:
+                dic_retorno = {'sucesso':False, 'mensagem':'Observacao nao registrada.'}
+                traceback.print_exc()
+            mensagens_list.append(dic_retorno)
 
         atendimento.save()
-        return atendimento.paciente
+        return (atendimento.paciente, mensagens_list)
         
 class AgendamentoForm(forms.Form):
-    fone                            = forms.CharField(max_length=30, required=False, initial="Fone")
+    fone                            = forms.CharField(max_length=45, required=False)
     agenda_tratamento_acolhimento   = forms.ChoiceField(choices=(),required=False)
     agenda_tratamento_desobsessao   = forms.ChoiceField(choices=(),required=False)
     agenda_tratamento_af            = forms.ChoiceField(choices=(),required=False)
@@ -1212,54 +1246,114 @@ class AgendamentoForm(forms.Form):
         ats = AgendaTratamento.objects.filter(tratamento = acolhimento, data__gte=datetime.date.today())
         choices = (('X','---------'),) + tuple([(at.id,at.data) for at in ats]) + (('N','Sem data'),)
         self.fields['agenda_tratamento_acolhimento'].choices= choices
-        
+
         desob = Tratamento.objects.get(descricao_basica__startswith='Desob')
         ats = AgendaTratamento.objects.filter(tratamento = desob, data__gte=datetime.date.today())
         choices = (('X','---------'),) + tuple([(at.id,at.data) for at in ats]) + (('N','Sem data'),)
         self.fields['agenda_tratamento_desobsessao'].choices=choices
-        
+
         af = Tratamento.objects.get(descricao_basica__startswith='Atend')
         ats = AgendaTratamento.objects.filter(tratamento = af, data__gte=datetime.date.today())
         choices = (('X','---------'),) + tuple([(at.id,at.data) for at in ats]) + (('N','Sem data'),)
         self.fields['agenda_tratamento_af'].choices=choices
 
+    def update(self, atendimento):
+        if atendimento.paciente.telefones:
+            self.fields['fone'].initial = atendimento.paciente.telefones
+        else:
+            self.fields['fone'].initial = 'Fone'
+
     def save(self, atendimento):
         agenda_tratamento_acolhimento_in = self.cleaned_data['agenda_tratamento_acolhimento']
         agenda_tratamento_desobsessao_in = self.cleaned_data['agenda_tratamento_desobsessao']
-        agenda_tratamento_af_in = self.cleaned_data['agenda_tratamento_acolhimento']
+        agenda_tratamento_af_in = self.cleaned_data['agenda_tratamento_af']
         fone_in = self.cleaned_data['fone']
-        print atendimento
+        mensagens_list = []
+
         if agenda_tratamento_acolhimento_in != 'X':
-            print '1'
             if agenda_tratamento_acolhimento_in != 'N':
                 agenda_tratamento = AgendaTratamento.objects.get(id=agenda_tratamento_acolhimento_in)
-                print '2'
             else:
-                print '3'
                 acolhimento = Tratamento.objects.get(descricao_basica__startswith='Acolh')
                 agenda_tratamentos = AgendaTratamento.objects.filter(data=None, tratamento=acolhimento)
-                print '3.1'
                 if not agenda_tratamentos:
                     agenda_tratamento = AgendaTratamento(tratamento = acolhimento, data=None)
-                    print '4'
+                    agenda_tratamento.save()
                 else:
                     agenda_tratamento = agenda_tratamentos[0]
-                    print '4.1'
-            print '4.2'
-            agenda_atendimento = AgendaAtendimento(paciente = atendimento.paciente, agenda_tratamento = agenda_tratamento)
-            print agenda_atendimento
-            print '4.3'
-            agenda_atendimento.save()
-            print '5'
-        atendimento.save()
-        return None
+            dic_retorno = {}
+            try:
+                agenda_atendimento = AgendaAtendimento(paciente = atendimento.paciente, \
+                    agenda_tratamento = agenda_tratamento, atendimento_origem = atendimento, status = 'A')
+                agenda_atendimento.save()
+                dic_retorno = {'sucesso':True, 'mensagem':'Agendamento do Acolhimento realizado com sucesso. '}
+            except:
+                dic_retorno = {'sucesso':False, 'mensagem':'Erro: Agendamento do Acolhimento nao realizado. '}
+                traceback.print_exc()
 
+            mensagens_list.append(dic_retorno)
 
+            if fone_in != 'Fone' and fone_in != atendimento.paciente.telefones:
+                atendimento.paciente.telefones = fone_in
+                try:
+                    atendimento.paciente.save()
+                    dic_retorno = {'sucesso':True, 'mensagem':'Telefone atualizado com sucesso. '}
+                except:
+                    dic_retorno = {'sucesso':False, 'mensagem':'Erro na atualização do telefone. '}
+                mensagens_list.append(dic_retorno)
+
+        if agenda_tratamento_desobsessao_in != 'X':
+            if agenda_tratamento_desobsessao_in != 'N':
+                agenda_tratamento = AgendaTratamento.objects.get(id=agenda_tratamento_desobsessao_in)
+            else:
+                desob = Tratamento.objects.get(descricao_basica__startswith='Desob')
+                agenda_tratamentos = AgendaTratamento.objects.filter(data=None, tratamento=desob)
+                if not agenda_tratamentos:
+                    agenda_tratamento = AgendaTratamento(tratamento = desob, data=None)
+                    agenda_tratamento.save()
+                else:
+                    agenda_tratamento = agenda_tratamentos[0]
+            dic_retorno = {}
+            try:
+                agenda_atendimento = AgendaAtendimento(paciente = atendimento.paciente, \
+                    agenda_tratamento = agenda_tratamento, atendimento_origem = atendimento, status = 'A')
+                agenda_atendimento.save()
+                dic_retorno = {'sucesso':True, 'mensagem':'Agendamento da Desobsessao realizado com sucesso. '}
+            except:
+                dic_retorno = {'sucesso':False, 'mensagem':'Erro: Agendamento da Desobsessao nao realizado. '}
+                traceback.print_exc()
+
+            mensagens_list.append(dic_retorno)
+
+        if agenda_tratamento_af_in != 'X':
+            if agenda_tratamento_af_in != 'N':
+                agenda_tratamento = AgendaTratamento.objects.get(id=agenda_tratamento_af_in)
+            else:
+                af = Tratamento.objects.get(descricao_basica__startswith='Atend')
+                agenda_tratamentos = AgendaTratamento.objects.filter(data=None, tratamento=af)
+                if not agenda_tratamentos:
+                    agenda_tratamento = AgendaTratamento(tratamento = af, data=None)
+                    agenda_tratamento.save()
+                else:
+                    agenda_tratamento = agenda_tratamentos[0]
+            dic_retorno = {}
+            try:
+                agenda_atendimento = AgendaAtendimento(paciente = atendimento.paciente, \
+                    agenda_tratamento = agenda_tratamento, atendimento_origem = atendimento, status = 'A')
+                agenda_atendimento.save()
+                dic_retorno = {'sucesso':True, 'mensagem':'Agendamento do Atendimento Fraterno realizado com sucesso. '}
+            except:
+                dic_retorno = {'sucesso':False, 'mensagem':'Erro: Agendamento da Atendimento Fraterno nao realizado. '}
+                traceback.print_exc()
+
+            mensagens_list.append(dic_retorno)
+
+        return mensagens_list
 
 class NotificacaoForm(forms.Form):
     descricao                       = forms.CharField(max_length=200, required=False, widget=forms.TextInput( \
         attrs={'size':'40'}))
-    tela_impressao                  = forms.BooleanField(required=False)
+    impressao                  = forms.BooleanField(required=False)
     tela_checkin                    = forms.BooleanField(required=False)
     fixo                            = forms.BooleanField(required=False)
     data_validade                   = forms.DateField(required=False, widget=forms.TextInput(attrs={'size':'8'}))
@@ -1269,13 +1363,35 @@ class NotificacaoForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(NotificacaoForm, self).__init__(*args, **kwargs)
-        #self.fields['agenda_tratamento_acolhimento'].queryset=AgendaTratamento.objects.all()
-        #self.fields['agenda_tratamento_desobsesssao'].queryset=AgendaTratamento.objects.all()
-        #self.fields['agenda_tratamento_af'].queryset=AgendaTratamento.objects.all()
 
     def update(self, atendimento):
         pass
 
+    def save(self, atendimento):
+        descricao_in = self.cleaned_data['descricao']
+        impressao_in = self.cleaned_data['impressao']
+        tela_checkin_in = self.cleaned_data['tela_checkin']
+        fixo_in = self.cleaned_data['fixo']
+        data_validade_in = self.cleaned_data['data_validade']
+        prazo_num_in = self.cleaned_data['prazo_num']
+        prazo_unidade_in = self.cleaned_data['prazo_unidade']
+        qtd_atendimentos_in = self.cleaned_data['qtd_atendimentos']
+
+        mensagens_list = []
+
+        if descricao_in:
+            try:
+                notificacao = Notificacao(descricao=descricao_in, impressao=impressao_in, tela_checkin=tela_checkin_in,\
+                    ativo=True, data_criacao = datetime.date.today(), paciente = atendimento.paciente, \
+                    atendimento = atendimento)
+
+                notificacao.save()
+                dic_retorno = {'sucesso':True, 'mensagem':'Notificacacao cadastrada com sucesso. '}
+            except:
+                dic_retorno = {'sucesso':False, 'mensagem':'Erro no cadastro da notificacao. '}
+                traceback.print_exc()
+            mensagens_list.append(dic_retorno)
+        return mensagens_list
 
 def ajax_atualizar_paciente_confirmacao(request, atendimento_id):
     atendimento = get_object_or_404(Atendimento, pk=atendimento_id)
@@ -1288,16 +1404,28 @@ def ajax_atualizar_paciente_confirmacao(request, atendimento_id):
         mensagens = []
         
         if atualizar_paciente_form.is_valid():
-            paciente = atualizar_paciente_form.save(atendimento)
-        
+            (paciente, mensagens_list) = atualizar_paciente_form.save(atendimento)
+            mensagens = mensagens + mensagens_list
         if agendamento_form.is_valid():
-            agendamento_form.save(atendimento)
+            mensagens_list = agendamento_form.save(atendimento)
+            mensagens = mensagens + mensagens_list
+        if notificacao_form.is_valid():
+            mensagens_list = notificacao_form.save(atendimento)
+            mensagens = mensagens + mensagens_list
+
+        if len(mensagens) == 0:
+            mensagens.append({'sucesso':False, 'mensagem':'Nenhuma operação realizada.'})
+
         return render_to_response('ajax-atualizar-paciente-confirmacao-resultado.html', {'paciente':paciente, \
                     'mensagens':mensagens})
     else:
-        atualizar_paciente_form = AtualizarPaciente_ConfirmacaoForm()
-        agendamento_form = AgendamentoForm()
-        notificacao_form = NotificacaoForm()
+        try:
+            atualizar_paciente_form = AtualizarPaciente_ConfirmacaoForm()
+            agendamento_form = AgendamentoForm()
+            agendamento_form.update(atendimento)
+            notificacao_form = NotificacaoForm()
+        except:
+            traceback.print_exc()
 
     return render_to_response('ajax-atualizar-paciente-confirmacao.html', {'atendimento':atendimento, \
         'form':atualizar_paciente_form, 'agendamento_form': agendamento_form, 'notificacao_form':notificacao_form})
