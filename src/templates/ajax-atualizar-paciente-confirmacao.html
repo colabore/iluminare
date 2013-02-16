@@ -17,10 +17,12 @@
             <td>{{atendimento.paciente.nome}}</td>
         </tr>
     </table>
+    <br>
     Dados Gerais
     <table class="ajax_campos">
         {{form}}
     </table>
+    <br>
     Agendamentos
     <table class="ajax_campos">
         <tr>
@@ -37,33 +39,28 @@
             <td>{{agendamento_form.agenda_tratamento_af}} </td>
         </tr>
     </table>
+    <br>
     Notificações
     <table class="ajax_campos">
         <tr>
-        <td colspan=4> Descrição: {{notificacao_form.descricao}} </td>
-        <td> </td>
-        <td> </td>
-        <td> </td>
+        <td> Descrição: </td>
+        <td> {{notificacao_form.descricao}} </td>
         </tr>
-        <td colspan=4> Tela Impressão: {{notificacao_form.tela_impressao}} &nbsp; &nbsp; &nbsp; 
+    </table>
+    <table class="ajax_campos">
+        <tr>
+        <td colspan=4> Tela Impressão: {{notificacao_form.impressao}} &nbsp; &nbsp; &nbsp; 
             Tela Checkin: {{notificacao_form.tela_checkin}} </td>
-        <td> </td>
-        <td> </td>
-        <td> </td>
+        </tr>
+    </table>
+    <table class="ajax_campos">
         <tr>
         <td> Fixo: {{notificacao_form.fixo}} </td>
-        <td> Data Validade: </td>
-        <td> Prazo: </td>
-        <td> Qtd. Atendimentos: </td>
+        <td> Data Validade: {{notificacao_form.data_validade}} </td>
         </tr>
         <tr>
-        <td>
-        </td>
-        <td> {{notificacao_form.data_validade}}  </td>
-        <td> {{notificacao_form.prazo_num}} {{notificacao_form.prazo_unidade}} </td>
-        <td> {{notificacao_form.qtd_atendimentos}} </td>
-        </tr>
-        <tr>
+        <td> Prazo: {{notificacao_form.prazo_num}} {{notificacao_form.prazo_unidade}}</td>
+        <td> Qtd. Atendimentos: {{notificacao_form.qtd_atendimentos}} </td>
         </tr>
     </table>
     <br>

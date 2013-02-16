@@ -15,16 +15,16 @@
     </table>
 
     <table class="ajax_resultado_checkin_rapido">
-        {% for mensagem in mensagens %}
-        {% if mensagem.sucesso %}
+        {% for item in mensagens %}
+        {% if item.sucesso %}
         <tr>
             <td><img src="/static/img/sucesso.png" width="25" height="25"/> </td>
-            <td><font color='green'>{{mensagem.texto}}</font></td>
+            <td><font color='green'>{{item.mensagem}}</font></td>
         </tr>
         {% else %}
         <tr>
             <td><img src="/static/img/falha.png" width="25" height="25"/></td>
-            <td><font color='red'>{{mensagem.texto}}</font></td>
+            <td><font color='red'>{{item.mensagem}}</font></td>
         </tr>
         {% endif %}
         {% endfor %}

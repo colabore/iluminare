@@ -274,8 +274,8 @@ p.senha-falha {
     background:#fff;
     border-collapse:collapse;
     text-align:left;
-    margin:5px;
-    width:90%;
+    margin:3px;
+    width:98%;
     border: 1px solid #FFF;
 
 }
@@ -283,11 +283,13 @@ p.senha-falha {
     color:#669;
     padding:2px 3px;
     font-weight:bold;
+    border: 1px solid #FFF;
 }
 .ajax_campos td{
     color:#669;
     padding:2px 3px;
     font-weight:bold;
+    border: 1px solid #FFF;
 }
 
 .ajax_checkin_observacao {
