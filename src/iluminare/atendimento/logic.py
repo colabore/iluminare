@@ -60,13 +60,16 @@ def regras_gerais_atendidas(paciente, tratamento):
                 dic_retorno['mensagem']='Último atendimento realizado há mais de 3 meses. Encaminhar paciente para a coordenação.'
                 return dic_retorno
 
-    # ainda não finalizou as manutenções
-    # talvez ainda seja necessário ajustar essa lógica.
+    # regra básica:
+    # se o paciente está fazendo um checkin para algum tratamento da quinta-feira,
+    # o que tipicamente começa por "Sala", será necessário verificar se ele já cumpriu as 4 manutenções.
+    # para tal, simplesmente verificamos se o último atendimento foi manutenção ou primeira vez e se
+    # nos últimos 180 dias houve 4 manutenções.
     if tratamento.descricao_basica[:4] == 'Sala':
         if ats:
             if ats[0].instancia_tratamento.tratamento.descricao_basica[:4] == "Manu" or \
                 ats[0].instancia_tratamento.tratamento.descricao_basica[:4] == "Prim":
-                data_limite = get_data_limite()
+                data_limite = datetime.today().date() - timedelta(days=180)
                 manuts = Atendimento.objects.filter(paciente = paciente, status='A', \
                     instancia_tratamento__tratamento__descricao_basica__startswith="Manu", \
                     instancia_tratamento__data__gte=data_limite)
