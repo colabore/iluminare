@@ -155,19 +155,3 @@ def checkin_paciente(paciente, tratamento, prioridade_bool, \
 
     return dic_retorno
 
-def atendimentos_paciente(paciente_id):
-
-    ats = []
-    try:
-        ats = Atendimento.objects.raw("""select a.* from atendimento_atendimento a
-            join tratamento_instanciatratamento it
-	            on a.instancia_tratamento_id = it.id
-            join tratamento_tratamento t
-	            on it.tratamento_id = t.id
-            where a.paciente_id = %d and a.status = 'A'
-            order by data desc;""" % paciente_id)
-    except:
-        pass
-        
-    return ats
-

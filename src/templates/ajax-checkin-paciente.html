@@ -40,22 +40,11 @@
     
 </table>
 
-
-<!--
-{% for prioridade in paciente.detalheprioridade_set.all %}
-    <img src="/static/img/icon_priority.jpg"/>
-    {{prioridade.get_tipo_display}}
-
-    {% if prioridade.data_inicio %}
-     - {{prioridade.data_inicio|date:"j"}} de 
-     {{prioridade.data_inicio|date:"F"}} de 
-     {{prioridade.data_inicio|date:"Y"}} 
-    {% endif %}
-    <br>
-{% endfor %}
--->
-
-
+<div class="tela-checkin-notificacoes">
+    {% for notificacao in notificacoes %}
+        {{notificacao.descricao}} <br>
+    {% endfor %}
+</div>
 
 <form method="POST" id="form_paciente_checkin">
     <table class="ajax_campos">

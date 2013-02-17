@@ -109,7 +109,7 @@ class CheckinPacienteForm(forms.ModelForm):
 def ajax_checkin_paciente(request, paciente_id):
     paciente = get_object_or_404(Paciente, pk=paciente_id)
     
-    lista_atendimentos = logic_atendimento.atendimentos_paciente(paciente.id)
+    lista_atendimentos = Atendimento.objects.filter(paciente = paciente, status='A').order_by('-instancia_tratamento__data')
     
     voluntarios = Voluntario.objects.filter(paciente = paciente, ativo = True)
     voluntario = None
@@ -156,9 +156,47 @@ def ajax_checkin_paciente(request, paciente_id):
     else:
         checkin_paciente_form = CheckinPacienteForm()
         checkin_paciente_form.update_tratamentos(paciente)
+        notificacoes = get_notificacoes_validas(paciente, True, False)
 
     return render_to_response('ajax-checkin-paciente.html', {'paciente':paciente, \
-        'form':checkin_paciente_form, 'lista':lista_atendimentos, 'erros':str(checkin_paciente_form.errors), 'voluntario':voluntario})
+        'form':checkin_paciente_form, 'lista':lista_atendimentos, 'erros':str(checkin_paciente_form.errors), \
+        'voluntario':voluntario, 'notificacoes':notificacoes})
+
+def get_notificacoes_validas(paciente, tela_checkin, impressao):
+    """
+        Tratamos os 4 casos para as notificações:
+        - Fixo
+        - Por prazo (X dias, y meses)
+        - Por validade (2013-04-10)
+        - Por quantidade de atendimentos.
+    """
+    if tela_checkin:
+        notificacoes = Notificacao.objects.filter(paciente = paciente, ativo=True, tela_checkin=tela_checkin)
+    if impressao:
+        notificacoes = Notificacao.objects.filter(paciente = paciente, ativo=True, impressao=impressao)
+
+    lista = []
+    for notificacao in notificacoes:
+        if notificacao.fixo:
+            lista.append(notificacao)
+        elif notificacao.data_validade:
+            if notificacao.data_validade >= datetime.date.today():
+                lista.append(notificacao)
+        elif notificacao.prazo_num:
+            if notificacao.prazo_unidade == 'D':
+                data_limite = notificacao.data_criacao + datetime.timedelta(days=notificacao.prazo_num)
+            elif notificacao.prazo_unidade == 'S':
+                data_limite = notificacao.data_criacao + datetime.timedelta(weeks=notificacao.prazo_num)
+            elif notificacao.prazo_unidade == 'M':
+                data_limite = notificacao.data_criacao + datetime.timedelta(days=30*notificacao.prazo_num)
+            if data_limite >= datetime.date.today():
+                lista.append(notificacao)
+        elif notificacao.qtd_atendimentos:
+            ats = Atendimento.objects.filter(paciente = paciente, \
+                instancia_tratamento__data__gte=notificacao.data_criacao, status='A')
+            if len(ats) < notificacao.qtd_atendimentos:
+                lista.append(notificacao)
+    return lista
 
 def get_info(paciente):
     info = ""
@@ -321,6 +359,11 @@ def retornaInfo(atendimento):
             nome_acompanhante = p.nome[:15]+'...'
             info_str = info_str + '[Ac. <-: ' + unicode(nome_acompanhante) + '] '
 
+    # NOTIFICAÇÕES:
+    notificacoes = get_notificacoes_validas(atendimento.paciente, False, True)
+    for notificacao in notificacoes:
+        info_str = info_str + '{' + unicode(notificacao.descricao) + '} '
+
     return info_str
     
     
@@ -376,46 +419,59 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
         confirma_in = self.cleaned_data['confirma']
         redireciona_in = self.cleaned_data['redireciona']
         encaminha_in = self.cleaned_data['encaminha']
-        
-        if redireciona_in:
-            atendimento_atual_str = atendimento.instancia_tratamento.tratamento.descricao_basica
-            its = InstanciaTratamento.objects.filter(data=atendimento.instancia_tratamento.data, tratamento__descricao_basica=redireciona_in)
+
+        try:
+            if redireciona_in:
+                atendimento_atual_str = atendimento.instancia_tratamento.tratamento.descricao_basica
+                its = InstanciaTratamento.objects.filter(data=atendimento.instancia_tratamento.data,\
+                    tratamento__descricao_basica=redireciona_in)
+
+                # pode ser que ainda não haja a instancia tratamento para o tratamento no dia.
+                # dificilmente isso ocorrerá em produção, pois esse processo é executado no final do dia.
+                # mas é importante que esteja mais robusto, pois executamos testes com poucos dados.
+                if not its:
+                    tratamento = Tratamento.objects.get(descricao_basica=redireciona_in)
+                    it = InstanciaTratamento(data=atendimento.instancia_tratamento.data, tratamento=tratamento)
+                    it.save()
+                else:
+                    it = its[0]
+
+                if it != atendimento.instancia_tratamento:
+                    atendimento.instancia_tratamento = it
+                    obs = atendimento.observacao
+                    atendimento.observacao = obs + '[Checkin: ' + atendimento_atual_str + ' / Hoje foi para '+str(redireciona_in)+'] '
+
+            if encaminha_in:
+                tratamento = Tratamento.objects.get(descricao_basica = encaminha_in)
+                if tratamento:
+                    lista_t = []
+                    lista_t.append(tratamento)
+                    tratamento_logic.encaminhar_paciente(atendimento.paciente.id, lista_t)
+                    obs = atendimento.observacao
+                    atendimento.observacao = obs + '[Encaminhado para '+str(encaminha_in)+'] '
             
-            # pode ser que ainda não haja a instancia tratamento para o tratamento no dia.
-            # dificilmente isso ocorrerá em produção, pois esse processo é executado no final do dia.
-            # mas é importante que esteja mais robusto, pois executamos testes com poucos dados.
-            if not its:
-                tratamento = Tratamento.objects.get(descricao_basica=redireciona_in)
-                it = InstanciaTratamento(data=atendimento.instancia_tratamento.data, tratamento=tratamento)
-                it.save()
-            else:
-                it = its[0]
+            if confirma_in:
+                atendimento.status = 'A'
                 
-            if it != atendimento.instancia_tratamento:
-                atendimento.instancia_tratamento = it
-                obs = atendimento.observacao 
-                atendimento.observacao = obs + '[Checkin: ' + atendimento_atual_str + ' / Hoje foi para '+str(redireciona_in)+'] '
-        
-        if encaminha_in:
-            tratamento = Tratamento.objects.get(descricao_basica = encaminha_in)
-            if tratamento:
-                lista_t = []
-                lista_t.append(tratamento)
-                tratamento_logic.encaminhar_paciente(atendimento.paciente.id, lista_t)
-                obs = atendimento.observacao 
-                atendimento.observacao = obs + '[Encaminhado para '+str(encaminha_in)+'] '
-        
-        if confirma_in:
-            atendimento.status = 'A'
+                # verifica se há algum agendamento para esse tratamento que esteja aberto.
+                # em caso positivo, o agendamento será fechado.
+                ag_ats = AgendaAtendimento.objects.filter(paciente = atendimento.paciente, \
+                    agenda_tratamento__tratamento=atendimento.instancia_tratamento.tratamento, status='A')
+                if len(ag_ats) > 0:
+                    ag_ats[0].status = 'F'
+                    ag_ats[0].save()
+
+                # se o tratamento for primeira vez, aproveitamos para atualizar o campo tem ficha.
+                if atendimento.instancia_tratamento.tratamento.descricao_basica[:4] == 'Prim':
+                    atendimento.paciente.tem_ficha = True
+                    atendimento.paciente.save()
+            else:
+                atendimento.status = 'C'
+            if commit:
+                atendimento.save()
             
-            # se o tratamento for primeira vez, aproveitamos para atualizar o campo tem ficha.
-            if atendimento.instancia_tratamento.tratamento.descricao_basica[:4] == 'Prim':
-                atendimento.paciente.tem_ficha = True
-                atendimento.paciente.save()
-        else:
-            atendimento.status = 'C'
-        if commit:
-            atendimento.save()
+        except:
+            traceback.print_exc()
 
     class Meta:
         model = Atendimento
@@ -1384,11 +1440,19 @@ class NotificacaoForm(forms.Form):
                 notificacao = Notificacao(descricao=descricao_in, impressao=impressao_in, tela_checkin=tela_checkin_in,\
                     ativo=True, data_criacao = datetime.date.today(), paciente = atendimento.paciente, \
                     atendimento = atendimento)
-
+                if fixo_in:
+                    notificacao.fixo = True
+                elif data_validade_in:
+                    notificacao.data_validade = data_validade_in
+                elif prazo_num_in:
+                    notificacao.prazo_num = prazo_num_in
+                    notificacao.prazo_unidade = prazo_unidade_in
+                elif qtd_atendimentos_in:
+                    notificacao.qtd_atendimentos = qtd_atendimentos_in
                 notificacao.save()
-                dic_retorno = {'sucesso':True, 'mensagem':'Notificacacao cadastrada com sucesso. '}
+                dic_retorno = {'sucesso':True, 'mensagem':'Notificacao cadastrada com sucesso.'}
             except:
-                dic_retorno = {'sucesso':False, 'mensagem':'Erro no cadastro da notificacao. '}
+                dic_retorno = {'sucesso':False, 'mensagem':'Erro no cadastro da notificacao.'}
                 traceback.print_exc()
             mensagens_list.append(dic_retorno)
         return mensagens_list
@@ -1406,15 +1470,21 @@ def ajax_atualizar_paciente_confirmacao(request, atendimento_id):
         if atualizar_paciente_form.is_valid():
             (paciente, mensagens_list) = atualizar_paciente_form.save(atendimento)
             mensagens = mensagens + mensagens_list
+        else:
+            mensagens.append({'sucesso':False, 'mensagem':'Erro nos dados gerais. Verificar dados inseridos.'})
         if agendamento_form.is_valid():
             mensagens_list = agendamento_form.save(atendimento)
             mensagens = mensagens + mensagens_list
+        else:
+            mensagens.append({'sucesso':False, 'mensagem':'Erro no agendamento. Verificar dados inseridos.'})
         if notificacao_form.is_valid():
             mensagens_list = notificacao_form.save(atendimento)
             mensagens = mensagens + mensagens_list
+        else:
+            mensagens.append({'sucesso':False, 'mensagem':'Erro na notificação. Verificar dados inseridos.'})
 
         if len(mensagens) == 0:
-            mensagens.append({'sucesso':False, 'mensagem':'Nenhuma operação realizada.'})
+            mensagens.append({'sucesso':False, 'mensagem':'Nenhuma atualização realizada. Confirmar dados.'})
 
         return render_to_response('ajax-atualizar-paciente-confirmacao-resultado.html', {'paciente':paciente, \
                     'mensagens':mensagens})
