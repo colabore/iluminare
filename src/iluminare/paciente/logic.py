@@ -79,7 +79,7 @@ def search(nome):
         data_nascimento = "%s-%s-%s" % (data_nascimento[2], data_nascimento[1], data_nascimento[0])
         pacientes = Paciente.objects.filter(data_nascimento__startswith=data_nascimento).order_by('nome')
     else:
-        pacientes = Paciente.objects.filter(nome__istartswith=nome).order_by('nome')
+        pacientes = Paciente.objects.filter(nome__icontains=nome).order_by('nome')[:30]
     
     return pacientes
 
