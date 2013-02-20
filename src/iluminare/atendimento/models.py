@@ -67,5 +67,5 @@ class Notificacao(models.Model):
     atendimento         = models.ForeignKey(Atendimento, null = True, blank = True)
 
     def __unicode__(self):
-        return "%s - %s" % (self.paciente.nome, self.descricao)
+        return "(Ativo: %s) %s - %s" % (self.ativo, self.paciente.nome, self.descricao)
 

@@ -8,9 +8,11 @@ class AtendimentoAdmin(admin.ModelAdmin):
     #admin.ModelAdmin.actions_on_bottom
 
 class AgendaAtendimentoAdmin(admin.ModelAdmin):
+    search_fields = ['paciente__nome']
     exclude = ('atendimento_origem', 'atendimento_realizado')
 
 class NotificacaoAdmin(admin.ModelAdmin):
+    search_fields = ['paciente__nome']
     exclude = ('atendimento',)
 
 admin.site.register(Atendimento, AtendimentoAdmin)
