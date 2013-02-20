@@ -364,6 +364,13 @@ def retornaInfo(atendimento):
     for notificacao in notificacoes:
         info_str = info_str + '{' + unicode(notificacao.descricao) + '} '
 
+    # CASAL:
+    if atendimento.paciente.casado_com:
+        at = Atendimento.objects.filter(paciente = atendimento.paciente.casado_com,
+            instancia_tratamento = atendimento.instancia_tratamento)
+        if at:
+            info_str = info_str + '[Casal: ' + unicode(atendimento.paciente.casado_com.nome) + '] '
+
     return info_str
     
     
@@ -488,7 +495,7 @@ class ConfirmacaoAtendimentoPrimeiraVezForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ConfirmacaoAtendimentoPrimeiraVezForm, self).__init__(*args, **kwargs)
-        self.fields.keyOrder = ['confirma', 'senha', 'nome', 'hora_chegada','observacao', 'frequencia', 'encaminha']
+        self.fields.keyOrder = ['confirma', 'senha', 'nome', 'hora_chegada','observacao', 'encaminha', 'frequencia']
         atendimento = kwargs.pop('instance')
         
         tratamento_desc = atendimento.instancia_tratamento.tratamento.descricao_basica
@@ -681,14 +688,28 @@ class ListagemGeralForm(forms.Form):
 
 class ListagemGeralFechamentoForm(forms.Form):
 
-	data = forms.DateField(initial = datetime.date.today, required=True)
-	tratamento = forms.ChoiceField(choices=(), required=False)
-	paciente = forms.CharField(required = False, widget=forms.TextInput(attrs={'size':'20'}))
+    data = forms.DateField(initial = datetime.date.today, required=True)
+    tratamento = forms.ChoiceField(choices=(), required=False)
+    paciente = forms.CharField(required = False, widget=forms.TextInput(attrs={'size':'20'}))
 
-	def __init__(self, *args, **kwargs):
-        	super(ListagemGeralFechamentoForm, self).__init__(*args, **kwargs)
-        	self.fields['tratamento'].choices = [('-', '----------')] + [(tratamento.id, tratamento.descricao_basica) for tratamento in Tratamento.objects.all()]
-        	self.fields.keyOrder = ['paciente', 'tratamento', 'data']
+    def __init__(self, *args, **kwargs):
+        super(ListagemGeralFechamentoForm, self).__init__(*args, **kwargs)
+        self.fields['tratamento'].choices = [('-', '----------')] + \
+            [(tratamento.id, tratamento.descricao_basica) for tratamento in Tratamento.objects.all()]
+        self.fields.keyOrder = ['paciente', 'tratamento', 'data']
+
+class ListagemNotificacoesForm(forms.Form):
+
+    data = forms.DateField(initial = datetime.date.today, required=False)
+    tratamento = forms.ChoiceField(choices=(), required=False)
+    paciente = forms.CharField(required = False, widget=forms.TextInput(attrs={'size':'20'}))
+
+    def __init__(self, *args, **kwargs):
+        super(ListagemNotificacoesForm, self).__init__(*args, **kwargs)
+        self.fields['tratamento'].choices = [('-', '----------')] + \
+            [(tratamento.id, tratamento.descricao_basica) for tratamento in Tratamento.objects.all()]
+        self.fields.keyOrder = ['paciente', 'tratamento', 'data']
+
 
 class RelatorioAtendimentosConsolidadoDiaForm(forms.Form):
 
@@ -979,7 +1000,64 @@ def exibir_listagem_geral_fechamento(request):
                             'mensagem': mensagem_erro,
                             'retorno':retorno,
                             'tratamento':tratamento,
-                            'titulo': 'LISTAGEM GERAL DE ATENDIMENTOS - FECHAMENTO'})
+                            'titulo': 'CONFIRMAR ATENDIMENTOS - DETALHES'})
+
+
+def exibir_listagem_notificacoes(request):
+
+    form_listagem = ListagemNotificacoesForm()
+    mensagem_erro = ''
+    notificacoes = []
+
+    if request.method == 'POST':
+        form_listagem = ListagemNotificacoesForm(request.POST)
+
+        if form_listagem.is_valid():
+            data_in = form_listagem.cleaned_data['data']
+            tratamento_in = form_listagem.cleaned_data['tratamento']
+            paciente_in = form_listagem.cleaned_data['paciente']
+
+            if tratamento_in == '-':
+                if paciente_in:
+                    if data_in:
+                        notificacoes = Notificacao.objects.filter(data_criacao = data_in, \
+                            paciente__nome__contains=paciente_in).order_by('-atendimento__instancia_tratamento__data')
+                    else:
+                        notificacoes = Notificacao.objects.filter(paciente__nome__contains=paciente_in).\
+                            order_by('-atendimento__instancia_tratamento__data')
+                else:
+                    if data_in:
+                        notificacoes = Notificacao.objects.filter(data_criacao = data_in).\
+                            order_by('-atendimento__instancia_tratamento__data')
+                    else:
+                        notificacoes = Notificacao.objects.all().order_by('-atendimento__instancia_tratamento__data')[:50]
+            else:
+                if paciente_in:
+                    if data_in:
+                        notificacoes = Notificacao.objects.filter(data_criacao = data_in, \
+                            paciente__nome__contains=paciente_in, atendimento__instancia_tratamento__tratamento__id=\
+                            tratamento_in).order_by('-atendimento__instancia_tratamento__data')
+                    else:
+                        notificacoes = Notificacao.objects.filter(\
+                            paciente__nome__contains=paciente_in, atendimento__instancia_tratamento__tratamento__id=\
+                            tratamento_in).order_by('-atendimento__instancia_tratamento__data')
+                else:
+                    if data_in:
+                        notificacoes = Notificacao.objects.filter(data_criacao = data_in, \
+                            atendimento__instancia_tratamento__tratamento__id=\
+                            tratamento_in).order_by('-atendimento__instancia_tratamento__data')
+                    else:
+                        notificacoes = Notificacao.objects.filter(atendimento__instancia_tratamento__tratamento__id=\
+                            tratamento_in).order_by('-atendimento__instancia_tratamento__data')
+            if not notificacoes:
+                mensagem_erro = 'Nenhuma notificação encontrada.'
+        else:
+            mensagem_erro = 'Erro nos parâmetros. Verificar se os campos foram devidamente preenchidos.';
+
+    return render_to_response('listagem-notificacoes.html', {'form_listagem':form_listagem,
+                            'mensagem': mensagem_erro,
+                            'notificacoes':notificacoes,
+                            'titulo': 'LISTAGEM DE NOTIFICAÇÕES'})
 
 
 def exibir_atendimentos_paciente(request, paciente_id, pagina = None):
@@ -1341,6 +1419,13 @@ class AgendamentoForm(forms.Form):
             try:
                 agenda_atendimento = AgendaAtendimento(paciente = atendimento.paciente, \
                     agenda_tratamento = agenda_tratamento, atendimento_origem = atendimento, status = 'A')
+                obs = atendimento.observacao
+                if not obs:
+                    obs = ''
+                novo_agendamento = unicode('[Novo agendamento: ' + \
+                    agenda_atendimento.agenda_tratamento.tratamento.descricao_basica + ']')
+                atendimento.observacao = obs + novo_agendamento
+                atendimento.save()
                 agenda_atendimento.save()
                 dic_retorno = {'sucesso':True, 'mensagem':'Agendamento do Acolhimento realizado com sucesso. '}
             except:
@@ -1374,6 +1459,13 @@ class AgendamentoForm(forms.Form):
                 agenda_atendimento = AgendaAtendimento(paciente = atendimento.paciente, \
                     agenda_tratamento = agenda_tratamento, atendimento_origem = atendimento, status = 'A')
                 agenda_atendimento.save()
+                obs = atendimento.observacao
+                if not obs:
+                    obs = ''
+                novo_agendamento = unicode('[Novo agendamento: ' + \
+                    agenda_atendimento.agenda_tratamento.tratamento.descricao_basica + ']')
+                atendimento.observacao = obs + novo_agendamento
+                atendimento.save()
                 dic_retorno = {'sucesso':True, 'mensagem':'Agendamento da Desobsessao realizado com sucesso. '}
             except:
                 dic_retorno = {'sucesso':False, 'mensagem':'Erro: Agendamento da Desobsessao nao realizado. '}
@@ -1397,6 +1489,13 @@ class AgendamentoForm(forms.Form):
                 agenda_atendimento = AgendaAtendimento(paciente = atendimento.paciente, \
                     agenda_tratamento = agenda_tratamento, atendimento_origem = atendimento, status = 'A')
                 agenda_atendimento.save()
+                obs = atendimento.observacao
+                if not obs:
+                    obs = ''
+                novo_agendamento = unicode('[Novo agendamento: ' + \
+                    agenda_atendimento.agenda_tratamento.tratamento.descricao_basica + ']')
+                atendimento.observacao = obs + novo_agendamento
+                atendimento.save()
                 dic_retorno = {'sucesso':True, 'mensagem':'Agendamento do Atendimento Fraterno realizado com sucesso. '}
             except:
                 dic_retorno = {'sucesso':False, 'mensagem':'Erro: Agendamento da Atendimento Fraterno nao realizado. '}
@@ -1450,6 +1549,12 @@ class NotificacaoForm(forms.Form):
                 elif qtd_atendimentos_in:
                     notificacao.qtd_atendimentos = qtd_atendimentos_in
                 notificacao.save()
+                obs = atendimento.observacao
+                if not obs:
+                    obs = ''
+                nova_notificacao = smart_str('[Nova notificao: ' + notificacao.descricao + ']')
+                atendimento.observacao = obs + nova_notificacao
+                atendimento.save()
                 dic_retorno = {'sucesso':True, 'mensagem':'Notificacao cadastrada com sucesso.'}
             except:
                 dic_retorno = {'sucesso':False, 'mensagem':'Erro no cadastro da notificacao.'}

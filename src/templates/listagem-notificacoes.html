@@ -1,0 +1,107 @@
+{% extends "base.html"%}
+{% block content %}
+<body OnLoad="document.form_listagem.paciente.focus();">
+<form name="form_listagem" method="POST" action="/atendimento/listagem-notificacoes/" >
+
+<table>
+    <tr>
+    <td>Paciente: </td>
+    <td>{{ form_listagem.paciente }}</td>
+    </tr>
+    <tr>
+    <td>Data: </td>
+    <td>{{ form_listagem.data }}</td>
+    </tr>
+    <tr>
+    <td>
+    Tratamento:</td>
+    <td>{{ form_listagem.tratamento }}</td>
+    </tr>
+</table>
+<br>
+<input type="submit" value="Pesquisar"/>
+
+
+<table id="tabela-padrao">
+    
+	{% for notificacao in notificacoes %}
+        {% if forloop.first %}
+
+	      <tr>	
+			<th align="center"> Ativo </th>
+			<th> Paciente </th>
+			<th width="280"> Descrição </th>
+			<th align="center"> Impressão </th>
+			<th align="center"> Tela Checkin </th>
+			<th> Fixo </th>
+			<th> Valid. </th>
+			<th> Prazo </th>
+			<th> .. </th>
+			<th> Qtd At. </th>
+			
+			
+			
+	      </tr>
+            <tbody id="tabela-fechamento">
+        {% endif %}
+		
+		  <tr>
+			{% if notificacao.ativo %}
+                <td align="center"> <img src="/static/img/confirma_atendimento.png" width="16" height="16"/> </td>
+            {% else %} 
+			    <td align="center"> <img src="/static/img/nao_confirma_atendimento.png" width="16" height="16"/> </td>
+            {% endif %}
+
+			<td> {{notificacao.paciente.nome}} </td>
+			<td> {{notificacao.descricao}} </td>
+			{% if notificacao.impressao %}
+                <td align="center"> <img src="/static/img/confirma_atendimento.png" width="16" height="16"/> </td>
+            {% else %} 
+			    <td align="center"> <img src="/static/img/nao_confirma_atendimento.png" width="16" height="16"/> </td>
+            {% endif %}
+            
+			{% if notificacao.tela_checkin %}
+                <td align="center"> <img src="/static/img/confirma_atendimento.png" width="16" height="16"/> </td>
+            {% else %} 
+			    <td align="center"> <img src="/static/img/nao_confirma_atendimento.png" width="16" height="16"/> </td>
+            {% endif %}
+
+			{% if notificacao.fixo %}
+                <td align="center"> <img src="/static/img/confirma_atendimento.png" width="16" height="16"/> </td>
+            {% else %} 
+			    <td align="center"> <img src="/static/img/nao_confirma_atendimento.png" width="16" height="16"/> </td>
+            {% endif %}
+
+			{% if notificacao.data_validade %}
+    			<td> {{notificacao.data_validade}} </td>
+            {% else %} 
+    			<td> - </td>
+            {% endif %}
+
+			{% if notificacao.prazo_num %}
+    			<td> {{notificacao.prazo_num}} </td>
+            {% else %} 
+    			<td> - </td>
+            {% endif %}
+
+			{% if notificacao.prazo_unidade %}
+    			<td> {{notificacao.get_prazo_unidade_display}} </td>
+            {% else %} 
+    			<td> - </td>
+            {% endif %}
+
+			{% if notificacao.qtd_atendimentos %}
+    			<td> {{notificacao.qtd_atendimentos}} </td>
+            {% else %} 
+    			<td> - </td>
+            {% endif %}
+
+
+		  </tr>
+	{% endfor %}
+	</tbody>
+</table>
+</div>
+
+</form>
+{% endblock %}
