@@ -88,7 +88,7 @@ class CheckinPacienteForm(forms.ModelForm):
             # só atualiza a opção inicial do campo tratamento na quinta se não for voluntário 
             # ou for um voluntário entrando na casa.
             # A ideia é que na saída só haja para o voluntário a opção ponto de saída.
-            if not volunt or volunt_entrada:
+            if not volunt:
                 tratamentos = [tp.tratamento for tp in paciente.tratamentopaciente_set.filter(status='A')]
                 if len(tratamentos) > 0:
                     self.fields['tratamento'].initial = tratamentos[0]
