@@ -378,7 +378,7 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
     """
         Esta confirmação é para todos os tratamentos, com exceção da primeira vez.
     """
-    observacao = forms.CharField(required=False)
+    observacao = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly'}))
     senha = forms.IntegerField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'5'}))
     nome = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'25'}))
     hora_chegada = forms.TimeField(label='Cheg.',required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'6'}))
@@ -420,6 +420,10 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
         else:
             status = False
         self.fields['confirma'].initial = status
+
+        # CARREGA A OBSERVAÇÃO DO PACIENTE NA TOOLTIP
+        self.fields['observacao'].widget.attrs['title'] = atendimento.observacao
+
 
     def save(self, commit=True):
         atendimento = super(ConfirmacaoAtendimentoForm, self).save(commit=False)
@@ -485,7 +489,7 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
         exclude = ['prioridade', 'instancia_tratamento', 'senha', 'observacao_prioridade', 'paciente', 'hora_atendimento', 'status']
           
 class ConfirmacaoAtendimentoPrimeiraVezForm(forms.ModelForm):
-    observacao = forms.CharField(required=False)
+    observacao = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly'}))
     senha = forms.IntegerField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'5'}))
     nome = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'25'}))
     hora_chegada = forms.TimeField(label='Cheg.',required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'6'}))
@@ -524,6 +528,9 @@ class ConfirmacaoAtendimentoPrimeiraVezForm(forms.ModelForm):
         else:
             status = False
         self.fields['confirma'].initial = status
+
+        # CARREGA A OBSERVAÇÃO DO PACIENTE NA TOOLTIP
+        self.fields['observacao'].widget.attrs['title'] = atendimento.observacao
 
     def save(self, commit=True):
         atendimento = super(ConfirmacaoAtendimentoPrimeiraVezForm, self).save(commit=False)

@@ -50,14 +50,22 @@ class DetalhePrioridadeForm(forms.ModelForm):
 class PacienteForm(forms.ModelForm):
     class Meta:
         model = Paciente
-        exclude = ('saude', )
+        exclude = ('saude', 'observacao')
 
     def __init__(self, *args, **kwargs):
         super(PacienteForm, self).__init__(*args, **kwargs)
         self.fields['acompanhante'].label = 'Acompanha 1'
         self.fields['acompanhante_crianca'].label = 'Acompanha 2'
-        self.fields['observacao'].label = 'Observação (Tela Check-in)'
         self.fields['pais'].label = 'País'
+        self.fields['endereco'].label = 'Endereço'
+        self.fields['telefones'].label = 'Telefone(s)'
+        self.fields['cep'].label = 'CEP'
+        self.fields['email'].label = 'E-mail'
+        self.fields['data_nascimento'].label = 'Data de nascimento'
+        self.fields['hora_nascimento'].label = 'Hora de nascimento'
+        self.fields['frequencia'].label = 'Frequência'
+        self.fields['profissao'].label = 'Profissão'
+        self.fields['local_nascimento'].label = 'Local de Nascimento'
 
     def save(self):
         paciente = forms.ModelForm.save(self)
