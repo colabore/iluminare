@@ -1089,7 +1089,7 @@ class ListagemAgendamentosForm(forms.Form):
         self.fields['tratamento_agendado'].choices = [('-', '----------')] + \
             [(tratamento.id, tratamento.descricao_basica) for tratamento in Tratamento.objects.all()]
         self.fields['status'].choices = [('-', '----------')] + list(AgendaAtendimento.STATUS)
-
+        self.fields['status'].initial = 'A'
 
 def exibir_listagem_agendamentos(request):
 
