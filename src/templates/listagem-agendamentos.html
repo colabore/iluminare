@@ -1,0 +1,94 @@
+{% extends "base.html"%}
+{% block content %}
+<body OnLoad="document.form_listagem.paciente.focus();">
+<form name="form_listagem" method="POST" action="/atendimento/listagem-agendamentos/" >
+
+<table>
+    <tr>
+    <td>Paciente: </td>
+    <td>{{ form_listagem.paciente }}</td>
+    </tr>
+    <tr>
+    <td>Data Prevista: </td>
+    <td>{{ form_listagem.data_prevista }}</td>
+    </tr>
+    <tr>
+    <td>Sem Data: </td>
+    <td>{{ form_listagem.sem_data }}</td>
+    </tr>
+    <tr>
+    <td> Tratamento Agendado:</td>
+    <td>{{ form_listagem.tratamento_agendado }}</td>
+    </tr>
+    <tr>
+    <td>Data Marcação:</td>
+    <td>{{ form_listagem.data_marcacao }}</td>
+    </tr>
+    <tr>
+    <td>Tratamento Marcação:</td>
+    <td>{{ form_listagem.tratamento_marcacao }}</td>
+    </tr>
+    <tr>
+    <td>Status:</td>
+    <td>{{ form_listagem.status }}</td>
+    </tr>
+</table>
+<br>
+<input type="submit" value="Pesquisar"/>
+
+
+<table id="tabela-padrao">
+    
+	{% for agendamento in agendamentos %}
+        {% if forloop.first %}
+
+	      <tr>	
+			<th align="center"> Status </th>
+			<th align="center"> Tratamento </th>
+			<th align="center"> Data Prevista </th>
+			<th> Paciente </th>
+			<th align="center"> Tratamento Marcação </th>
+			<th align="center"> Data Marcação </th>
+			
+	      </tr>
+            <tbody id="tabela-fechamento">
+        {% endif %}
+		
+		  <tr>
+			{% if agendamento.status %}
+    			<td> {{agendamento.get_status_display}} </td>
+            {% else %} 
+    			<td> - </td>
+            {% endif %}
+
+			<td> {{agendamento.agenda_tratamento.tratamento.descricao_basica}} </td>
+
+			{% if agendamento.agenda_tratamento.data %}
+    			<td> {{agendamento.agenda_tratamento.data}} </td>
+            {% else %} 
+    			<td> Sem data </td>
+            {% endif %}
+
+			<td> {{agendamento.paciente.nome}} </td>
+
+			{% if agendamento.atendimento_origem %}
+    			<td> {{agendamento.atendimento_origem.instancia_tratamento.tratamento.descricao_basica}} </td>
+            {% else %} 
+    			<td> Não informado. </td>
+            {% endif %}
+
+			{% if agendamento.atendimento_origem %}
+    			<td> {{agendamento.atendimento_origem.instancia_tratamento.data}} </td>
+            {% else %} 
+    			<td> Não informada. </td>
+            {% endif %}
+
+
+		  </tr>
+	{% endfor %}
+	</tbody>
+</table>
+</div>
+
+</form>
+{% endblock %}

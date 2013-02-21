@@ -262,7 +262,7 @@ def retornaInfo(atendimento):
                 instancia_tratamento__tratamento__descricao_basica__startswith = "Prime", \
                 instancia_tratamento__data = datetime.datetime.today())
             if len(primeira_vez) == 1:
-                info_str = info_str + '[Consulta de 1a vez] '
+                info_str = info_str + '[1a vez] '
             
     except Tratamento.DoesNotExist:
         pass
@@ -698,18 +698,6 @@ class ListagemGeralFechamentoForm(forms.Form):
             [(tratamento.id, tratamento.descricao_basica) for tratamento in Tratamento.objects.all()]
         self.fields.keyOrder = ['paciente', 'tratamento', 'data']
 
-class ListagemNotificacoesForm(forms.Form):
-
-    data = forms.DateField(initial = datetime.date.today, required=False)
-    tratamento = forms.ChoiceField(choices=(), required=False)
-    paciente = forms.CharField(required = False, widget=forms.TextInput(attrs={'size':'20'}))
-
-    def __init__(self, *args, **kwargs):
-        super(ListagemNotificacoesForm, self).__init__(*args, **kwargs)
-        self.fields['tratamento'].choices = [('-', '----------')] + \
-            [(tratamento.id, tratamento.descricao_basica) for tratamento in Tratamento.objects.all()]
-        self.fields.keyOrder = ['paciente', 'tratamento', 'data']
-
 
 class RelatorioAtendimentosConsolidadoDiaForm(forms.Form):
 
@@ -1002,6 +990,18 @@ def exibir_listagem_geral_fechamento(request):
                             'tratamento':tratamento,
                             'titulo': 'CONFIRMAR ATENDIMENTOS - DETALHES'})
 
+class ListagemNotificacoesForm(forms.Form):
+
+    data = forms.DateField(initial = datetime.date.today, required=False)
+    tratamento = forms.ChoiceField(choices=(), required=False)
+    paciente = forms.CharField(required = False, widget=forms.TextInput(attrs={'size':'20'}))
+
+    def __init__(self, *args, **kwargs):
+        super(ListagemNotificacoesForm, self).__init__(*args, **kwargs)
+        self.fields['tratamento'].choices = [('-', '----------')] + \
+            [(tratamento.id, tratamento.descricao_basica) for tratamento in Tratamento.objects.all()]
+        self.fields.keyOrder = ['paciente', 'tratamento', 'data']
+
 
 def exibir_listagem_notificacoes(request):
 
@@ -1055,9 +1055,94 @@ def exibir_listagem_notificacoes(request):
             mensagem_erro = 'Erro nos parâmetros. Verificar se os campos foram devidamente preenchidos.';
 
     return render_to_response('listagem-notificacoes.html', {'form_listagem':form_listagem,
-                            'mensagem': mensagem_erro,
+                            'mensagem_erro': mensagem_erro,
                             'notificacoes':notificacoes,
                             'titulo': 'LISTAGEM DE NOTIFICAÇÕES'})
+
+class ListagemAgendamentosForm(forms.Form):
+
+    # quando agendou
+    data_marcacao = forms.DateField(required=False)
+    # para quando agendou
+    data_prevista = forms.DateField(required=False)
+    # incluir agendamentos sem data
+    # esse campo é necessário, pois há casos em que os tratamentos não tem data prevista.
+    sem_data = forms.BooleanField(required = False, initial=False)
+    # tratamento de onde originou o agendamento
+    tratamento_marcacao = forms.ChoiceField(choices=(), required=False)
+    # tratamento realmente agendado
+    tratamento_agendado = forms.ChoiceField(choices=(), required=False)
+    paciente = forms.CharField(required = False)
+    status = forms.ChoiceField(choices=(), required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(ListagemAgendamentosForm, self).__init__(*args, **kwargs)
+        self.fields['tratamento_marcacao'].choices = [('-', '----------')] + \
+            [(tratamento.id, tratamento.descricao_basica) for tratamento in Tratamento.objects.all()]
+        self.fields['tratamento_agendado'].choices = [('-', '----------')] + \
+            [(tratamento.id, tratamento.descricao_basica) for tratamento in Tratamento.objects.all()]
+        self.fields['status'].choices = [('-', '----------')] + list(AgendaAtendimento.STATUS)
+
+
+def exibir_listagem_agendamentos(request):
+
+    form_listagem = ListagemAgendamentosForm()
+    mensagem_erro = ''
+    agendamentos = []
+
+    if request.method == 'POST':
+        form_listagem = ListagemAgendamentosForm(request.POST)
+
+        try:
+            if form_listagem.is_valid():
+                data_prevista_in = form_listagem.cleaned_data['data_prevista']
+                sem_data_in = form_listagem.cleaned_data['sem_data']
+                data_marcacao_in = form_listagem.cleaned_data['data_marcacao']
+                tratamento_agendado_in = form_listagem.cleaned_data['tratamento_agendado']
+                tratamento_marcacao_in = form_listagem.cleaned_data['tratamento_marcacao']
+                paciente_in = form_listagem.cleaned_data['paciente']
+                status_in = form_listagem.cleaned_data['status']
+
+                if data_prevista_in:
+                    if sem_data_in:
+                        agendamentos = AgendaAtendimento.objects.filter(Q(agenda_tratamento__data = data_prevista_in) | \
+                            Q(agenda_tratamento__data = None))
+                    else:
+                        agendamentos = AgendaAtendimento.objects.filter(agenda_tratamento__data = data_prevista_in)
+                else:
+                    if sem_data_in:
+                        agendamentos = AgendaAtendimento.objects.filter(Q(agenda_tratamento__data = None))
+                    else:
+                        agendamentos = AgendaAtendimento.objects.all()
+
+                if data_marcacao_in:
+                    agendamentos = agendamentos.filter(atendimento_origem__instancia_tratamento__data = data_marcacao_in)
+
+                if tratamento_agendado_in != '-':
+                    agendamentos = agendamentos.filter(agenda_tratamento__tratamento__id=tratamento_agendado_in)
+
+                if tratamento_marcacao_in != '-':
+                    agendamentos = agendamentos.filter(atendimento_origem__instancia_tratamento__tratamento__id=\
+                        tratamento_marcacao_in)
+
+                if paciente_in != '-':
+                    agendamentos = agendamentos.filter(paciente__nome__contains=paciente_in)
+
+                if status_in != '-':
+                    agendamentos = agendamentos.filter(status = status_in)
+
+                if not agendamentos:
+                        mensagem_erro = 'Nenhuma notificação encontrada.'
+            else:
+                mensagem_erro = 'Erro nos parâmetros. Verificar se os campos foram devidamente preenchidos.';
+        except:
+            traceback.print_exc()
+
+    return render_to_response('listagem-agendamentos.html', {'form_listagem':form_listagem,
+                            'mensagem_erro': mensagem_erro,
+                            'agendamentos':agendamentos,
+                            'titulo': 'LISTAGEM DE AGENDAMENTOS'})
+
 
 
 def exibir_atendimentos_paciente(request, paciente_id, pagina = None):
