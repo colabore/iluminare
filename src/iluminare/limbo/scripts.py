@@ -56,3 +56,23 @@ def atualiza_notificacoes():
                 p.save()
                 print p.nome + ' - ' + 'inativo' + ' - '
 
+def migra_observacoes_desob():
+    """
+        Todas as observações que tiverem desob depois do dia 19/11 eu já posso criar os agendamentos para a próxima desob.
+    """
+    data_base = datetime.datetime(2012, 11, 20).date()
+    ats = Atendimento.objects.filter(observacao__icontains='desob', instancia_tratamento__data__gte=data_base)
+    desob = Tratamento.objects.get(descricao_basica__startswith='Desob')
+    agenda_tratamentos = AgendaTratamento.objects.filter(data=None, tratamento=desob)
+    if not agenda_tratamentos:
+        agenda_tratamento = AgendaTratamento(tratamento = desob, data=None)
+        agenda_tratamento.save()
+    else:
+        agenda_tratamento = agenda_tratamentos[0]
+
+    for at in ats:
+        agenda_atendimento = AgendaAtendimento(paciente = at.paciente, \
+            agenda_tratamento = agenda_tratamento, atendimento_origem = at, status = 'A')
+        agenda_atendimento.save()
+        print at.paciente.nome + ' - ' + str(at.instancia_tratamento.data)
+
