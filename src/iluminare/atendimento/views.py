@@ -1391,6 +1391,9 @@ class AgendamentoForm(forms.Form):
         choices = (('X','---------'),) + tuple([(at.id,at.data) for at in ats]) + (('N','Sem data'),)
         self.fields['agenda_tratamento_af'].choices=choices
 
+        self.fields['fone'].widget.attrs['title'] = 'Telefone do paciente. Caso o telefone informado ' + \
+            'na fichinha não seja o mesmo registrado, favor atualizá-lo.'
+
     def update(self, atendimento):
         if atendimento.paciente.telefones:
             self.fields['fone'].initial = atendimento.paciente.telefones
