@@ -16,7 +16,7 @@ from    django.http                     import HttpResponse
 from    django.db.models                import Q
 from    django.db                       import transaction
 from    django.db.models                import Count
-from    django.utils.encoding           import smart_str
+from    django.utils.encoding           import smart_str, smart_unicode
 
 from    operator                        import itemgetter
 from    sets                            import Set
@@ -379,16 +379,18 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
         Esta confirmação é para todos os tratamentos, com exceção da primeira vez.
     """
     observacao = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly'}))
-    senha = forms.IntegerField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'5'}))
-    nome = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'25'}))
-    hora_chegada = forms.TimeField(label='Cheg.',required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'6'}))
+    senha = forms.IntegerField(required=False, widget=forms.TextInput(attrs={'class':'disabled', \
+        'readonly':'readonly', 'size':'5'}))
+    nome = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', \
+        'readonly':'readonly', 'size':'25'}))
+    hora_chegada = forms.TimeField(label='Cheg.',required=False, widget=forms.TextInput(attrs={'class':'disabled',\
+        'readonly':'readonly', 'size':'6'}))
     confirma = forms.BooleanField(required = False, label= 'Conf.')
     redireciona = forms.ModelChoiceField(label='Redir.',queryset=Tratamento.objects.none(), required=False)
-    encaminha = forms.ModelChoiceField(label='Mud. Sala', queryset=Tratamento.objects.none(), required=False)
 
     def __init__(self, *args, **kwargs):
         super(ConfirmacaoAtendimentoForm, self).__init__(*args, **kwargs)
-        self.fields.keyOrder = ['confirma', 'senha', 'nome', 'hora_chegada','observacao', 'redireciona', 'encaminha']
+        self.fields.keyOrder = ['confirma', 'senha', 'nome', 'hora_chegada','observacao', 'redireciona']
         atendimento = kwargs.pop('instance')
         
         tratamento_desc = atendimento.instancia_tratamento.tratamento.descricao_basica
@@ -396,17 +398,13 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
         # CAREREGA OS CAMPOS REDIRECIONA E ENCAMINHA
         if tratamento_desc[:4] == 'Sala':
             self.fields['redireciona'].queryset=Tratamento.objects.filter(descricao_basica__startswith='Sala')
-            self.fields['encaminha'].queryset=Tratamento.objects.filter(descricao_basica__startswith='Sala')
         elif tratamento_desc[:4] == 'Manu':
             self.fields['redireciona'].queryset=Tratamento.objects.none()
-            self.fields['encaminha'].queryset=Tratamento.objects.none()
         elif tratamento_desc[:4] == 'Prim':
             self.fields['redireciona'].queryset=Tratamento.objects.none()
-            self.fields['encaminha'].queryset=Tratamento.objects.filter(descricao_basica__startswith='Sala')
             opcoes = (('X','---------'),) + Paciente.FREQUENCIA
         else:
             self.fields['redireciona'].queryset=Tratamento.objects.none()
-            self.fields['encaminha'].queryset=Tratamento.objects.none()
                 
         # CARREGA O NOME DO PACIENTE
         self.fields['nome'].initial = atendimento.paciente.nome
@@ -429,7 +427,6 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
         atendimento = super(ConfirmacaoAtendimentoForm, self).save(commit=False)
         confirma_in = self.cleaned_data['confirma']
         redireciona_in = self.cleaned_data['redireciona']
-        encaminha_in = self.cleaned_data['encaminha']
 
         try:
             if redireciona_in:
@@ -450,17 +447,8 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
                 if it != atendimento.instancia_tratamento:
                     atendimento.instancia_tratamento = it
                     obs = atendimento.observacao
-                    atendimento.observacao = obs + '[Checkin: ' + atendimento_atual_str + ' / Hoje foi para '+str(redireciona_in)+'] '
-
-            if encaminha_in:
-                tratamento = Tratamento.objects.get(descricao_basica = encaminha_in)
-                if tratamento:
-                    lista_t = []
-                    lista_t.append(tratamento)
-                    tratamento_logic.encaminhar_paciente(atendimento.paciente.id, lista_t)
-                    obs = atendimento.observacao
-                    atendimento.observacao = obs + '[Encaminhado para '+str(encaminha_in)+'] '
-            
+                    atendimento.observacao = obs + '[Checkin: ' + atendimento_atual_str + \
+                        ' / Hoje foi para '+str(redireciona_in)+'] '
             if confirma_in:
                 atendimento.status = 'A'
                 
@@ -968,14 +956,14 @@ def exibir_listagem_geral_fechamento(request):
             if tratamento_in == '-':
                 if paciente_in:
                     atendimentos = Atendimento.objects.filter(instancia_tratamento__data = data_in, \
-                        paciente__nome__contains=paciente_in).order_by('-hora_chegada')
+                        paciente__nome__icontains=paciente_in).order_by('-hora_chegada')
                 else:
                     atendimentos = Atendimento.objects.filter(instancia_tratamento__data = data_in).order_by('-hora_chegada')
             else:
                 if paciente_in:
                     atendimentos = Atendimento.objects.filter(instancia_tratamento__data = data_in, \
                         instancia_tratamento__tratamento__id = tratamento_in, 
-                        paciente__nome__contains=paciente_in).order_by('-hora_chegada')
+                        paciente__nome__icontains=paciente_in).order_by('-hora_chegada')
                 else:
                     atendimentos = Atendimento.objects.filter(instancia_tratamento__data = data_in, \
                         instancia_tratamento__tratamento__id = tratamento_in).order_by('-hora_chegada')
@@ -1028,9 +1016,9 @@ def exibir_listagem_notificacoes(request):
                 if paciente_in:
                     if data_in:
                         notificacoes = Notificacao.objects.filter(data_criacao = data_in, \
-                            paciente__nome__contains=paciente_in).order_by('-atendimento__instancia_tratamento__data')
+                            paciente__nome__icontains=paciente_in).order_by('-atendimento__instancia_tratamento__data')
                     else:
-                        notificacoes = Notificacao.objects.filter(paciente__nome__contains=paciente_in).\
+                        notificacoes = Notificacao.objects.filter(paciente__nome__icontains=paciente_in).\
                             order_by('-atendimento__instancia_tratamento__data')
                 else:
                     if data_in:
@@ -1042,11 +1030,11 @@ def exibir_listagem_notificacoes(request):
                 if paciente_in:
                     if data_in:
                         notificacoes = Notificacao.objects.filter(data_criacao = data_in, \
-                            paciente__nome__contains=paciente_in, atendimento__instancia_tratamento__tratamento__id=\
+                            paciente__nome__icontains=paciente_in, atendimento__instancia_tratamento__tratamento__id=\
                             tratamento_in).order_by('-atendimento__instancia_tratamento__data')
                     else:
                         notificacoes = Notificacao.objects.filter(\
-                            paciente__nome__contains=paciente_in, atendimento__instancia_tratamento__tratamento__id=\
+                            paciente__nome__icontains=paciente_in, atendimento__instancia_tratamento__tratamento__id=\
                             tratamento_in).order_by('-atendimento__instancia_tratamento__data')
                 else:
                     if data_in:
@@ -1133,7 +1121,7 @@ def exibir_listagem_agendamentos(request):
                         tratamento_marcacao_in)
 
                 if paciente_in != '-':
-                    agendamentos = agendamentos.filter(paciente__nome__contains=paciente_in)
+                    agendamentos = agendamentos.filter(paciente__nome__icontains=paciente_in)
 
                 if status_in != '-':
                     agendamentos = agendamentos.filter(status = status_in)
@@ -1647,12 +1635,13 @@ class NotificacaoForm(forms.Form):
                 obs = atendimento.observacao
                 if not obs:
                     obs = ''
-                nova_notificacao = smart_str('[Nova notificao: ' + notificacao.descricao + ']')
+                nova_notificacao = smart_unicode('[Nova notificação: ') + smart_unicode(notificacao.descricao) + \
+                    smart_unicode(']')
                 atendimento.observacao = obs + nova_notificacao
                 atendimento.save()
-                dic_retorno = {'sucesso':True, 'mensagem':'Notificacao cadastrada com sucesso.'}
+                dic_retorno = {'sucesso':True, 'mensagem':'Notificação cadastrada com sucesso.'}
             except:
-                dic_retorno = {'sucesso':False, 'mensagem':'Erro no cadastro da notificacao.'}
+                dic_retorno = {'sucesso':False, 'mensagem':'Erro no cadastro da notificação.'}
                 traceback.print_exc()
             mensagens_list.append(dic_retorno)
         return mensagens_list
