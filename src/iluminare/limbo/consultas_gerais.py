@@ -13,6 +13,7 @@ import re
 from django.utils.encoding import smart_str, smart_unicode
 
 from django.db.models import Q
+import  traceback
 
 dir_log = "/media/DATA/Iluminare/relatorios/"
 
@@ -20,10 +21,19 @@ dir_log = "/media/DATA/Iluminare/relatorios/"
 def gera_csv(lista_rotulos, lista, nome_arquivo_csv):
     
     spamWriter = csv.writer(open(dir_log+nome_arquivo_csv, 'wb'), delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-    spamWriter.writerow(lista_rotulos)
+    try:
+        spamWriter.writerow(lista_rotulos)
+    except:
+        print lista_rotulos
+        traceback.print_exc()
+        
     
     for item in lista:
-        spamWriter.writerow(item)
+        try:
+            spamWriter.writerow(item)
+        except:
+            print item
+            traceback.print_exc()
 
 def retorna_dia_semana(data):
 
@@ -204,8 +214,9 @@ def relatorio_atendimentos_por_sala(ano=2011):
         - ano: a partir de..
     """
     
-    lista_salas = ["Sala 1", "Sala 2", "Sala 3", "Sala 4", "Sala 5"]
-    lista_rotulos = ["Data"] + lista_salas
+    tratamentos = Tratamento.objects.all()
+    lista_salas = [tratamento.descricao_basica.encode('utf-8') for tratamento in tratamentos]
+    lista_rotulos = ["Data"] + ["Ano-mes".encode('utf-8')] + lista_salas
     lista_rotulos = lista_rotulos + ["Todos"]
     
     # listar datas
@@ -216,7 +227,7 @@ def relatorio_atendimentos_por_sala(ano=2011):
     
     a = data_inicial
     while a <= data_final:
-        if a.weekday()==3:
+        if a.weekday()==3 or a.weekday()==0:
             lista_datas.append(a)
         a = a + timedelta(1)
     
@@ -224,6 +235,7 @@ def relatorio_atendimentos_por_sala(ano=2011):
     for d in lista_datas:
         lista_linha = []
         lista_linha.append(str(d))
+        lista_linha.append(str(d.year)+'-'+str(d.month))
         total = 0
         for s in lista_salas:
             # consulta
@@ -235,7 +247,7 @@ def relatorio_atendimentos_por_sala(ano=2011):
         lista_linha.append(total)
         lista_dados.append(lista_linha)
     
-    gera_csv(lista_rotulos, lista_dados, "relatorio.csv")
+    gera_csv(lista_rotulos, lista_dados, "relatorio_2011.csv")
 
 
 def histograma_horarios():
