@@ -1251,7 +1251,6 @@ def relatorio_atendimentos_mes_geral(data_ordinal):
     retorno = []
     tratamento = ''
     lista_datas = []
-    lista_datas_str = []
     lista_rotulos = []
     debug = ''
 
@@ -1267,9 +1266,9 @@ def relatorio_atendimentos_mes_geral(data_ordinal):
             lista_ids_tratamentos.append(at.instancia_tratamento.tratamento.id)
         if at.instancia_tratamento.data not in lista_datas:
             lista_datas.append(at.instancia_tratamento.data)
-            lista_datas_str.append(str(at.instancia_tratamento.data))
 
     lista_ids_tratamentos.sort()
+    lista_datas.sort()
     for tratamento_id in lista_ids_tratamentos:
         ats_filtro = atendimentos.filter(instancia_tratamento__tratamento__id = tratamento_id)
         lista = ats_filtro.values('instancia_tratamento__data').annotate(numero=Count('instancia_tratamento__data'))
@@ -1310,7 +1309,7 @@ def relatorio_atendimentos_mes_geral(data_ordinal):
         lista_soma.append(soma_tratamento)
         retorno.append(lista_soma)
 
-    lista_rotulos = ['Tratamento'] + lista_datas_str + ['Total']
+    lista_rotulos = ['Tratamento'] + [str(data) for data in lista_datas] + ['Total']
     return mensagem_erro, retorno, lista_rotulos
 
 def relatorio_atendimentos_mes(request):
@@ -1320,7 +1319,6 @@ def relatorio_atendimentos_mes(request):
     retorno = []
     tratamento = ''
     lista_datas = []
-    lista_datas_str = []
     data_ordinal = ''
     lista_rotulos = []
     debug = ''
