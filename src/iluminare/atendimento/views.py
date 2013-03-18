@@ -70,17 +70,26 @@ class CheckinPacienteForm(forms.ModelForm):
             lista_trat = Tratamento.objects.filter(dia_semana = 'S')
             self.fields['tratamento'].queryset = lista_trat
             
+            # Verifica se o paciente tem algum agendamento para desobsessão no dia.
+            # Caso positivo, a desobsessão passa a ser a opção default.
+            desob = Tratamento.objects.filter(descricao_basica__contains='Desob')
+            if len(desob) == 1:
+                ags = AgendaAtendimento.objects.filter(paciente = paciente, agenda_tratamento__tratamento=desob[0], \
+                    agenda_tratamento__data=datetime.datetime.now().date)
+                if (len(ags) >=1) and (desob[0] in lista_trat):
+                    self.fields['tratamento'].initial = desob[0]
+
             # só atualiza a opção inicial do campo tratamento na segunda para Manutenção se não for voluntário.
             # Em geral, os voluntários não se tratam nas segundas. Logo, só farão os pontos de entrada e saída.
+            # Notar que caso o paciente tenha um agendamento para a desob no dia, mas ainda estiver na manutenção,
+            # a opção default na tela será a manutenção.
             if not volunt: 
                 trat_manut = Tratamento.objects.filter(descricao_basica__startswith = "Manu")
                 if len(trat_manut) > 0:
                     manut = trat_manut[0]
-                    if manut in lista_trat:
+                    ats = Atendimento.objects.filter(paciente = paciente).order_by("-instancia_tratamento__data")
+                    if (manut in lista_trat) and (len(ats) >= 1) and (ats[0].instancia_tratamento.tratamento==manut):
                         self.fields['tratamento'].initial = manut
-                    
-            
-            
         # AJUSTANDO A TELA PARA AS QUINTAS            
         elif datetime.date.today().weekday() == 3:
             self.fields['tratamento'].queryset = Tratamento.objects.filter(dia_semana = 'N')
@@ -92,15 +101,13 @@ class CheckinPacienteForm(forms.ModelForm):
                 tratamentos = [tp.tratamento for tp in paciente.tratamentopaciente_set.filter(status='A')]
                 if len(tratamentos) > 0:
                     self.fields['tratamento'].initial = tratamentos[0]
-                
         # AJUSTANDO A TELA PARA OUTROS DIAS (em geral utilizado para os testes)
         else:
             self.fields['tratamento'].queryset = Tratamento.objects.all()
 
         # ATUALIZANDO LABEL DA OBSERVAÇÃO PRIORIDADE
         self.fields['observacao_prioridade'].label = "Info. Complementar"
-        
-        
+
     class Meta:
         model = Atendimento
         exclude = ['observacao', 'status', 'hora_atendimento', 'hora_chegada', 'instancia_tratamento', 'paciente', 'senha']
