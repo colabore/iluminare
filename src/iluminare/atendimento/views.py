@@ -157,10 +157,11 @@ def ajax_checkin_paciente(request, paciente_id):
         checkin_paciente_form = CheckinPacienteForm()
         checkin_paciente_form.update_tratamentos(paciente)
         notificacoes = get_notificacoes_validas(paciente, True, False)
+        agendamentos = AgendaAtendimento.objects.filter(paciente = paciente, status = 'A')
 
     return render_to_response('ajax-checkin-paciente.html', {'paciente':paciente, \
         'form':checkin_paciente_form, 'lista':lista_atendimentos, 'erros':str(checkin_paciente_form.errors), \
-        'voluntario':voluntario, 'notificacoes':notificacoes})
+        'voluntario':voluntario, 'notificacoes':notificacoes, 'agendamentos': agendamentos})
 
 def get_notificacoes_validas(paciente, tela_checkin, impressao):
     """

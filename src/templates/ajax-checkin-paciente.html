@@ -37,13 +37,17 @@
         <td>{{paciente.observacao}}</td>
         <tr>
     {% endif %}
-    
+
 </table>
 
 <div class="tela-checkin-notificacoes">
+    {% for ag in agendamentos %}
+        Agendamento: {{ag.agenda_tratamento.tratamento.descricao_basica}} ({{ag.agenda_tratamento.data|date:'d/m/Y'}})  <br>
+    {% endfor %}
     {% for notificacao in notificacoes %}
         {{notificacao.descricao}} <br>
     {% endfor %}
+    <br>
 </div>
 
 <form method="POST" id="form_paciente_checkin">

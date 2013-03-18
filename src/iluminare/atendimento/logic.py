@@ -60,6 +60,14 @@ def regras_gerais_atendidas(paciente, tratamento):
                 dic_retorno['mensagem']='Último atendimento realizado há mais de 3 meses. Encaminhar paciente para a coordenação.'
                 return dic_retorno
 
+    # somente pacientes com agendamento na desobsessão podem fazer checkin.
+    if tratamento.descricao_basica[:5] == 'Desob':
+        agenda = AgendaAtendimento.objects.filter(paciente = paciente, agenda_tratamento__tratamento = tratamento, \
+            status='A')
+        if not agenda:
+            dic_retorno['mensagem']='Paciente não agendado para a Desobsessão. Favor encaminhá-lo para a coordenação.'
+            return dic_retorno
+
     # regra básica:
     # se o paciente está fazendo um checkin para algum tratamento da quinta-feira,
     # o que tipicamente começa por "Sala", será necessário verificar se ele já cumpriu as 4 manutenções.
