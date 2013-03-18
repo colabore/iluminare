@@ -10,7 +10,9 @@
 from iluminare.atendimento.models import *
 from iluminare.paciente.models import *
 from iluminare.tratamento.models import *
+from iluminare.limbo.consultas_gerais import gera_csv
 import datetime
+from django.utils.encoding import smart_str, smart_unicode
 
 
 def condicao_paciente_ativo(paciente):
@@ -76,3 +78,28 @@ def migra_observacoes_desob():
         agenda_atendimento.save()
         print at.paciente.nome + ' - ' + str(at.instancia_tratamento.data)
 
+def exibe_notificacoes():
+    lista_rotulos = ['id', 'data',smart_str('Notificação'),'Paciente']
+    lista_retorno = []
+    ns = Notificacao.objects.filter(ativo=True)
+    for n in ns:
+        lista = [str(n.id), str(n.data_criacao), smart_str(n.descricao), smart_str(n.paciente.nome)]
+        lista_retorno.append(lista)
+    gera_csv(lista_rotulos, lista_retorno, 'obs.csv')
+
+
+def ajusta_notificacoes():
+    ns = Notificacao.objects.filter(ativo=True)
+    for n in ns:
+        if ('desob' in n.descricao.lower()) or ('nafme' in n.descricao.lower()):
+            n.ativo = False
+            n.save()
+
+def ajusta_notificacoes2():
+    ns = Notificacao.objects.filter(ativo=True)
+    for n in ns:
+        if (n.data_criacao == datetime.date(2013,02,20)) and (n.id not in [244, 285, 307,320, 355,389,408,424,526,536,541,542,\
+           663,664,693,774,775,776,795,844,865,881,886,893,903,935,954,970,1024,1042,1048,1080,1084,1096,1105,1109,1110,1167,\
+           1180,1186,1273,1317,1325,1358,1381,1397]):
+            n.ativo = False
+            n.save()
