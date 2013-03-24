@@ -72,24 +72,30 @@ class CheckinPacienteForm(forms.ModelForm):
             
             # Verifica se o paciente tem algum agendamento para desobsessão no dia.
             # Caso positivo, a desobsessão passa a ser a opção default.
-            desob = Tratamento.objects.filter(descricao_basica__contains='Desob')
-            if len(desob) == 1:
-                ags = AgendaAtendimento.objects.filter(paciente = paciente, agenda_tratamento__tratamento=desob[0], \
+            try:
+                # id=8: desobsessão
+                desob = Tratamento.objects.get(id=8)
+                ags = AgendaAtendimento.objects.filter(paciente = paciente, agenda_tratamento__tratamento=desob, \
                     agenda_tratamento__data=datetime.datetime.now().date)
-                if (len(ags) >=1) and (desob[0] in lista_trat):
-                    self.fields['tratamento'].initial = desob[0]
+                if (len(ags) >=1) and (desob in lista_trat):
+                    self.fields['tratamento'].initial = desob
+            except:
+                pass
 
             # só atualiza a opção inicial do campo tratamento na segunda para Manutenção se não for voluntário.
             # Em geral, os voluntários não se tratam nas segundas. Logo, só farão os pontos de entrada e saída.
             # Notar que caso o paciente tenha um agendamento para a desob no dia, mas ainda estiver na manutenção,
             # a opção default na tela será a manutenção.
             if not volunt: 
-                trat_manut = Tratamento.objects.filter(descricao_basica__startswith = "Manu")
-                if len(trat_manut) > 0:
-                    manut = trat_manut[0]
+                try:
+                    manut = Tratamento.objects.get(id=7)
+                    prim = Tratamento.objects.get(id=6)
                     ats = Atendimento.objects.filter(paciente = paciente).order_by("-instancia_tratamento__data")
-                    if (manut in lista_trat) and (len(ats) >= 1) and (ats[0].instancia_tratamento.tratamento==manut):
+                    if (manut in lista_trat) and (len(ats) >= 1) and (ats[0].instancia_tratamento.tratamento==manut or \
+                        ats[0].instancia_tratamento.tratamento==prim):
                         self.fields['tratamento'].initial = manut
+                except:
+                    pass
         # AJUSTANDO A TELA PARA AS QUINTAS            
         elif datetime.date.today().weekday() == 3:
             self.fields['tratamento'].queryset = Tratamento.objects.filter(dia_semana = 'N')
@@ -402,13 +408,14 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
         atendimento = kwargs.pop('instance')
         
         tratamento_desc = atendimento.instancia_tratamento.tratamento.descricao_basica
+        tratamento = atendimento.instancia_tratamento.tratamento
         
         # CAREREGA OS CAMPOS REDIRECIONA E ENCAMINHA
-        if tratamento_desc[:4] == 'Sala':
-            self.fields['redireciona'].queryset=Tratamento.objects.filter(descricao_basica__startswith='Sala')
-        elif tratamento_desc[:4] == 'Manu':
+        if tratamento.id in [1,2,3,4,5]:
+            self.fields['redireciona'].queryset=Tratamento.objects.filter(id__in=[1,2,3,4,5])
+        elif tratamento.id == 7:
             self.fields['redireciona'].queryset=Tratamento.objects.none()
-        elif tratamento_desc[:4] == 'Prim':
+        elif tratamento.id == 6:
             self.fields['redireciona'].queryset=Tratamento.objects.none()
             opcoes = (('X','---------'),) + Paciente.FREQUENCIA
         else:
@@ -499,14 +506,16 @@ class ConfirmacaoAtendimentoPrimeiraVezForm(forms.ModelForm):
         atendimento = kwargs.pop('instance')
         
         tratamento_desc = atendimento.instancia_tratamento.tratamento.descricao_basica
+
+        tratamento = atendimento.instancia_tratamento.tratamento
         
-        # CAREREGA O ENCAMINHA
-        if tratamento_desc[:4] == 'Sala':
-            self.fields['encaminha'].queryset=Tratamento.objects.filter(descricao_basica__startswith='Sala')
-        elif tratamento_desc[:4] == 'Manu':
+        # CAREREGA OS CAMPOS REDIRECIONA E ENCAMINHA
+        if tratamento.id in [1,2,3,4,5]:
+            self.fields['encaminha'].queryset=Tratamento.objects.filter(id__in=[1,2,3,4,5])
+        elif tratamento.id == 7:
             self.fields['encaminha'].queryset=Tratamento.objects.none()
-        elif tratamento_desc[:4] == 'Prim':
-            self.fields['encaminha'].queryset=Tratamento.objects.filter(descricao_basica__startswith='Sala')
+        elif tratamento.id == 6:
+            self.fields['encaminha'].queryset=Tratamento.objects.filter(id__in=[1,2,3,4,5])
             opcoes = (('X','---------'),) + Paciente.FREQUENCIA
             self.fields['frequencia'].choices=opcoes
         else:
@@ -1369,7 +1378,7 @@ class AtualizarPaciente_ConfirmacaoForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(AtualizarPaciente_ConfirmacaoForm, self).__init__(*args, **kwargs)
         self.fields.keyOrder = ['tratamento', 'frequencia', 'prioridade', 'observacao_atendimento']
-        self.fields['tratamento'].queryset=Tratamento.objects.filter(descricao_basica__startswith='Sala')
+        self.fields['tratamento'].queryset=Tratamento.objects.filter(id__in=[1,2,3,4,5])
         self.fields['frequencia'].choices=opcoes = (('X','---------'),) + Paciente.FREQUENCIA
         self.fields['prioridade'].choices=opcoes = (('X','---------'),) + DetalhePrioridade.TIPO
 
@@ -1462,17 +1471,17 @@ class AgendamentoForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(AgendamentoForm, self).__init__(*args, **kwargs)
-        acolhimento = Tratamento.objects.get(descricao_basica__startswith='Acolh')
+        acolhimento = Tratamento.objects.get(id=10)
         ats = AgendaTratamento.objects.filter(tratamento = acolhimento, data__gte=datetime.date.today())
         choices = (('X','---------'),) + tuple([(at.id,at.data) for at in ats]) + (('N','Sem data'),)
         self.fields['agenda_tratamento_acolhimento'].choices= choices
 
-        desob = Tratamento.objects.get(descricao_basica__startswith='Desob')
+        desob = Tratamento.objects.get(id=8)
         ats = AgendaTratamento.objects.filter(tratamento = desob, data__gte=datetime.date.today())
         choices = (('X','---------'),) + tuple([(at.id,at.data) for at in ats]) + (('N','Sem data'),)
         self.fields['agenda_tratamento_desobsessao'].choices=choices
 
-        af = Tratamento.objects.get(descricao_basica__startswith='Atend')
+        af = Tratamento.objects.get(id=9)
         ats = AgendaTratamento.objects.filter(tratamento = af, data__gte=datetime.date.today())
         choices = (('X','---------'),) + tuple([(at.id,at.data) for at in ats]) + (('N','Sem data'),)
         self.fields['agenda_tratamento_af'].choices=choices
@@ -1497,7 +1506,7 @@ class AgendamentoForm(forms.Form):
             if agenda_tratamento_acolhimento_in != 'N':
                 agenda_tratamento = AgendaTratamento.objects.get(id=agenda_tratamento_acolhimento_in)
             else:
-                acolhimento = Tratamento.objects.get(descricao_basica__startswith='Acolh')
+                acolhimento = Tratamento.objects.get(id=10)
                 agenda_tratamentos = AgendaTratamento.objects.filter(data=None, tratamento=acolhimento)
                 if not agenda_tratamentos:
                     agenda_tratamento = AgendaTratamento(tratamento = acolhimento, data=None)
@@ -1536,7 +1545,7 @@ class AgendamentoForm(forms.Form):
             if agenda_tratamento_desobsessao_in != 'N':
                 agenda_tratamento = AgendaTratamento.objects.get(id=agenda_tratamento_desobsessao_in)
             else:
-                desob = Tratamento.objects.get(descricao_basica__startswith='Desob')
+                desob = Tratamento.objects.get(id=8)
                 agenda_tratamentos = AgendaTratamento.objects.filter(data=None, tratamento=desob)
                 if not agenda_tratamentos:
                     agenda_tratamento = AgendaTratamento(tratamento = desob, data=None)
@@ -1566,7 +1575,7 @@ class AgendamentoForm(forms.Form):
             if agenda_tratamento_af_in != 'N':
                 agenda_tratamento = AgendaTratamento.objects.get(id=agenda_tratamento_af_in)
             else:
-                af = Tratamento.objects.get(descricao_basica__startswith='Atend')
+                af = Tratamento.objects.get(id=9)
                 agenda_tratamentos = AgendaTratamento.objects.filter(data=None, tratamento=af)
                 if not agenda_tratamentos:
                     agenda_tratamento = AgendaTratamento(tratamento = af, data=None)

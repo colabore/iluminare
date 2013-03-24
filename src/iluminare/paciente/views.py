@@ -71,91 +71,43 @@ class PacienteForm(forms.ModelForm):
         paciente = forms.ModelForm.save(self)
         return paciente
 
-def get_lista_tratamentos(tps):
-    # Retorna a lista de tratamentos a partir da lista de TratamentoPaciente
-    
-    lista = []
-    for tp in tps:
-        lista.append(tp.tratamento)
-    return lista
-
-            
-def get_lista_tratamentos_atuais(paciente):
-    # Retorna a lista de tratamentos no formato TRATAMENTO_CHOICES
-    # Exemplo: ['1','4']
-
-    TRATAMENTOS_CHOICES = (
-        (1, u'Sala 1'),
-        (2, u'Sala 2'),
-        (3, u'Sala 3'),
-        (4, u'Sala 4'),
-        (5, u'Sala 5'),
-        (6, u'Manutenção'),
-        (7, u'Sala 9')
-    )
-
-    lista = []    
-    tps = list(TratamentoPaciente.objects.filter(Q(paciente=paciente.id), Q(status = 'A')))
-    ts = get_lista_tratamentos(tps)    
-
-    for t in TRATAMENTOS_CHOICES:
-        tratamento = Tratamento.objects.get(descricao_basica = t[1])
-        if tratamento in ts:
-            lista.append(t[0])
-    return lista
-
-
 class TratamentoPacienteForm(forms.Form):
-    # IMPORTANTE OBSERVAR QUE OS TRATAMENTOS DEVEM TER OS MESMOS NOMES QUE OS TRATAMENTOS QUE ESTÃO NA BASE
-    # PODE SER MELHORADO.
-    TRATAMENTOS_CHOICES = (
-        (1, u'Sala 1'),
-        (2, u'Sala 2'),
-        (3, u'Sala 3'),
-        (4, u'Sala 4'),
-        (5, u'Sala 5'),
-        (6, u'Manutenção'),
-        (7, u'Sala 9')
-    )
-    tratamentos = forms.MultipleChoiceField(choices=TRATAMENTOS_CHOICES, widget=forms.CheckboxSelectMultiple, required=False)
+    TRATAMENTO_CHOICES = [(tratamento.id, tratamento.descricao_basica) \
+        for tratamento in Tratamento.objects.filter(id__in=[1,2,3,4,5,7,11])]
+    tratamentos = forms.MultipleChoiceField(choices=TRATAMENTO_CHOICES, widget=forms.CheckboxSelectMultiple, required=False)
 
     def update(self, paciente):
-        lista_tratamentos_atuais = get_lista_tratamentos_atuais(paciente)
+        lista_tratamentos_atuais = [tp.tratamento.id for tp in \
+            TratamentoPaciente.objects.filter(Q(paciente=paciente.id), Q(status = 'A'))]
         self.fields['tratamentos'].initial=lista_tratamentos_atuais
 
     def save(self, paciente):
         cod_ts = self.cleaned_data["tratamentos"]
         lista_tratamentos_novos = []
         # pega a lista de tratamentos a partir dos códigos
-        for t in self.TRATAMENTOS_CHOICES:
+        for t in self.TRATAMENTO_CHOICES:
             if str(t[0]) in cod_ts:
                 tratamento = Tratamento.objects.get(descricao_basica = t[1])
                 lista_tratamentos_novos.append(tratamento)
         tratamento_logic.encaminhar_paciente(paciente.id, lista_tratamentos_novos)
 
 class TratamentoCadastroRapido(forms.Form):
-    TRATAMENTOS_CHOICES_QUINTA = (
-        (3, u'Sala 5'),
-    )
-    TRATAMENTOS_CHOICES_SEGUNDA = (
-        (1, u'Primeira Vez'),
-        (2, u'Manutenção')
-    )
-    TRATAMENTOS_CHOICES = (
-        (1, u'Primeira Vez'),
-        (2, u'Manutenção'),
-        (3, u'Sala 5')
-    )
+    TRATAMENTOS_CHOICES_QUINTA = [(tratamento.id, tratamento.descricao_basica) \
+        for tratamento in Tratamento.objects.filter(id=5)]
+    TRATAMENTOS_CHOICES_SEGUNDA = [(tratamento.id, tratamento.descricao_basica) \
+        for tratamento in Tratamento.objects.filter(id__in=[6,7])]
+    TRATAMENTOS_CHOICES = [(tratamento.id, tratamento.descricao_basica) \
+        for tratamento in Tratamento.objects.filter(id__in=[5,6,7])]
     
-    tratamentos = forms.MultipleChoiceField(choices=TRATAMENTOS_CHOICES, widget=forms.CheckboxSelectMultiple, required=False)
+    tratamentos = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple, required=False)
                 
     def update(self):
         if datetime.date.today().weekday() == 0:
-            self.fields['tratamentos'].choices = self.TRATAMENTOS_CHOICES_SEGUNDA 
-            self.fields['tratamentos'].initial=['1','2']
-        if datetime.date.today().weekday() == 3:
+            self.fields['tratamentos'].choices = self.TRATAMENTOS_CHOICES_SEGUNDA
+            self.fields['tratamentos'].initial=['6','7']
+        elif datetime.date.today().weekday() == 3:
             self.fields['tratamentos'].choices = self.TRATAMENTOS_CHOICES_QUINTA
-            self.fields['tratamentos'].initial=['3']
+            self.fields['tratamentos'].initial=['5']
         else:
             self.fields['tratamentos'].choices = self.TRATAMENTOS_CHOICES
         
