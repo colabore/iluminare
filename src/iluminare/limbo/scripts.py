@@ -103,3 +103,50 @@ def ajusta_notificacoes2():
            1180,1186,1273,1317,1325,1358,1381,1397]):
             n.ativo = False
             n.save()
+
+def migra_s3_s3s():
+    """
+        Migração dos pacientes da sala 3 para sala 3 na segunda-feira.
+    """
+    pacientes = Paciente.objects.all()
+    s3s = Tratamento.objects.get(id=12)
+    s3 = Tratamento.objects.get(id=3)
+    for paciente in pacientes:
+        tps = [tp for tp in paciente.tratamentopaciente_set.filter(status='A', tratamento__id=3)]
+        if len(tps)==1:
+            tps[0].status='C'
+            tps[0].data_fim = datetime.date.today()
+            tps[0].save()
+
+            tp_novo = TratamentoPaciente(paciente = paciente, tratamento=s3s, data_inicio=datetime.date.today(), status='A')
+            tp_novo.save()
+
+            notificacao = Notificacao(paciente = paciente, ativo=False, data_criacao = datetime.date.today(), \
+                descricao='Paciente transferido da sala 3 (quinta-feira) para sala 3 (segunda-feira)')
+            notificacao.save()
+
+        elif len(tps)>1:
+            print 'Mais de um tratamento na sala 3. ' + smart_str(paciente.nome)
+        else:
+            pass
+
+def relatorio_tratamentos():
+    dic = {0:0, 1:0, 2:0, 3:0, 4:0}
+    pacientes = Paciente.objects.all()
+    for paciente in pacientes:
+        tps = [tp for tp in paciente.tratamentopaciente_set.filter(status='A')]
+        dic[len(tps)] += 1
+        if len(tps) == 2:
+            print paciente.nome
+            print str(tps)
+    print dic
+
+def relatorio_tratamentos_2():
+    dic = {}
+    tps = TratamentoPaciente.objects.filter(status='A')
+    ts = Tratamento.objects.all()
+    for t in ts:
+        dic[t.descricao_basica] = 0
+    for tp in tps:
+        dic[tp.tratamento.descricao_basica] += 1
+    print dic

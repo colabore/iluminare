@@ -50,7 +50,7 @@ def regras_gerais_atendidas(paciente, tratamento):
 
     # somente os tratamentos nas salas 1, 2, 3 e 4 são verificados, pois qualquer paciente pode fazer check-in na
     # quinta-feira na sala 5.
-    if tratamento.descricao_basica in ['Sala 1', 'Sala 2', 'Sala 3', 'Sala 4']:
+    if tratamento.id in [1,2,3,4,12]:
         if len(ats) == 0:
             dic_retorno['mensagem']='Paciente sem atendimentos registrados. Deve retornar para as segundas-feiras'
             return dic_retorno
@@ -61,7 +61,7 @@ def regras_gerais_atendidas(paciente, tratamento):
                 return dic_retorno
 
     # somente pacientes com agendamento na desobsessão podem fazer checkin.
-    if tratamento.descricao_basica[:5] == 'Desob':
+    if tratamento.id == 8:
         agenda = AgendaAtendimento.objects.filter(paciente = paciente, agenda_tratamento__tratamento = tratamento, \
             status='A')
         if not agenda:
@@ -69,11 +69,11 @@ def regras_gerais_atendidas(paciente, tratamento):
             return dic_retorno
 
     # regra básica:
-    # se o paciente está fazendo um checkin para algum tratamento da quinta-feira,
-    # o que tipicamente começa por "Sala", será necessário verificar se ele já cumpriu as 4 manutenções.
+    # se o paciente está fazendo um checkin para algum tratamento,
+    # será necessário verificar se ele já cumpriu as 4 manutenções.
     # para tal, simplesmente verificamos se o último atendimento foi manutenção ou primeira vez e se
     # nos últimos 180 dias houve 4 manutenções.
-    if tratamento.descricao_basica[:4] == 'Sala':
+    if tratamento.id in [1,2,3,4,5,12]:
         if ats:
             if ats[0].instancia_tratamento.tratamento.descricao_basica[:4] == "Manu" or \
                 ats[0].instancia_tratamento.tratamento.descricao_basica[:4] == "Prim":

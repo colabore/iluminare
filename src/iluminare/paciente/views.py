@@ -73,7 +73,7 @@ class PacienteForm(forms.ModelForm):
 
 class TratamentoPacienteForm(forms.Form):
     TRATAMENTO_CHOICES = [(tratamento.id, tratamento.descricao_basica) \
-        for tratamento in Tratamento.objects.filter(id__in=[1,2,3,4,5,7,11])]
+        for tratamento in Tratamento.objects.filter(id__in=[1,2,3,4,5,7,11,12])]
     tratamentos = forms.MultipleChoiceField(choices=TRATAMENTO_CHOICES, widget=forms.CheckboxSelectMultiple, required=False)
 
     def update(self, paciente):
@@ -100,17 +100,18 @@ class TratamentoCadastroRapido(forms.Form):
         for tratamento in Tratamento.objects.filter(id__in=[5,6,7])]
     
     tratamentos = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple, required=False)
-                
-    def update(self):
+
+    def __init__(self, *args, **kwargs):
+        super(forms.Form, self).__init__(*args, **kwargs)
         if datetime.date.today().weekday() == 0:
             self.fields['tratamentos'].choices = self.TRATAMENTOS_CHOICES_SEGUNDA
-            self.fields['tratamentos'].initial=['6','7']
+            self.fields['tratamentos'].initial=[6,7]
         elif datetime.date.today().weekday() == 3:
             self.fields['tratamentos'].choices = self.TRATAMENTOS_CHOICES_QUINTA
-            self.fields['tratamentos'].initial=['5']
+            self.fields['tratamentos'].initial=[5]
         else:
             self.fields['tratamentos'].choices = self.TRATAMENTOS_CHOICES
-        
+
     def save(self, paciente):
         ts = self.cleaned_data["tratamentos"]
         
@@ -269,8 +270,8 @@ def cadastro_rapido_paciente(request):
                 lista.append(dic_paciente)
                 paciente = None
                 return render_to_response ('cadastro-rapido-paciente-resultado.html', {'paciente': paciente, 'lista_dics':lista})
-
         else:
+            print str(trat_form)
             erro = "Erro. Digite o nome do paciente."
             dic_paciente = {'sucesso':False, 'mensagem': erro}
             paciente = None
@@ -279,7 +280,6 @@ def cadastro_rapido_paciente(request):
     else:
         form = PacienteForm()
         trat_form = TratamentoCadastroRapido()
-        trat_form.update()
         
     return render_to_response ('cadastro-rapido-paciente.html', {'form': form, 'trat_form': trat_form})
 

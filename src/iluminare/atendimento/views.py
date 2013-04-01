@@ -90,7 +90,15 @@ class CheckinPacienteForm(forms.ModelForm):
                 try:
                     manut = Tratamento.objects.get(id=7)
                     prim = Tratamento.objects.get(id=6)
+                    s3s = Tratamento.objects.get(id=12)
                     ats = Atendimento.objects.filter(paciente = paciente).order_by("-instancia_tratamento__data")
+
+                    # Verifica se o tratamento do paciente é Sala 3 - Segunda.
+                    tratamentos = [tp.tratamento for tp in paciente.tratamentopaciente_set.filter(status='A')]
+                    if s3s in tratamentos:
+                        self.fields['tratamento'].initial = s3s
+
+                    # Verifica se não terminou as manutenções.
                     if (manut in lista_trat) and (len(ats) >= 1) and (ats[0].instancia_tratamento.tratamento==manut or \
                         ats[0].instancia_tratamento.tratamento==prim):
                         self.fields['tratamento'].initial = manut
@@ -410,7 +418,7 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
         tratamento_desc = atendimento.instancia_tratamento.tratamento.descricao_basica
         tratamento = atendimento.instancia_tratamento.tratamento
         
-        # CAREREGA OS CAMPOS REDIRECIONA E ENCAMINHA
+        # CAREREGA O CAMPO REDIRECIONA
         if tratamento.id in [1,2,3,4,5]:
             self.fields['redireciona'].queryset=Tratamento.objects.filter(id__in=[1,2,3,4,5])
         elif tratamento.id == 7:
@@ -509,13 +517,9 @@ class ConfirmacaoAtendimentoPrimeiraVezForm(forms.ModelForm):
 
         tratamento = atendimento.instancia_tratamento.tratamento
         
-        # CAREREGA OS CAMPOS REDIRECIONA E ENCAMINHA
-        if tratamento.id in [1,2,3,4,5]:
-            self.fields['encaminha'].queryset=Tratamento.objects.filter(id__in=[1,2,3,4,5])
-        elif tratamento.id == 7:
-            self.fields['encaminha'].queryset=Tratamento.objects.none()
-        elif tratamento.id == 6:
-            self.fields['encaminha'].queryset=Tratamento.objects.filter(id__in=[1,2,3,4,5])
+        # CAREREGA O CAMPO ENCAMINHA
+        if tratamento.id == 6:
+            self.fields['encaminha'].queryset=Tratamento.objects.filter(id__in=[1,2,3,4,5,12])
             opcoes = (('X','---------'),) + Paciente.FREQUENCIA
             self.fields['frequencia'].choices=opcoes
         else:
