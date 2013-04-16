@@ -38,6 +38,7 @@
 			<th> Prazo </th>
 			<th> .. </th>
 			<th> Qtd At. </th>
+		    <th> Atualizar </th>
 			
 			
 			
@@ -95,6 +96,11 @@
             {% else %} 
     			<td> - </td>
             {% endif %}
+			<td align="center">
+                <a href="/atendimento/atualizar-notificacao/{{notificacao.id}}">
+                <img alt="" width="20" height="20" src="/static/img/update.png" />
+                </a>
+            </td>
 
 
 		  </tr>

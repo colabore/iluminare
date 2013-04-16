@@ -18,5 +18,7 @@ urlpatterns = patterns('iluminare.atendimento.views',
     (r'^atualizar-paciente-confirmacao/(?P<atendimento_id>[0-9]+)$', 'ajax_atualizar_paciente_confirmacao'),
     (r'^listagem-notificacoes/$', 'exibir_listagem_notificacoes'),
     (r'^listagem-agendamentos/$', 'exibir_listagem_agendamentos'),
+    (r'^incluir-notificacao/(?P<paciente_id>[0-9]+)$', 'incluir_notificacao'),
+    (r'^atualizar-notificacao/(?P<notificacao_id>[0-9]+)$', 'atualizar_notificacao'),
 )
 

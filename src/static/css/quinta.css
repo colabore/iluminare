@@ -458,3 +458,31 @@ p.senha-falha {
     max-width:350px;
     overflow: auto;
 }
+
+#cadastros_basicos_sub {
+    font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size:14px;
+    font-weight:bold;
+    color: #616161;
+    text-align:left;
+    border: 1px solid #FFF;
+}
+
+
+#cadastros_basicos {
+    font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size:13px;
+    font-weight:bold;
+    color: #818161;
+    text-align:left;
+    border: 1px solid #FFF;
+}
+
+#cadastros_basicos th{
+    padding:2px 3px;
+}
+#cadastros_basicos td{
+    padding:2px 3px;
+}
+
+

@@ -1669,6 +1669,36 @@ class NotificacaoForm(forms.Form):
             mensagens_list.append(dic_retorno)
         return mensagens_list
 
+class NotificacaoForm2(forms.ModelForm):
+    class Meta:
+        model = Notificacao
+        fields = ('descricao','ativo','impressao','tela_checkin','fixo',\
+            'data_validade','prazo_num','prazo_unidade','qtd_atendimentos','paciente')
+
+    def __init__(self, *args, **kwargs):
+        try:
+            pacienteid = kwargs.pop('pacienteid')
+        except:
+            pacienteid = -1
+        super(NotificacaoForm2, self).__init__(*args, **kwargs)
+        if pacienteid != -1:
+            self.fields['paciente'].initial = Paciente.objects.get(id=pacienteid)
+#        self.fields['paciente'].widget.attrs['readonly'] = True
+#        self.fields['paciente'].widget.attrs['disabled'] = 'disabled'
+        self.fields['data_validade'].widget.attrs['size'] = 8
+        self.fields['prazo_num'].widget.attrs['size'] = 4
+        self.fields['qtd_atendimentos'].widget.attrs['size'] = 4
+        self.fields['descricao'].widget.attrs['size'] = 40
+        self.fields['descricao'].max_length = 200
+        self.fields['ativo'].initial = True
+
+    def save(self):
+        notificacao = forms.ModelForm.save(self)
+        if not notificacao.data_criacao:
+            notificacao.data_criacao = datetime.date.today()
+            notificacao.save()
+        return notificacao
+
 def ajax_atualizar_paciente_confirmacao(request, atendimento_id):
     atendimento = get_object_or_404(Atendimento, pk=atendimento_id)
 
@@ -1711,3 +1741,59 @@ def ajax_atualizar_paciente_confirmacao(request, atendimento_id):
 
     return render_to_response('ajax-atualizar-paciente-confirmacao.html', {'atendimento':atendimento, \
         'form':atualizar_paciente_form, 'agendamento_form': agendamento_form, 'notificacao_form':notificacao_form})
+
+def incluir_notificacao(request, paciente_id):
+    paciente = get_object_or_404(Paciente, pk=paciente_id)
+    mensagem_sucesso = ''
+    mensagem_erro = ''
+
+    if request.method == "POST":
+        form_notificacao = NotificacaoForm2(request.POST)
+        if form_notificacao.is_valid():
+            try:
+                form_notificacao.save()
+                mensagem_sucesso = "Notificação incluída com sucesso."
+            except:
+                mensagem_erro = "Houve um erro ao atualizar a notificação"
+                traceback.print_exc()
+        else:
+            print str(form_notificacao.errors)
+            traceback.print_exc()
+            mensagem_erro = "Notificação não incluída. Favor verificar os campos."
+    else:
+        form_notificacao = NotificacaoForm2(pacienteid = paciente.id)
+
+    return render_to_response('crud-notificacao.html',
+        {'paciente':paciente, \
+        'form_notificacao':form_notificacao,\
+        'mensagem_sucesso':mensagem_sucesso, \
+        'mensagem_erro':mensagem_erro, \
+        'titulo':'INCLUIR NOTIFICAÇÃO'})
+
+def atualizar_notificacao(request, notificacao_id):
+    notificacao = Notificacao.objects.get(pk=notificacao_id)
+
+    mensagem_sucesso = ''
+    mensagem_erro = ''
+
+    if request.method == "POST":
+        form_notificacao = NotificacaoForm2(request.POST, instance=notificacao, pacienteid = notificacao.paciente.id)
+        if form_notificacao.is_valid():
+            try:
+                form_notificacao.save()
+                mensagem_sucesso = "Notificação atualizada com sucesso."
+            except:
+                mensagem_erro = "Houve um erro ao atualizar a notificação"
+        else:
+            mensagem_erro = "Atualização não efetuada. Favor verificar os campos."
+    else:
+        form_notificacao = NotificacaoForm2(instance=notificacao, pacienteid = notificacao.paciente.id)
+
+    return render_to_response('crud-notificacao.html', \
+        {'paciente':notificacao.paciente,\
+        'form_notificacao':form_notificacao,
+        'notificacao':notificacao, \
+        'mensagem_sucesso':mensagem_sucesso, \
+        'mensagem_erro':mensagem_erro, \
+        'titulo': 'ATUALIZAR NOTIFICAÇÃO', \
+        })

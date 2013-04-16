@@ -1,0 +1,49 @@
+{% extends "base.html"%}
+{% block content %}
+<style type="text/css">
+@import url("/static/css/quinta.css");
+</style>
+
+<div class="nova_notificacao">
+<form method="POST" id="form_nova_notificacao">
+    <table id="cadastros_basicos_sub">
+        <tr>
+            <td></td>
+            <td>{{form_notificacao.paciente.as_hidden}} {{paciente.nome}}</td>
+        </tr>
+    </table>
+    <br>
+    <table id="cadastros_basicos">
+        <tr>
+        <td> Descrição: </td>
+        <td> {{form_notificacao.descricao}} </td>
+        </tr>
+    </table>
+    <table id="cadastros_basicos">
+        <tr>
+        <td colspan=4> Tela Impressão: {{form_notificacao.impressao}} &nbsp; &nbsp; &nbsp; 
+            Tela Checkin: {{form_notificacao.tela_checkin}} </td>
+        </tr>
+    </table>
+    <table id="cadastros_basicos">
+        <tr>
+        <td> Fixo: {{form_notificacao.fixo}} </td>
+        <td> Data Validade: {{form_notificacao.data_validade}} </td>
+        </tr>
+        <tr>
+        <td> Prazo: {{form_notificacao.prazo_num}} {{form_notificacao.prazo_unidade}}</td>
+        <td> Qtd. Atendimentos: {{form_notificacao.qtd_atendimentos}} </td>
+        </tr>
+    </table>
+    <table id="cadastros_basicos">
+        <tr>
+        <td> Ativo: </td>
+        <td> {{form_notificacao.ativo}} </td>
+        </tr>
+    </table>
+    
+    <br>
+    <input type="submit" value="Confirmar"/>
+</form>
+</div>
+{% endblock %}

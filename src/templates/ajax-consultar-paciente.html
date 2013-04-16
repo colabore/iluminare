@@ -109,6 +109,11 @@
         <td> <a href="/atendimento/consultar/{{paciente.id}}">
             <img src="/static/img/list.gif" width="25" height="25"/></a>  
         </td>
+        <td>
+            <a href="/atendimento/incluir-notificacao/{{paciente.id}}">
+            <img alt="" width="25" height="25" src="/static/img/notification.gif" />
+            </a>
+        </td>
         {% if voluntario %}
         <td> <a href="/voluntario/{{voluntario.id}}">
             <img src="/static/img/worker-icon.gif" width="25" height="25" /></a>
@@ -121,6 +126,10 @@
         </td>
         <td> <a href="/atendimento/consultar/{{paciente.id}}">
             Listar atendimentos </a>  
+        </td>
+        <td>
+            <a href="/atendimento/incluir-notificacao/{{paciente.id}}">
+            Incluir Notificação </a>
         </td>
         {% if voluntario %}
         <td> <a href="/voluntario/{{voluntario.id}}">
