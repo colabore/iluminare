@@ -422,10 +422,12 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
         if tratamento.id in [1,2,3,4,5]:
             self.fields['redireciona'].queryset=Tratamento.objects.filter(id__in=[1,2,3,4,5])
         elif tratamento.id == 7:
-            self.fields['redireciona'].queryset=Tratamento.objects.none()
+            self.fields['redireciona'].queryset=Tratamento.objects.filter(id__in=[12])
         elif tratamento.id == 6:
             self.fields['redireciona'].queryset=Tratamento.objects.none()
             opcoes = (('X','---------'),) + Paciente.FREQUENCIA
+        elif tratamento.id == 12:
+            self.fields['redireciona'].queryset=Tratamento.objects.filter(id__in=[7])
         else:
             self.fields['redireciona'].queryset=Tratamento.objects.none()
                 
@@ -456,7 +458,6 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
                 atendimento_atual_str = atendimento.instancia_tratamento.tratamento.descricao_basica
                 its = InstanciaTratamento.objects.filter(data=atendimento.instancia_tratamento.data,\
                     tratamento__descricao_basica=redireciona_in)
-
                 # pode ser que ainda não haja a instancia tratamento para o tratamento no dia.
                 # dificilmente isso ocorrerá em produção, pois esse processo é executado no final do dia.
                 # mas é importante que esteja mais robusto, pois executamos testes com poucos dados.
@@ -470,8 +471,11 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
                 if it != atendimento.instancia_tratamento:
                     atendimento.instancia_tratamento = it
                     obs = atendimento.observacao
-                    atendimento.observacao = obs + '[Checkin: ' + atendimento_atual_str + \
-                        ' / Hoje foi para '+str(redireciona_in)+'] '
+                    atendimento.observacao = obs + \
+                                            '[Checkin: ' + \
+                                            smart_unicode(atendimento_atual_str) + \
+                                            ' / Hoje foi para '+ \
+                                            smart_unicode(str(redireciona_in))+'] ' 
             if confirma_in:
                 atendimento.status = 'A'
                 
