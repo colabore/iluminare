@@ -78,8 +78,8 @@
     			<td> Não informado. </td>
             {% endif %}
 
-			{% if agendamento.atendimento_origem %}
-    			<td> {{agendamento.atendimento_origem.instancia_tratamento.data}} </td>
+			{% if agendamento.data_criacao %}
+                <td> {{agendamento.data_criacao}} </td>
             {% else %} 
     			<td> Não informada. </td>
             {% endif %}

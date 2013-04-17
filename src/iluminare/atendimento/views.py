@@ -1136,7 +1136,7 @@ def exibir_listagem_agendamentos(request):
                         agendamentos = AgendaAtendimento.objects.all()
 
                 if data_marcacao_in:
-                    agendamentos = agendamentos.filter(atendimento_origem__instancia_tratamento__data = data_marcacao_in)
+                    agendamentos = agendamentos.filter(data_criacao = data_marcacao_in)
 
                 if tratamento_agendado_in != '-':
                     agendamentos = agendamentos.filter(agenda_tratamento__tratamento__id=tratamento_agendado_in)
@@ -1152,7 +1152,7 @@ def exibir_listagem_agendamentos(request):
                     agendamentos = agendamentos.filter(status = status_in)
 
                 if not agendamentos:
-                        mensagem_erro = 'Nenhuma notificação encontrada.'
+                        mensagem_erro = 'Nenhum agendamento encontrado.'
             else:
                 mensagem_erro = 'Erro nos parâmetros. Verificar se os campos foram devidamente preenchidos.';
         except:
@@ -1504,6 +1504,11 @@ class AgendamentoForm(forms.Form):
             self.fields['fone'].initial = 'Fone'
 
     def save(self, atendimento):
+        """
+            Ainda preciso, antes de incluir o agendamento, verificar se já existe
+            outro agendamento para o mesmo dia, mesmo paciente, mesmo tratamento.
+            Essa verificação não está sendo feita ainda.
+        """
         agenda_tratamento_acolhimento_in = self.cleaned_data['agenda_tratamento_acolhimento']
         agenda_tratamento_desobsessao_in = self.cleaned_data['agenda_tratamento_desobsessao']
         agenda_tratamento_af_in = self.cleaned_data['agenda_tratamento_af']
@@ -1524,7 +1529,8 @@ class AgendamentoForm(forms.Form):
             dic_retorno = {}
             try:
                 agenda_atendimento = AgendaAtendimento(paciente = atendimento.paciente, \
-                    agenda_tratamento = agenda_tratamento, atendimento_origem = atendimento, status = 'A')
+                    agenda_tratamento = agenda_tratamento, atendimento_origem = atendimento, status = 'A',\
+                    data_criacao = atendimento.instancia_tratamento.data)
                 obs = atendimento.observacao
                 if not obs:
                     obs = ''
@@ -1563,7 +1569,8 @@ class AgendamentoForm(forms.Form):
             dic_retorno = {}
             try:
                 agenda_atendimento = AgendaAtendimento(paciente = atendimento.paciente, \
-                    agenda_tratamento = agenda_tratamento, atendimento_origem = atendimento, status = 'A')
+                    agenda_tratamento = agenda_tratamento, atendimento_origem = atendimento, status = 'A', \
+                    data_criacao = atendimento.instancia_tratamento.data)
                 agenda_atendimento.save()
                 obs = atendimento.observacao
                 if not obs:
@@ -1593,7 +1600,8 @@ class AgendamentoForm(forms.Form):
             dic_retorno = {}
             try:
                 agenda_atendimento = AgendaAtendimento(paciente = atendimento.paciente, \
-                    agenda_tratamento = agenda_tratamento, atendimento_origem = atendimento, status = 'A')
+                    agenda_tratamento = agenda_tratamento, atendimento_origem = atendimento, status = 'A', \
+                    data_criacao = atendimento.instancia_tratamento.data)
                 agenda_atendimento.save()
                 obs = atendimento.observacao
                 if not obs:
@@ -1841,17 +1849,18 @@ class AgendaAtendimentoForm2(forms.ModelForm):
             self.fields['fone'].initial = at.paciente.telefones
 
     def save(self, agenda_atendimento=None):
-        # significa que está criando um novo agenda_atendimento
         dic = {}
         paciente = self.cleaned_data['paciente']
         agenda_tratamento = self.cleaned_data['agenda_tratamento']
 
+        # significa que está criando um novo agenda_atendimento
         if not agenda_atendimento:
             aas = AgendaAtendimento.objects.filter(paciente = paciente, agenda_tratamento = agenda_tratamento)
             # verifica se já não há algum agendamento para o paciente.
             if len(aas) == 0:
                 agenda_atendimento = forms.ModelForm.save(self)
                 agenda_atendimento.status = 'A'
+                agenda_atendimento.data_criacao = datetime.date.today()
                 agenda_atendimento.save()
                 paciente = agenda_atendimento.paciente
                 paciente.telefones = self.cleaned_data['fone']
@@ -1862,8 +1871,7 @@ class AgendaAtendimentoForm2(forms.ModelForm):
             else:
                 dic['sucesso']=False
                 dic['mensagem']='Agendamento já existente.'
-            # ainda preciso tratar a questão da data_criacao.
-            # vou criar o campo.
+
         # significa que está atualizando uma agenda_atendimento existente.
         else:
             agenda_atendimento.agenda_tratamento = agenda_tratamento

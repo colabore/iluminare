@@ -44,6 +44,12 @@ class AgendaAtendimento(models.Model):
     paciente                = models.ForeignKey(Paciente, null = False, blank = False)
     status                  = models.CharField(max_length=1, choices=STATUS, null = True, blank = True)
 
+    # No caso inicialmente pensado, a data da criação do agendamento estava embutida no atendimento_origem.
+    # Como agora temos a possibildiade de criar um agendamento sem que este esteja pendurado em algum atendimento, 
+    # precisamos de uma data.
+    # Na prática, essa data passará a ser a data oficial de criação do agendamento.
+    data_criacao            = models.DateField(blank = True, null = True)
+
     def __unicode__(self):
         return u'%s %s %s' % (self.agenda_tratamento, self.paciente.nome, self.status)
 
