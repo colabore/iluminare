@@ -4,6 +4,51 @@
 @import url("/static/css/quinta.css");
 </style>
 
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+<!-- Begin
+function getSelectedText(elementId) {
+    var elt = document.getElementById(elementId);
+    if (elt.selectedIndex == -1)
+        return null;
+    return elt.options[elt.selectedIndex].text;
+}
+
+function show_hide_fone() {
+    var text = getSelectedText('agenda');
+    input = "Acolh"
+    if (text.substring(0, input.length) === input) {
+        document.getElementById('fone').style.display='block';
+        document.getElementById('fone_field').style.display='block';
+    }
+    else {
+        document.getElementById('fone').style.display='none';
+        document.getElementById('fone_field').style.display='none';
+    }
+}
+
+// por enquanto esse código está replicado.
+// tentei a linha abaixo, mas não funcionou.
+// onload = show_hide_fone()
+onload = function show_hide_fone() {
+    var text = getSelectedText('agenda');
+    input = "Acolh"
+    if (text.substring(0, input.length) === input) {
+        document.getElementById('fone').style.display='block';
+        document.getElementById('fone_field').style.display='block';
+    }
+    else {
+        document.getElementById('fone').style.display='none';
+        document.getElementById('fone_field').style.display='none';
+    }
+}
+
+
+
+//  End -->
+</script>
+
+
 <div class="realizar_agendamento">
 <form method="POST" id="form_realizar_agendamento">
     <table id="cadastros_basicos_sub">
@@ -18,6 +63,11 @@
         <td> Tratamento / Data: </td>
         <td> {{form_agendamento.agenda_tratamento}} </td>
         </tr>
+        <tr>
+        <td> <div id='fone'>Fone: <div></td>
+        <td> {{form_agendamento.fone}} </td>
+        </tr>
+
     </table>
     <br>
     <input type="submit" value="Confirmar"/>

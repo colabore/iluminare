@@ -1699,53 +1699,6 @@ class NotificacaoForm2(forms.ModelForm):
             notificacao.save()
         return notificacao
 
-class AgendaAtendimentoForm2(forms.ModelForm):
-    class Meta:
-        model = AgendaAtendimento
-        fields = ('agenda_tratamento','paciente','status')
-
-    def __init__(self, *args, **kwargs):
-        try:
-            # no caso de estar atualizando uma agenda_atendimento já existente
-            agenda_atendimento_id = kwargs.pop('agenda_atendimento_id')
-        except:
-            agenda_atendimento_id = -1
-        try:
-            # no caso de estar criando uma nova agenda_atendimento.
-            pacienteid = kwargs.pop('pacienteid')
-        except:
-            pacienteid = -1
-        super(AgendaAtendimentoForm2, self).__init__(*args, **kwargs)
-        # Criando nova agenda_atendimento
-        if agenda_atendimento_id == -1:
-            if pacienteid != -1:
-                self.fields['paciente'].initial = Paciente.objects.get(id=pacienteid)
-
-            # somente agendas_tratamento com datas no futuro serão exibidas.
-            self.fields['agenda_tratamento'].queryset = AgendaTratamento.objects.filter(Q(data__gte=datetime.date.today()) \
-                | Q(data=None)).order_by("tratamento__descricao_basica")
-        # atualizando agenda_atendimento já existente.
-        else:
-            at = AgendaAtendimento.objects.get(id=agenda_atendimento_id)
-            self.fields['paciente'].initial = at.paciente
-            self.fields['agenda_tratamento'].initial = at.agenda_tratamento
-            self.fields['status'].initial = at.status
-
-    def save(self, agenda_atendimento=None):
-        # significa que está criando um novo agenda_atendimento
-        if not agenda_atendimento:
-            agenda_atendimento = forms.ModelForm.save(self)
-            agenda_atendimento.status = 'A'
-            agenda_atendimento.save()
-            # ainda preciso tratar a questão da data_criacao.
-            # vou criar o campo.
-        # significa que está atualizando uma agenda_atendimento existente.
-        else:
-            agenda_atendimento_tela = forms.ModelForm.save(self)
-            agenda_atendimento.agenda_tratamento = agenda_atendimento_tela.agenda_tratamento
-            agenda_atendimento.status = agenda_atendimento_tela.status
-            agenda_atendimento.save()
-        return agenda_atendimento
 
 def ajax_atualizar_paciente_confirmacao(request, atendimento_id):
     atendimento = get_object_or_404(Atendimento, pk=atendimento_id)
@@ -1847,6 +1800,84 @@ def atualizar_notificacao(request, notificacao_id):
         })
 
 
+class AgendaAtendimentoForm2(forms.ModelForm):
+    fone = forms.CharField(required=False)
+    class Meta:
+        model = AgendaAtendimento
+        fields = ('agenda_tratamento','paciente','status')
+
+    def __init__(self, *args, **kwargs):
+        try:
+            # no caso de estar atualizando uma agenda_atendimento já existente
+            agenda_atendimento_id = kwargs.pop('agenda_atendimento_id')
+        except:
+            agenda_atendimento_id = -1
+        try:
+            # no caso de estar criando uma nova agenda_atendimento.
+            pacienteid = kwargs.pop('pacienteid')
+        except:
+            pacienteid = -1
+        super(AgendaAtendimentoForm2, self).__init__(*args, **kwargs)
+        self.fields['agenda_tratamento'].widget.attrs['id']='agenda'
+        self.fields['agenda_tratamento'].widget.attrs['onchange']='show_hide_fone()'
+        self.fields['agenda_tratamento'].widget.attrs['onload']='show_hide_fone()'
+        self.fields['fone'].widget.attrs['id']='fone_field'
+        self.fields['fone'].widget.attrs['title']='Atualizar esse campo implica na atualização do telefone da ficha do paciente.'
+        # Criando nova agenda_atendimento
+        if agenda_atendimento_id == -1:
+            if pacienteid != -1:
+                paciente = Paciente.objects.get(id=pacienteid)
+                self.fields['paciente'].initial = paciente
+                self.fields['fone'].initial = paciente.telefones
+            # somente agendas_tratamento com datas no futuro serão exibidas.
+            self.fields['agenda_tratamento'].queryset = AgendaTratamento.objects.filter(Q(data__gte=datetime.date.today()) \
+                | Q(data=None)).order_by("tratamento__descricao_basica")
+        # atualizando agenda_atendimento já existente.
+        else:
+            at = AgendaAtendimento.objects.get(id=agenda_atendimento_id)
+            self.fields['paciente'].initial = at.paciente
+            self.fields['agenda_tratamento'].initial = at.agenda_tratamento
+            self.fields['status'].initial = at.status
+            self.fields['fone'].initial = at.paciente.telefones
+
+    def save(self, agenda_atendimento=None):
+        # significa que está criando um novo agenda_atendimento
+        dic = {}
+        paciente = self.cleaned_data['paciente']
+        agenda_tratamento = self.cleaned_data['agenda_tratamento']
+
+        if not agenda_atendimento:
+            aas = AgendaAtendimento.objects.filter(paciente = paciente, agenda_tratamento = agenda_tratamento)
+            # verifica se já não há algum agendamento para o paciente.
+            if len(aas) == 0:
+                agenda_atendimento = forms.ModelForm.save(self)
+                agenda_atendimento.status = 'A'
+                agenda_atendimento.save()
+                paciente = agenda_atendimento.paciente
+                paciente.telefones = self.cleaned_data['fone']
+                paciente.save()
+                dic['sucesso']=True
+                dic['mensagem']='Agendamento realizado com sucesso.'
+
+            else:
+                dic['sucesso']=False
+                dic['mensagem']='Agendamento já existente.'
+            # ainda preciso tratar a questão da data_criacao.
+            # vou criar o campo.
+        # significa que está atualizando uma agenda_atendimento existente.
+        else:
+            agenda_atendimento.agenda_tratamento = agenda_tratamento
+            agenda_atendimento.status = self.cleaned_data['status']
+            agenda_atendimento.save()
+            paciente = agenda_atendimento.paciente
+            paciente.telefones = self.cleaned_data['fone']
+            paciente.save()
+            dic['sucesso']=True
+            dic['mensagem']='Agendamento atualizado com sucesso.'
+
+        return dic
+
+
 def realizar_agendamento(request, paciente_id):
     paciente = get_object_or_404(Paciente, pk=paciente_id)
     mensagem_sucesso = ''
@@ -1856,8 +1887,11 @@ def realizar_agendamento(request, paciente_id):
         form_agendamento = AgendaAtendimentoForm2(request.POST)
         if form_agendamento.is_valid():
             try:
-                form_agendamento.save()
-                mensagem_sucesso = "Agendamento realizado com sucesso."
+                dic = form_agendamento.save()
+                if dic['sucesso'] == True:
+                    mensagem_sucesso = dic['mensagem']
+                else:
+                    mensagem_erro = dic['mensagem']
             except:
                 mensagem_erro = "Erro no agendamento."
                 traceback.print_exc()
@@ -1890,8 +1924,11 @@ def atualizar_agendamento(request, agenda_atendimento_id):
         form_agendamento = AgendaAtendimentoForm2(request.POST)
         if form_agendamento.is_valid():
             try:
-                form_agendamento.save(agenda_atendimento)
-                mensagem_sucesso = "Agendamento atualizado com sucesso."
+                dic = form_agendamento.save(agenda_atendimento)
+                if dic['sucesso'] == True:
+                    mensagem_sucesso = dic['mensagem']
+                else:
+                    mensagem_erro = dic['mensagem']
             except:
                 mensagem_erro = "Erro no agendamento."
                 traceback.print_exc()
