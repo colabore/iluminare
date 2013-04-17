@@ -65,5 +65,8 @@ class AgendaTratamento(models.Model):
     max_agendamentos    = models.SmallIntegerField(null = True, blank = True)
     
     def __unicode__(self):
-        return u'%s %s %s' % (self.tratamento, self.data, self.max_agendamentos)
+        data_str = str(self.data)
+        if self.data == None:
+            data_str = 'Sem data'
+        return u'%s / %s' % (self.tratamento, data_str)
 

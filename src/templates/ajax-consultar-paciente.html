@@ -103,41 +103,28 @@
 </table>
 <table id=tabela_links_info_paciente>
     <tr>
-        <td> <a href="/paciente/{{paciente.id}}">
+        <td> <a href="/paciente/{{paciente.id}}" title="Atualizar dados do paciente">
             <img src="/static/img/edit.png"  width="25" height="25"/></a>  
         </td>
-        <td> <a href="/atendimento/consultar/{{paciente.id}}">
+        <td> <a href="/atendimento/consultar/{{paciente.id}}" title="Consultar atendimentos">
             <img src="/static/img/list.gif" width="25" height="25"/></a>  
         </td>
         <td>
-            <a href="/atendimento/incluir-notificacao/{{paciente.id}}">
+            <a href="/atendimento/incluir-notificacao/{{paciente.id}}" title="Incluir notificação">
             <img alt="" width="25" height="25" src="/static/img/notification.gif" />
             </a>
         </td>
+        <td>
+            <a href="/atendimento/realizar-agendamento/{{paciente.id}}" title="Realizar agendamento">
+            <img alt="" width="25" height="25" src="/static/img/calendar.png" />
+            </a>
+        </td>
         {% if voluntario %}
-        <td> <a href="/voluntario/{{voluntario.id}}">
+        <td> <a href="/voluntario/{{voluntario.id}}" title="Atualizar dados do voluntário">
             <img src="/static/img/worker-icon.gif" width="25" height="25" /></a>
         </td>
         {% endif %}
     </tr>
-    <tr>
-        <td> <a href="/paciente/{{paciente.id}}">
-            Editar </a>  
-        </td>
-        <td> <a href="/atendimento/consultar/{{paciente.id}}">
-            Listar atendimentos </a>  
-        </td>
-        <td>
-            <a href="/atendimento/incluir-notificacao/{{paciente.id}}">
-            Incluir Notificação </a>
-        </td>
-        {% if voluntario %}
-        <td> <a href="/voluntario/{{voluntario.id}}">
-            Atualizar Voluntário </a>
-        </td>
-        {% endif %}
-    </tr>
-    
 </table>
 </td>
 </tr>

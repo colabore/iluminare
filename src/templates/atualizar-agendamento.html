@@ -1,0 +1,30 @@
+{% extends "base.html"%}
+{% block content %}
+<style type="text/css">
+@import url("/static/css/quinta.css");
+</style>
+
+<div class="atualizar_agendamento">
+<form method="POST" id="form_atualizar_agendamento">
+    <table id="cadastros_basicos_sub">
+        <tr>
+            <td></td>
+            <td>{{form_agendamento.paciente.as_hidden}}  {{agenda_atendimento.paciente.nome}}</td>
+        </tr>
+    </table>
+    <br>
+    <table id="cadastros_basicos">
+        <tr>
+        <td> Tratamento / Data: </td>
+        <td> {{form_agendamento.agenda_tratamento}} </td>
+        </tr>
+        <tr>
+        <td> Status: </td>
+        <td> {{form_agendamento.status}} </td>
+        </tr>
+    </table>
+    <br>
+    <input type="submit" value="Atualizar"/>
+</form>
+</div>
+{% endblock %}

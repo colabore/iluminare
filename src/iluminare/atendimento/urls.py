@@ -20,5 +20,7 @@ urlpatterns = patterns('iluminare.atendimento.views',
     (r'^listagem-agendamentos/$', 'exibir_listagem_agendamentos'),
     (r'^incluir-notificacao/(?P<paciente_id>[0-9]+)$', 'incluir_notificacao'),
     (r'^atualizar-notificacao/(?P<notificacao_id>[0-9]+)$', 'atualizar_notificacao'),
+    (r'^realizar-agendamento/(?P<paciente_id>[0-9]+)$', 'realizar_agendamento'),
+    (r'^atualizar-agendamento/(?P<agenda_atendimento_id>[0-9]+)$', 'atualizar_agendamento'),
 )
 

@@ -1699,6 +1699,54 @@ class NotificacaoForm2(forms.ModelForm):
             notificacao.save()
         return notificacao
 
+class AgendaAtendimentoForm2(forms.ModelForm):
+    class Meta:
+        model = AgendaAtendimento
+        fields = ('agenda_tratamento','paciente','status')
+
+    def __init__(self, *args, **kwargs):
+        try:
+            # no caso de estar atualizando uma agenda_atendimento já existente
+            agenda_atendimento_id = kwargs.pop('agenda_atendimento_id')
+        except:
+            agenda_atendimento_id = -1
+        try:
+            # no caso de estar criando uma nova agenda_atendimento.
+            pacienteid = kwargs.pop('pacienteid')
+        except:
+            pacienteid = -1
+        super(AgendaAtendimentoForm2, self).__init__(*args, **kwargs)
+        # Criando nova agenda_atendimento
+        if agenda_atendimento_id == -1:
+            if pacienteid != -1:
+                self.fields['paciente'].initial = Paciente.objects.get(id=pacienteid)
+
+            # somente agendas_tratamento com datas no futuro serão exibidas.
+            self.fields['agenda_tratamento'].queryset = AgendaTratamento.objects.filter(Q(data__gte=datetime.date.today()) \
+                | Q(data=None)).order_by("tratamento__descricao_basica")
+        # atualizando agenda_atendimento já existente.
+        else:
+            at = AgendaAtendimento.objects.get(id=agenda_atendimento_id)
+            self.fields['paciente'].initial = at.paciente
+            self.fields['agenda_tratamento'].initial = at.agenda_tratamento
+            self.fields['status'].initial = at.status
+
+    def save(self, agenda_atendimento=None):
+        # significa que está criando um novo agenda_atendimento
+        if not agenda_atendimento:
+            agenda_atendimento = forms.ModelForm.save(self)
+            agenda_atendimento.status = 'A'
+            agenda_atendimento.save()
+            # ainda preciso tratar a questão da data_criacao.
+            # vou criar o campo.
+        # significa que está atualizando uma agenda_atendimento existente.
+        else:
+            agenda_atendimento_tela = forms.ModelForm.save(self)
+            agenda_atendimento.agenda_tratamento = agenda_atendimento_tela.agenda_tratamento
+            agenda_atendimento.status = agenda_atendimento_tela.status
+            agenda_atendimento.save()
+        return agenda_atendimento
+
 def ajax_atualizar_paciente_confirmacao(request, atendimento_id):
     atendimento = get_object_or_404(Atendimento, pk=atendimento_id)
 
@@ -1797,3 +1845,66 @@ def atualizar_notificacao(request, notificacao_id):
         'mensagem_erro':mensagem_erro, \
         'titulo': 'ATUALIZAR NOTIFICAÇÃO', \
         })
+
+
+def realizar_agendamento(request, paciente_id):
+    paciente = get_object_or_404(Paciente, pk=paciente_id)
+    mensagem_sucesso = ''
+    mensagem_erro = ''
+
+    if request.method == "POST":
+        form_agendamento = AgendaAtendimentoForm2(request.POST)
+        if form_agendamento.is_valid():
+            try:
+                form_agendamento.save()
+                mensagem_sucesso = "Agendamento realizado com sucesso."
+            except:
+                mensagem_erro = "Erro no agendamento."
+                traceback.print_exc()
+        else:
+            traceback.print_exc()
+            mensagem_erro = "Erro no agendamento. Verificar campos."
+    else:
+        form_agendamento = AgendaAtendimentoForm2(pacienteid = paciente.id)
+
+    return render_to_response('realizar-agendamento.html',
+        {'paciente':paciente, \
+        'form_agendamento':form_agendamento,\
+        'mensagem_sucesso':mensagem_sucesso, \
+        'mensagem_erro':mensagem_erro, \
+        'titulo':'REALIZAR AGENDAMENTO'})
+
+def atualizar_agendamento(request, agenda_atendimento_id):
+    """
+        É importante deixar registrado que essa atualização está levando em conta
+        a existência de um atendimento realizado que deveria estar relacionado a um agendamento que foi fechado.
+        Da forma como está, podemos ter algumas pequenas inconsistências, como:
+        - Um agendamento marcado como fechado, mas que não está ligado a nenhum agenda_atendimento.
+        Por enquanto não é muito grave.
+    """
+    agenda_atendimento = get_object_or_404(AgendaAtendimento, pk=agenda_atendimento_id)
+    mensagem_sucesso = ''
+    mensagem_erro = ''
+
+    if request.method == "POST":
+        form_agendamento = AgendaAtendimentoForm2(request.POST)
+        if form_agendamento.is_valid():
+            try:
+                form_agendamento.save(agenda_atendimento)
+                mensagem_sucesso = "Agendamento atualizado com sucesso."
+            except:
+                mensagem_erro = "Erro no agendamento."
+                traceback.print_exc()
+        else:
+            traceback.print_exc()
+            mensagem_erro = "Erro no agendamento. Verificar campos."
+    else:
+        form_agendamento = AgendaAtendimentoForm2(agenda_atendimento_id = agenda_atendimento_id)
+
+    return render_to_response('atualizar-agendamento.html',
+        {'agenda_atendimento':agenda_atendimento, \
+        'form_agendamento':form_agendamento,\
+        'mensagem_sucesso':mensagem_sucesso, \
+        'mensagem_erro':mensagem_erro, \
+        'titulo':'ATUALIZAR AGENDAMENTO'})
+

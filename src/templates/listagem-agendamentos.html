@@ -49,6 +49,7 @@
 			<th> Paciente </th>
 			<th> Tratamento de origem </th>
 			<th> Data de marcação </th>
+			<th> Atualizar </th>
 			
 	      </tr>
             <tbody id="tabela-fechamento">
@@ -82,6 +83,11 @@
             {% else %} 
     			<td> Não informada. </td>
             {% endif %}
+			<td align="center">
+                <a href="/atendimento/atualizar-agendamento/{{agendamento.id}}">
+                <img alt="" width="20" height="20" src="/static/img/update.png" />
+                </a>
+            </td>
 
 
 		  </tr>
