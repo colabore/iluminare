@@ -480,9 +480,11 @@ p.senha-falha {
 
 #cadastros_basicos th{
     padding:2px 3px;
+    vertical-align:middle;
 }
 #cadastros_basicos td{
     padding:2px 3px;
+    vertical-align:middle;
 }
 
 

@@ -1,0 +1,28 @@
+{% extends "base.html"%}
+{% block content %}
+<style type="text/css">
+@import url("/static/css/quinta.css");
+</style>
+
+<div class="nova_agenda_tratamento">
+<form method="POST" id="form_nova_agenda_tratamento">
+    <table id="cadastros_basicos">
+        <tr>
+            <td>Tratamento</td>
+            <td>{{form_agenda.tratamento}} </td>
+        </tr>
+        <tr>
+        <td> Data: </td>
+        <td title="Formato: AAAA-MM-DD. &#13;Caso a data ainda esteja indefinida, deixar esse campo em branco"> {{form_agenda.data}} </td>
+        </tr>
+        <tr>
+        <td> Max Agendamentos: </td>
+        <td title="Alguns tratamentos podem ter um limite de agendamentos por dia de trabalho. O acolhimento, por exemplo, só pode ser agendado no mesmo dia para 10 a 12 pessoas."> {{form_agenda.max_agendamentos}} </td>
+        </tr>
+    </table>
+    
+    <br>
+    <input type="submit" value="Confirmar"/>
+</form>
+</div>
+{% endblock %}

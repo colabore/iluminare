@@ -26,4 +26,5 @@ urlpatterns = patterns('',
     (r'^limbo/', include('iluminare.limbo.urls')),
     (r'^relatorio/', include('iluminare.relatorio.urls')),
     (r'^atendimento/', include('iluminare.atendimento.urls')),
+    (r'^tratamento/', include('iluminare.tratamento.urls')),
 )
