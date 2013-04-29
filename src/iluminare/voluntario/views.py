@@ -69,6 +69,7 @@ class FiltroRelatiorioTrabalhosForm(forms.Form):
         ('2', 'Segunda'),
         ('3', 'Terça'),
         ('5', 'Quinta'),
+        ('6', 'Sexta'),
     )
 
 
