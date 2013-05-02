@@ -427,10 +427,10 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
         tratamento = atendimento.instancia_tratamento.tratamento
         
         # CAREREGA O CAMPO REDIRECIONA
-        if tratamento.id in [1,2,3,4,5,11]:
-            self.fields['redireciona'].queryset=Tratamento.objects.filter(id__in=[1,2,3,4,5,11])
-        elif tratamento.id in [7,12]:
-            self.fields['redireciona'].queryset=Tratamento.objects.filter(id__in=[7,12])
+        if tratamento.id in [1,2,3,4,5]:
+            self.fields['redireciona'].queryset=Tratamento.objects.filter(id__in=[1,2,3,4,5])
+        elif tratamento.id in [7,11,12]:
+            self.fields['redireciona'].queryset=Tratamento.objects.filter(id__in=[7,11,12])
         elif tratamento.id == 6:
             self.fields['redireciona'].queryset=Tratamento.objects.none()
             opcoes = (('X','---------'),) + Paciente.FREQUENCIA
