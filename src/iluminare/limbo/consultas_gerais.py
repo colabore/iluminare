@@ -667,24 +667,39 @@ def retorna_lista_pacientes_fluido():
         var = 0
         for tp in tps:
             if tp['status'] == 'A' and tp['tratamento_id'] == 5:
-                lista.append(p)
-                break
+                at = Atendimento.objects.filter(paciente=p, instancia_tratamento__tratamento__id=5).\
+                    order_by("-instancia_tratamento__data")
+                if len(at) > 0:
+                    ult_atendimento = at[0]
+                    data_limite = datetime(2013,01,01).date()
+                    if ult_atendimento.instancia_tratamento.data > data_limite:
+                        lista.append(p)
+                        break
 
     spamWriter = csv.writer(open(dir_log+"fluido12.csv", 'wb'), delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-    spamWriter.writerow(["Id", "Nome", "Data", "Tratamento"])
+    spamWriter.writerow(["Id", "Nome", "Ultimo atendimento", "Data encaminhamento", "Quantidade atendimentos"])
     
+    print lista
     for paciente in lista:
-        ats = Atendimento.objects.filter(paciente = paciente)
-        #trat = _retorna_tratamento_ativo(paciente)
-        for at in ats:
-            l = []
-            if (at.instancia_tratamento.tratamento.id == 4 and at.instancia_tratamento.data < datetime(2012,1,1).date()) or \
-                (at.instancia_tratamento.tratamento.id == 5 and at.instancia_tratamento.data >= datetime(2012,1,1).date()):
-                l.append(at.id)
-                l.append(smart_str(paciente.nome))
-                l.append(at.instancia_tratamento.data)
-                l.append("Fluido")
-                spamWriter.writerow(l)
+        l = []
+        tp = TratamentoPaciente.objects.filter(paciente = paciente, status='A', tratamento__id=5)
+        print tp
+        if len(tp) == 1:
+            l.append(paciente.id)
+            l.append(smart_str(paciente.nome))
+            data_enc = tp[0].data_inicio
+            at = Atendimento.objects.filter(paciente=paciente, instancia_tratamento__tratamento__id=5, \
+                instancia_tratamento__data__gte=data_enc).order_by("-instancia_tratamento__data")
+            if len(at) > 0:
+                l.append(at[0].instancia_tratamento.data)
+            else:
+                l.append('F')
+            l.append(data_enc)
+            l.append(len(at))
+            spamWriter.writerow(l)
+        else:
+            print "Else"
+
 
 def retorna_lista_pacientes():
     """
