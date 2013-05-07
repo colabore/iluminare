@@ -54,7 +54,14 @@ class FiltroPontoForm(forms.Form):
     def __init__(self, *args, **kwargs):
         	super(FiltroPontoForm, self).__init__(*args, **kwargs)
 
-    data = forms.DateField(initial = datetime.date.today)
+    DIA_ESTUDO = (
+        ('T', 'Terça'),
+        ('X', 'Sexta'),
+        ('O', 'Todos'),
+    )
+
+    data        = forms.DateField(initial = datetime.date.today)
+    dia_estudo  = dia_estudo = forms.ChoiceField(required=False, choices=DIA_ESTUDO, initial='O')
 
 class FiltroPontoConsultaForm(forms.Form):
 
@@ -96,12 +103,19 @@ class FiltroConsultaVoluntariosForm(forms.Form):
         ('T', 'Todos'),
     )
 
+    DIA_ESTUDO = (
+        ('T', 'Terça'),
+        ('X', 'Sexta'),
+        ('O', 'Todos'),
+    )
+
 
     def __init__(self, *args, **kwargs):
         	super(FiltroConsultaVoluntariosForm, self).__init__(*args, **kwargs)
 
     tipo =  forms.ChoiceField(required=False, choices=TIPO, initial='O')
     ativo =  forms.ChoiceField(required=False, choices=ATIVO, initial='T')
+    dia_estudo = forms.ChoiceField(required=False, choices=DIA_ESTUDO, initial='O')
 
 
 FiltroRelatiorioTrabalhosForm
@@ -131,10 +145,11 @@ class PontoForm(forms.ModelForm):
     hora_final = forms.TimeField(label='Final',required=False, widget=forms.TextInput(attrs={'size':'6'}))
     info_voluntario = forms.CharField(required=False, label='Info', widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'18'}))
     data_registro_ponto = None
+    dia_estudo = None
     
     class Meta:
         model = Voluntario
-        exclude = ['paciente', 'data_inicio', 'data_fim', 'ativo','observacao', 'tipo']
+        exclude = ['paciente', 'data_inicio', 'data_fim', 'ativo','observacao', 'tipo', 'dia_estudo']
 
     def __init__(self, *args, **kwargs):
         super(PontoForm, self).__init__(*args, **kwargs)
@@ -163,7 +178,7 @@ class PontoForm(forms.ModelForm):
             self.fields['hora_inicio'].initial = trabalho[0].hora_inicio
             self.fields['hora_final'].initial = trabalho[0].hora_final
         else:
-            self.fields['pf'].initial = 'FA'
+            self.fields['pf'].initial = 'NI'
 
     def save(self, commit=True):
         voluntario = super(PontoForm, self).save(commit=False)
@@ -199,8 +214,11 @@ def registra_ponto(request):
         if filtro_form.is_valid():
             if 'pesquisar' in request.POST:
                 PontoForm.data_registro_ponto = filtro_form.cleaned_data['data']
-                
-                voluntarios = PontoFormSet(queryset=Voluntario.objects.filter(ativo=True))
+                PontoForm.dia_estudo = filtro_form.cleaned_data['dia_estudo']
+                if PontoForm.dia_estudo == 'T' or PontoForm.dia_estudo == 'X':
+                    voluntarios = PontoFormSet(queryset=Voluntario.objects.filter(ativo=True, dia_estudo=PontoForm.dia_estudo))
+                else:
+                    voluntarios = PontoFormSet(queryset=Voluntario.objects.filter(ativo=True))
                 
         if 'salvar' in request.POST:
             try:
@@ -341,39 +359,44 @@ def relatorio_trabalhos_geral(data_inicial_ordinal, data_final_ordinal, dia_sema
             trabalhos = Trabalho.objects.filter(voluntario = v, data__gte=data_inicial, \
                 data__lte=data_final)
 
-        lista_voluntario = []
-        lista_voluntario.append(v)
+        dict_voluntario = {}
+        dict_voluntario['voluntario'] = v
         for trabalho in trabalhos:
-            lista_voluntario.append(trabalho.data)
+            dict_voluntario[trabalho.data] = trabalho
             if trabalho.data not in lista_datas:
                 lista_datas.append(trabalho.data)
         
-        lista_geral.append(lista_voluntario)
+        lista_geral.append(dict_voluntario)
     
+    # inicializando a lista de totais inferior.
     lista_totais = [0]*(len(lista_datas)+1)
+    
     #ordenando as datas e preparando rótulos
     lista_datas.sort()
+    
+    # preparando a lista de rótulos
     lista_rotulos.append("Voluntário")
     lista_rotulos.append("Tipo")
     for data in lista_datas:
         lista_rotulos.append(str(data))
-    
     lista_rotulos.append("Total")
     
     for item in lista_geral:
         linha = []
-        linha.append(smart_str(item[0].paciente.nome))
-        linha.append(item[0].tipo)
+        linha.append(smart_str(item['voluntario'].paciente.nome))
+        linha.append(item['voluntario'].tipo)
         cont = 0
         i=0
         for data in lista_datas:
-            if data in item:
-                linha.append("P")
-                cont +=1
-                lista_totais[i] +=1
-                lista_totais[-1] +=1
+            if data in item.keys():
+                linha.append(item[data].status)
+                print str(item[data].id)
+                if item[data].status == 'PR':
+                    cont +=1
+                    lista_totais[i] +=1
+                    lista_totais[-1] +=1
             else:
-                linha.append("F")
+                linha.append("FA")
             i+=1
         
         linha.append(str(cont))
@@ -435,24 +458,20 @@ def relatorio_trabalhos_csv(request, data_inicial_ordinal, data_final_ordinal, d
 
     return response
 
-def relatorio_voluntarios_geral(tipo, ativo):
+def relatorio_voluntarios_geral(tipo, ativo, dia_estudo):
     mensagem = ''
 
-    ativo_param = True
-    if ativo == 'N':
-        ativo_param = False
-    elif ativo == 'S':
+
+    voluntarios = Voluntario.objects.all()
+    if tipo != 'O':
+        voluntarios = voluntarios.filter(tipo = tipo)
+    if ativo != 'T':
         ativo_param = True
-    
-    voluntarios = []
-    if tipo != 'O' and ativo != 'T':
-        voluntarios = Voluntario.objects.filter(ativo = ativo_param, tipo = tipo)
-    elif tipo != 'O' and ativo == 'T':
-        voluntarios = Voluntario.objects.filter(tipo = tipo)
-    elif tipo == 'O' and ativo != 'T':
-        voluntarios = Voluntario.objects.filter(ativo = ativo_param)
-    else:
-        voluntarios = Voluntario.objects.all()
+        if ativo == 'N':
+            ativo_param = False
+        voluntarios = voluntarios.filter(ativo = ativo_param)
+    if dia_estudo != 'O':
+        voluntarios = voluntarios.filter(dia_estudo = dia_estudo)
     return voluntarios, mensagem
 
     
@@ -470,7 +489,8 @@ def relatorio_voluntarios(request):
         if form.is_valid():
             tipo = form.cleaned_data['tipo']
             ativo = form.cleaned_data['ativo']
-            voluntarios, mensagem = relatorio_voluntarios_geral(tipo, ativo)
+            dia_estudo = form.cleaned_data['dia_estudo']
+            voluntarios, mensagem = relatorio_voluntarios_geral(tipo, ativo, dia_estudo)
             if len(voluntarios) == 0:
                 mensagem = 'Nenhum registro'
         else:
@@ -479,7 +499,7 @@ def relatorio_voluntarios(request):
     return render_to_response('relatorio-voluntarios.html', {'form':form, 'mensagem': mensagem, \
         'voluntarios':voluntarios, 'titulo': 'LISTAR VOLUNTÁRIOS'})
 
-def relatorio_voluntarios_csv(request, tipo, ativo):
+def relatorio_voluntarios_csv(request, tipo, ativo, dia_estudo):
     """
         Falta corrigir..
     """
@@ -487,7 +507,7 @@ def relatorio_voluntarios_csv(request, tipo, ativo):
     response['Content-Disposition'] = 'attachment; filename=relatorio_voluntarios.csv'
 
     writer = csv.writer(response)
-    lista_rotulos, lista_dados, mensagem = relatorio_voluntario_geral(tipo, ativo)
+    lista_rotulos, lista_dados, mensagem = relatorio_voluntario_geral(tipo, ativo, dia_estudo)
     writer.writerow(lista_rotulos)
     for element in lista_dados:
         writer.writerow(element)

@@ -4,10 +4,21 @@
 <form name="form" method="POST" action="/voluntario/relatorio-voluntarios/" >
 
 <table>
-       Tipo : {{ form.tipo }}
-       Ativo : {{ form.ativo }}
-        <input type="submit" value="Pesquisar"/>
+    <tr>
+    <td>Tipo: </td>
+    <td>&nbsp&nbsp{{ form.tipo }}</td>
+    </tr>
+    <tr>
+    <td>Ativo: </td>
+    <td>&nbsp&nbsp{{ form.ativo }}</td>
+    </tr>
+    <tr>
+    <td>Dia de estudo:</td>
+    <td>&nbsp&nbsp{{ form.dia_estudo }}</td>
+    </tr>
 </table>
+<br>
+<input type="submit" value="Pesquisar"/>
 <br>
 <table id="tabela-padrao">
     
@@ -18,6 +29,7 @@
 			<th width="40" align="center"> Ativo </th>	
 		    <th width="260"> Nome </th>
 		    <th> Tipo </th>
+		    <th> Dia de Estudo </th>
 		    <th> Telefone </th>
 		    <th> E-mail </th>
 		    <th> Observação </th>
@@ -33,6 +45,11 @@
             {% endif %}
             <td width="260"> <a href="/voluntario/{{voluntario.id}}"> {{voluntario.paciente.nome}} </a> </td>
 			<td> {{voluntario.tipo}} </td>
+			{% if voluntario.dia_estudo %}
+                <td> {{voluntario.get_dia_estudo_display}} </td>
+            {% else %}
+                <td> - </td>
+            {% endif %}
 			<td> {{voluntario.paciente.telefones}} </td>
 			<td> {{voluntario.paciente.email}} </td>
 			<td> {{voluntario.observacao}} </td>

@@ -41,7 +41,8 @@ def ponto_voluntario(paciente, ponto_voluntario_char):
     if ponto_voluntario_char == 'E':
         trabalhos = Trabalho.objects.filter(voluntario = voluntario, funcao=funcao, data = date.today())
         if len(trabalhos) == 0:
-            trabalho = Trabalho(voluntario = voluntario, funcao=funcao, data = date.today(), hora_inicio = datetime.now())
+            trabalho = Trabalho(voluntario = voluntario, funcao=funcao, data = date.today(), \
+                hora_inicio = datetime.now(), status='PR')
             trabalho.save()
             dic_retorno['mensagem'] = "PONTO DE ENTRADA do voluntário efetuado com SUCESSO."
             dic_retorno['sucesso'] = True

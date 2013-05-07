@@ -29,8 +29,20 @@ function checkAll(field)
 <form name='lista_voluntarios' action="/voluntario/registra-ponto/" method="POST">
     
     <div class="filtro">
-       Data : {{ filtro_form.data }}
-       <input type="submit" name="pesquisar" value="Pesquisar" />    
+
+        <table>
+            <tr>
+            <td>Data: </td>
+            <td>&nbsp&nbsp{{ filtro_form.data }}</td>
+            </tr>
+            <tr>
+            <td>Dia de estudo: </td>
+            <td>&nbsp&nbsp{{ filtro_form.dia_estudo }}</td>
+            </tr>
+        </table>
+        <br>
+        <input type="submit" name="pesquisar" value="Pesquisar"/>
+        <br>
     </div>
     <br>
     <br>

@@ -14,13 +14,17 @@ class Funcao(models.Model):
 
 class Voluntario(models.Model):
     TIPO = (('T', "Trabalhador"),('C',"Colaborador"),('A',"Apoio"))
-    
+    DIAS = (
+        ('T', 'Terça'),
+        ('X', 'Sexta'))
+
     paciente        = models.ForeignKey(Paciente, null = False, blank = False)
     tipo            = models.CharField(max_length = 1, choices = TIPO)
     data_inicio     = models.DateField(null = True, blank = True)
     data_fim        = models.DateField(null = True, blank = True)
-    ativo           = models.BooleanField(blank = True)    
-    observacao      = models.TextField(null = True, blank = True)       
+    ativo           = models.BooleanField(blank = True)
+    observacao      = models.TextField(null = True, blank = True)
+    dia_estudo      = models.CharField(max_length=1, choices = DIAS, null = True, blank = True)	
 
     class Meta:
         ordering = ['paciente__nome']

@@ -22,14 +22,58 @@
     		
 		  <tr>
 		  {% for elemento in linha %}
-			{% if elemento == 'P' %}
-                <td align="center"> <img src="/static/img/confirma_atendimento.png" width="15" height="15" /> </td>
-            {% else %} {% if elemento == 'F' %}
-			    <td align="center"> <img src="/static/img/nao_confirma_atendimento.png" width="15" height="15" /> </td>
-			{% else %}
-    			<td align="center"> {{elemento}} </td>
+			{% if elemento == 'PR' %}
+                <td align="center"> 
+                <img src="/static/img/confirma_atendimento.png" title="Presente" width="15" height="15" /> 
+                </td>
+            {% else %} 
+                {% if elemento == 'FA' %}
+			        <td align="center"> 
+			        <img src="/static/img/nao_confirma_atendimento.png" width="15" height="15" title="Falta" /> 
+			        </td>
+                {% else %}
+                    {% if elemento == 'FV' %}
+			            <td align="center"> 
+			            <img src="/static/img/warning_icon.png" width="15" height="15" title="Falta (viagem)"/> 
+			            </td>
+                    {% else %}
+                        {% if elemento == 'FT' %}
+			                <td align="center"> 
+			                <img src="/static/img/warning_icon.png" width="15" height="15" title="Falta (Trabalho)" /> 
+			                </td>
+                        {% else %} 
+                            {% if elemento == 'FL' %}
+			                    <td align="center"> 
+			                    <img src="/static/img/warning_icon.png" width="15" height="15" title="Falta (Licença)" /> 
+			                    </td>
+                            {% else %} 
+                                {% if elemento == 'FS' %}
+			                       <td align="center"> 
+			                       <img src="/static/img/warning_icon.png" width="15" height="15" title="Falta (Saúde)" /> 
+			                       </td>
+                                {% else %}
+                                    {% if elemento == 'NA' %}
+			                           <td align="center"> 
+			                           <img src="/static/img/blue-icon-hi.png" 
+			                           width="15" height="15" title="Falta (Não se aplica)" /> 
+			                           </td>
+			                        {% else %}
+                                        {% if elemento == 'NI' %}
+			                               <td align="center"> 
+			                               <img src="/static/question.png" 
+			                               width="15" height="15" title="Não informado" /> 
+			                               </td>
+                                        {% else %}
+            			                    <td align="center"> {{elemento}} </td>
+                                        {% endif %}
+            			            {% endif %}
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
             {% endif %}
-            {% endif %}
+            
           {% endfor %}
 		  </tr>
 	{% endfor %}
