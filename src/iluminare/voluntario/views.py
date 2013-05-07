@@ -390,7 +390,6 @@ def relatorio_trabalhos_geral(data_inicial_ordinal, data_final_ordinal, dia_sema
         for data in lista_datas:
             if data in item.keys():
                 linha.append(item[data].status)
-                print str(item[data].id)
                 if item[data].status == 'PR':
                     cont +=1
                     lista_totais[i] +=1
