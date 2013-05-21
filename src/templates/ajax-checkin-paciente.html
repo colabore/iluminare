@@ -44,7 +44,12 @@
     {% for ag in agendamentos_ok %}
         [{{ag.data_criacao|date:'d/m/Y'}}] Agendamento:
         {{ag.agenda_tratamento.tratamento.descricao_basica}}
-        em {{ag.agenda_tratamento.data|date:'d/m/Y'}}  <br>
+        {% if ag.agenda_tratamento.data %}
+            em {{ag.agenda_tratamento.data|date:'d/m/Y'}}
+        {% else %}
+            (Sem data)
+        {% endif %}
+        <br>
     {% endfor %}
     {% for ag in agendamentos_falta %}
         [{{ag.data_criacao|date:'d/m/Y'}}] Agendamento:
@@ -90,7 +95,11 @@
                 {{atendimento.instancia_tratamento.tratamento.descricao_basica}}
             </td>
             <td>
-                {{atendimento.observacao}}
+                {% if atendimento.observacao %}
+                    {{atendimento.observacao}}
+                {% else %}
+                    -
+                {% endif %}
             </td>
             </tr>
         {% endfor %}

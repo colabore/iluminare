@@ -179,10 +179,15 @@ def ajax_checkin_paciente(request, paciente_id):
         checkin_paciente_form.update_tratamentos(paciente)
         notificacoes = get_notificacoes_validas(paciente, True, False)
         agendamentos = AgendaAtendimento.objects.filter(paciente = paciente, status = 'A')
+        # registra os agendamentos para uma data futura que ainda não foram transformados em atendimentos.
         agendamentos_ok = []
+        # registra os agendamentos que o paciente faltou.
         agendamentos_falta = []
         for agendamento in agendamentos:
-            if agendamento.agenda_tratamento.data < datetime.datetime.today().date():
+            # a forma básica de confirmar se o paciente faltou a um agendamento 
+            # é verificar se há algum agendamento com data anterior à data atual que continua com o status 'A' (aberto)
+            # É importante notar que há casos em que o agendamento não tem data marcada.
+            if agendamento.agenda_tratamento.data and (agendamento.agenda_tratamento.data < datetime.datetime.today().date()):
                 agendamentos_falta.append(agendamento)
             else:
                 agendamentos_ok.append(agendamento)
@@ -371,6 +376,13 @@ def retornaInfo(atendimento):
         if dp and at:
             nome_prioridade = atendimento.paciente.acompanhante.nome[:15]+'...'
             info_str = info_str + '[Ac. ->: ' + unicode(nome_prioridade) + '] '
+    if atendimento.paciente.acompanhante_crianca:
+        dp = DetalhePrioridade.objects.filter(paciente = atendimento.paciente.acompanhante_crianca)
+        at = Atendimento.objects.filter(paciente = atendimento.paciente.acompanhante_crianca, \
+            instancia_tratamento__data = atendimento.instancia_tratamento.data)
+        if dp and at:
+            nome_prioridade = atendimento.paciente.acompanhante_crianca.nome[:15]+'...'
+            info_str = info_str + '[Ac. ->: ' + unicode(nome_prioridade) + '] '
 
     # É ACOMPANHADO POR: ...
     # Verifica se o paciente em questão é acompanhado por alguém. Ou seja, se há algum paciente cujo acompanhante seja o 
@@ -529,7 +541,7 @@ class ConfirmacaoAtendimentoPrimeiraVezForm(forms.ModelForm):
         
         # CAREREGA O CAMPO ENCAMINHA
         if tratamento.id == 6:
-            self.fields['encaminha'].queryset=Tratamento.objects.filter(id__in=[1,2,3,4,5,12])
+            self.fields['encaminha'].queryset=Tratamento.objects.filter(id__in=[1,2,3,4,5,12,11]).order_by("descricao_basica")
             opcoes = (('X','---------'),) + Paciente.FREQUENCIA
             self.fields['frequencia'].choices=opcoes
         else:
