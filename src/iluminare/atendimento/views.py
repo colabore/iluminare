@@ -439,10 +439,14 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
         tratamento = atendimento.instancia_tratamento.tratamento
         
         # CAREREGA O CAMPO REDIRECIONA
-        if tratamento.id in [1,2,3,4,5]:
-            self.fields['redireciona'].queryset=Tratamento.objects.filter(id__in=[1,2,3,4,5])
-        elif tratamento.id in [7,11,12]:
-            self.fields['redireciona'].queryset=Tratamento.objects.filter(id__in=[7,11,12])
+        lista_segunda = [7,11,12,13]
+        lista_quinta = [1,2,3,4,5,14]
+        if tratamento.id in lista_quinta:
+            lista_quinta.remove(tratamento.id)
+            self.fields['redireciona'].queryset=Tratamento.objects.filter(id__in=lista_quinta)
+        elif tratamento.id in lista_segunda:
+            lista_segunda.remove(tratamento.id)
+            self.fields['redireciona'].queryset=Tratamento.objects.filter(id__in=lista_segunda)
         elif tratamento.id == 6:
             self.fields['redireciona'].queryset=Tratamento.objects.none()
             opcoes = (('X','---------'),) + Paciente.FREQUENCIA
@@ -708,7 +712,7 @@ class ImprimirListagemCriancaForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(ImprimirListagemCriancaForm, self).__init__(*args, **kwargs)
         self.fields['tratamento'].choices = [('', '----------')] + \
-            [(tratamento.id, tratamento.descricao_basica) for tratamento in Tratamento.objects.all()]
+            [(tratamento.id, tratamento.descricao_basica) for tratamento in Tratamento.objects.filter(id=11)]
         # o id do tratamento Sala 9 é 11. Deixei esse valor na mão.
         self.fields['tratamento'].initial = 11
 
@@ -732,8 +736,14 @@ class ListagemGeralFechamentoForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(ListagemGeralFechamentoForm, self).__init__(*args, **kwargs)
+
+        lista_trat = Tratamento.objects.all()
+        if datetime.date.today().weekday() == 0: # caso seja segunda-feira
+            lista_trat = Tratamento.objects.filter(dia_semana = 'S')
+        elif datetime.date.today().weekday() == 3: # caso seja quinta-feira
+            lista_trat = Tratamento.objects.filter(dia_semana = 'N')
         self.fields['tratamento'].choices = [('-', '----------')] + \
-            [(tratamento.id, tratamento.descricao_basica) for tratamento in Tratamento.objects.all()]
+            [(tratamento.id, tratamento.descricao_basica) for tratamento in lista_trat]
         self.fields.keyOrder = ['paciente', 'tratamento', 'data']
 
 
