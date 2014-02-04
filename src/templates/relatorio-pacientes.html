@@ -26,6 +26,8 @@
 			<th width="40" align="center"> Ativo </th>	
 		    <th width="260"> Nome </th>
 		    <th> Ult. Atendimento </th>
+		    <th> Prioridade </th>
+		    <th> Voluntario </th>
 	      </tr>
 	      
         {% endif %}
@@ -39,6 +41,8 @@
             {% endif %}
             <td width="260"> {{paciente.nome}} </a> </td>
 			<td> {{paciente.ult_atendimento}} </td>
+			<td> {{paciente.prioridade}} </td>
+			<td> {{paciente.voluntario}} </td>
 		  </tr>
 	{% endfor %}
 </table>

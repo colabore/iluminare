@@ -312,6 +312,19 @@ def relatorio_pacientes_geral(ativo, tratamento):
         if len(at) > 0:
             ult_atendimento = at[0]
             paciente["ult_atendimento"] = ult_atendimento.instancia_tratamento.data
+
+            count_det_prio = tp.paciente.detalheprioridade_set.count()
+            if count_det_prio == 1:
+                paciente["prioridade"] = tp.paciente.detalheprioridade_set.get().get_tipo_display()
+            else:
+                paciente["prioridade"] = ""
+
+            voluntarios = Voluntario.objects.filter(paciente = tp.paciente, ativo=True)
+            if len(voluntarios) == 1:
+                paciente["voluntario"] = voluntarios[0].get_tipo_display()
+            else:
+                paciente["voluntario"] = ""
+
             data_limite = get_data_limite()
             if data_limite < ult_atendimento.instancia_tratamento.data:
                 paciente["ativo"]=True
