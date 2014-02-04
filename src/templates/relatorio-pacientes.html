@@ -37,7 +37,7 @@
             {% else %}
 			    <td align="center" width="40"> <img src="/static/img/nao_confirma_atendimento.png" width="20" height="20" /> </td>
             {% endif %}
-            <td width="260"> <a href="/paciente/{{paciente.id}}"> {{paciente.nome}} </a> </td>
+            <td width="260"> {{paciente.nome}} </a> </td>
 			<td> {{paciente.ult_atendimento}} </td>
 		  </tr>
 	{% endfor %}
