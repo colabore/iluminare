@@ -1,0 +1,47 @@
+{% extends "base.html"%}
+{% block content %}
+
+<form name="form" method="POST" action="/paciente/relatorio-pacientes/" >
+
+<table>
+    <tr>
+    <td>Tratamento: </td>
+    <td>&nbsp&nbsp{{ form.tratamento }}</td>
+    </tr>
+    <tr>
+    <td>Ativo: </td>
+    <td>&nbsp&nbsp{{ form.ativo }}</td>
+    </tr>
+</table>
+<br>
+<input type="submit" value="Pesquisar"/>
+<br>
+<table id="tabela-padrao">
+    
+	{% for paciente in pacientes %}
+        {% if forloop.first %}
+
+	      <tr>	
+			<th width="40" align="center"> # </th>	
+			<th width="40" align="center"> Ativo </th>	
+		    <th width="260"> Nome </th>
+		    <th> Ult. Atendimento </th>
+	      </tr>
+	      
+        {% endif %}
+		
+		  <tr>
+		    <td align="center" width="40"> {{paciente.count}} </td>
+			{% if paciente.ativo %}
+                <td align="center" width="40"> <img src="/static/img/confirma_atendimento.png" width="20" height="20" /> </td>
+            {% else %}
+			    <td align="center" width="40"> <img src="/static/img/nao_confirma_atendimento.png" width="20" height="20" /> </td>
+            {% endif %}
+            <td width="260"> <a href="/paciente/{{paciente.id}}"> {{paciente.nome}} </a> </td>
+			<td> {{paciente.ult_atendimento}} </td>
+		  </tr>
+	{% endfor %}
+</table>
+
+</form>
+{% endblock %}

@@ -7,6 +7,7 @@ from iluminare.paciente.models import *
 from iluminare.atendimento.models import *
 from iluminare.tratamento.models import *
 from iluminare.voluntario.models import *
+from iluminare.util.logic import get_data_limite
 
 
 from django.db.models import Q
@@ -128,6 +129,22 @@ class TratamentoCadastroRapido(forms.Form):
 
         return lista_dic
 
+class FiltroConsultaPacientesForm(forms.Form):
+
+    ATIVO = (
+        ('S', 'Sim'),
+        ('N', 'Não'),
+        ('T', 'Todos'),
+    )
+
+    TRATAMENTO_CHOICES = [(tratamento.id, tratamento.descricao_basica) \
+        for tratamento in Tratamento.objects.filter(id__in=[1,2,3,4,5,7,11,12])]
+
+    def __init__(self, *args, **kwargs):
+        super(FiltroConsultaPacientesForm, self).__init__(*args, **kwargs)
+
+    ativo =  forms.ChoiceField(required=True, choices=ATIVO, initial='S')
+    tratamento = forms.ChoiceField(choices=TRATAMENTO_CHOICES, required=False)
 
 def atualizar(request, paciente_id):
     paciente = Paciente.objects.get(pk=paciente_id)
@@ -282,4 +299,50 @@ def cadastro_rapido_paciente(request):
         trat_form = TratamentoCadastroRapido()
         
     return render_to_response ('cadastro-rapido-paciente.html', {'form': form, 'trat_form': trat_form})
+
+def relatorio_pacientes_geral(ativo, tratamento):
+    mensagem = ''
+    tps = TratamentoPaciente.objects.filter(status='A', tratamento=tratamento).order_by("paciente__nome")
+    pacientes = []
+    count = 0
+    for tp in tps:
+        paciente = {}
+        paciente["nome"] = tp.paciente.nome
+        at = Atendimento.objects.filter(paciente=tp.paciente).order_by("-instancia_tratamento__data")
+        if len(at) > 0:
+            ult_atendimento = at[0]
+            paciente["ult_atendimento"] = ult_atendimento.instancia_tratamento.data
+            data_limite = get_data_limite()
+            if data_limite < ult_atendimento.instancia_tratamento.data:
+                paciente["ativo"]=True
+            else:
+                paciente["ativo"]=False
+            if (ativo == "S" and paciente["ativo"]) or (ativo == "N" and not paciente["ativo"]) or (ativo == "T"):
+                pacientes.append(paciente)
+                count += 1
+                paciente["count"] = count
+
+    return pacientes, mensagem
+
+def relatorio_pacientes(request):
+    """
+    """
+    form = FiltroConsultaPacientesForm()
+    mensagem = ''
+    pacientes = []
+
+    if request.method == "POST":
+        form = FiltroConsultaPacientesForm(request.POST)
+
+        if form.is_valid():
+            ativo = form.cleaned_data['ativo']
+            tratamento = form.cleaned_data['tratamento']
+            pacientes, mensagem = relatorio_pacientes_geral(ativo, tratamento)
+            if len(pacientes) == 0:
+                mensagem = 'Nenhum registro'
+        else:
+            mensagem = 'Formulário inválido'
+
+    return render_to_response('relatorio-pacientes.html', {'form':form, 'mensagem': mensagem, \
+        'pacientes':pacientes, 'titulo': 'RELATÓRIO PACIENTES ATIVOS'})
 
