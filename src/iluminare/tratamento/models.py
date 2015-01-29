@@ -52,7 +52,7 @@ class InstanciaTratamento(models.Model):
     
     data                = models.DateField(null = False, blank = False)    
     medico_espiritual   = models.CharField(max_length = 45, blank = True, null = True)
-    coletivo            = models.BooleanField(blank = True)
+    coletivo            = models.BooleanField(blank = True, default=False)
     observacoes         = models.TextField(blank = True, null = True)
 
     def __unicode__(self):

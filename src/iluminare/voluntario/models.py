@@ -25,7 +25,7 @@ class Voluntario(models.Model):
     tipo            = models.CharField(max_length = 1, choices = TIPO)
     data_inicio     = models.DateField(null = True, blank = True)
     data_fim        = models.DateField(null = True, blank = True)
-    ativo           = models.BooleanField(blank = True)
+    ativo           = models.BooleanField(blank = True, default=True)
     observacao      = models.TextField(null = True, blank = True)
     dia_estudo      = models.CharField(max_length=1, choices = DIAS, null = True, blank = True)	
 

@@ -78,7 +78,7 @@ class Paciente(models.Model):
     frequencia              = models.CharField(max_length=1, choices = FREQUENCIA, null=True, blank=True)
     observacao              = models.CharField(max_length=200, blank = True, null = True)
     profissao               = models.CharField(max_length=100, blank = True, null = True)
-    tem_ficha               = models.BooleanField(blank=True)     
+    tem_ficha               = models.BooleanField(blank=True, default=False)
     detalhe_ficha           = models.CharField(max_length=200, blank = True, null = True)
     saude                   = models.TextField(null=True, blank=True)    	
     acompanhante            = models.ForeignKey('self', null=True, blank=True)
