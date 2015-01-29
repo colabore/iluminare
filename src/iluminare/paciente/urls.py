@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import * 
+from django.conf.urls import * 
 
 from iluminare.paciente.views import cadastro_rapido_paciente
 urlpatterns = patterns('iluminare.paciente.views',

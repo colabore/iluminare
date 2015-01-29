@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import * 
+from django.conf.urls import * 
 
 urlpatterns = patterns('iluminare.voluntario.views',
     (r'^incluir-voluntario/$', 'incluir_voluntario'),
