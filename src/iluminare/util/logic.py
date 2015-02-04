@@ -10,8 +10,8 @@ def get_data_limite():
     """
     data_base = datetime.today().date()
     NUMERO_DIAS = 90
-    inicio_recesso = datetime(2013,12,13).date()
-    final_recesso = datetime(2014,02,04).date()
+    inicio_recesso = datetime(2014,12,12).date()
+    final_recesso = datetime(2015,02,05).date()
     diferenca_depois = data_base - final_recesso
     if diferenca_depois.days > NUMERO_DIAS:
         return data_base - timedelta(days=NUMERO_DIAS)
