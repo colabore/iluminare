@@ -545,7 +545,7 @@ class ConfirmacaoAtendimentoPrimeiraVezForm(forms.ModelForm):
         
         # CAREREGA O CAMPO ENCAMINHA
         if tratamento.id == 6:
-            self.fields['encaminha'].queryset=Tratamento.objects.filter(id__in=[1,2,3,4,5,12,11]).order_by("descricao_basica")
+            self.fields['encaminha'].queryset=Tratamento.objects.filter(id__in=[1,2,3,4,5,12,11,7]).order_by("descricao_basica")
             opcoes = (('X','---------'),) + Paciente.FREQUENCIA
             self.fields['frequencia'].choices=opcoes
         else:
@@ -580,7 +580,8 @@ class ConfirmacaoAtendimentoPrimeiraVezForm(forms.ModelForm):
                 lista_t.append(tratamento)
                 tratamento_logic.encaminhar_paciente(atendimento.paciente.id, lista_t)
                 obs = atendimento.observacao 
-                atendimento.observacao = obs + '[Encaminhado para '+str(encaminha_in)+'] '
+                # tive que usar smart_str evitar o erro de UnicodeDecodeError: 'ascii' codec can't decode byte 0xc3 in position 7:
+                atendimento.observacao = smart_str(obs + '[Encaminhado para ')+ smart_str(str(encaminha_in)) + smart_str(']')
         
         if frequencia_in != 'X':
             # significa que se trata de um atendimento de primeira vez, pois somente estes podem ser alterados.
@@ -680,6 +681,7 @@ def confirmacao(request):
             except:
                 mensagem_erro = str(atendimentos_pv.queryset) + '- ' + str(atendimentos_pv.total_form_count()) + \
                     str(atendimentos.queryset) + '-' + str(atendimentos.total_form_count())
+                traceback.print_exc()
         else:
             mensagem_erro = mensagem_erro + 'Erro na página. Contactar suporte.'
 
