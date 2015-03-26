@@ -58,14 +58,7 @@ $(document).ready(function(){
         return false;
     })
     
-    $('#cadastro_rapido_paciente').click(function(){
-        var motion = {'transitionIn':'elastic', 'transitionOut':'elastic'};
-        $.get('/paciente/cadastro-rapido/',function (data){
-            $.fancybox(data, motion);
-            bindfancybox($(this).attr('id'));
-            $('#id_nome').val($('#q-paciente').val());
-        });
-    });
+
 
     $("#tabela-fechamento a").click(function(){
         var atendimento = $(this).attr('id');
@@ -75,6 +68,13 @@ $(document).ready(function(){
         $.get(url,function (data){$.fancybox(data, motion);bindfancybox2(atendimento);});
     });
 
-
+    $("#cadastro_rapido").click(function(){
+        var motion = {'transitionIn':'elastic', 'transitionOut':'elastic'};
+        $.get('/paciente/cadastro-rapido/',function (data){
+            $.fancybox(data, motion);
+            bindfancybox($(this).attr('id'));
+            $('#id_nome').val($('#q-paciente').val());
+        });
+    });
 });
 

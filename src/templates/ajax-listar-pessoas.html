@@ -1,50 +1,58 @@
+<script type="text/javascript" src="/static/js/iluminare.js"></script>
+
 <div id="lista-pessoas"> 
 <table>
-    <tr>
-        <th>Nome</th>
-        <th>Data Nasc.</th>
-        <th>Tratamento</th>
-        <th>Últ. Atendimento</th>
-        <th>Check-in</th>
-    </tr>
-    <tbody id="tabela-pacientes">
-    {% for dado in lista %}
+    {% if lista|length == 0 %}
+        <b>Nenhum registro encontrado.</b>
+    {% else %}
         <tr>
-        
-        
-            {% if dado.jtc %}
-                {% if dado.eh_vol %}
-                    <td><a href="#" style="color: #800000;" id="{{dado.paciente.id}}"> {{dado.paciente.nome}}  
-                    <img src="/static/img/worker-icon.gif" width="20" height="20" /></a> 
-                    </td>
+            <th>Nome</th>
+            <th>Data Nasc.</th>
+            <th>Tratamento</th>
+            <th>Últ. Atendimento</th>
+            <th>Check-in</th>
+        </tr>
+        <tbody id="tabela-pacientes">
+
+        {% for dado in lista %}
+            <tr>
+                {% if dado.jtc %}
+                    {% if dado.eh_vol %}
+                        <td><a href="#" style="color: #800000;" id="{{dado.paciente.id}}"> {{dado.paciente.nome}}  
+                        <img src="/static/img/worker-icon.gif" width="20" height="20" /></a> 
+                        </td>
+                    {% else %}
+                        <td><a href="#" style="color: #800000;" id="{{dado.paciente.id}}"> {{dado.paciente.nome}} </a> </td>
+                    {% endif %}
                 {% else %}
-                    <td><a href="#" style="color: #800000;" id="{{dado.paciente.id}}"> {{dado.paciente.nome}} </a> </td>
+                    {% if dado.eh_vol %}
+                        <td><a href="#" id="{{dado.paciente.id}}"> {{dado.paciente.nome}}  
+                        <img src="/static/img/worker-icon.gif" width="20" height="20" /></a> 
+                        </td>
+                    {% else %}
+                        <td><a href="#" id="{{dado.paciente.id}}"> {{dado.paciente.nome}} </a> </td>
+                    {% endif %}
                 {% endif %}
-            {% else %}
-                {% if dado.eh_vol %}
-                    <td><a href="#" id="{{dado.paciente.id}}"> {{dado.paciente.nome}}  
-                    <img src="/static/img/worker-icon.gif" width="20" height="20" /></a> 
-                    </td>
-                {% else %}
-                    <td><a href="#" id="{{dado.paciente.id}}"> {{dado.paciente.nome}} </a> </td>
-                {% endif %}
-            {% endif %}
-            <td>{{dado.paciente.data_nascimento|date:"j/n/Y"}}</td>
-            <td>
-            <ul>
-            {% for tratamentopaciente in dado.tratamentos %}
-            <li>{{tratamentopaciente.tratamento.descricao_basica}}</li>
-            {% endfor %}
-            </ul>
-            </td>
-            <td>{{dado.atendimento.data|date:"j/n/Y"}}</td>
-			<td align="center">
-			    <a href="#" class="checkin" id="{{dado.paciente.id}}">
-			    <img alt="" src="../static/img/checkin.png" />
-			    </a>
-            </td>
-		</tr>
-    {% endfor %}
+                <td>{{dado.paciente.data_nascimento|date:"j/n/Y"}}</td>
+                <td>
+                <ul>
+                {% for tratamentopaciente in dado.tratamentos %}
+                <li>{{tratamentopaciente.tratamento.descricao_basica}}</li>
+                {% endfor %}
+                </ul>
+                </td>
+                <td>{{dado.atendimento.data|date:"j/n/Y"}}</td>
+			    <td align="center">
+			        <a href="#" class="checkin" id="{{dado.paciente.id}}">
+			        <img alt="" src="../static/img/checkin.png" />
+			        </a>
+                </td>
+		    </tr>
+        {% endfor %}
+    {% endif %}
     </tbody>
 </table>
+<br>
+<br>
+<a id="cadastro_rapido" href="#"> <img src="/static/img/add_patient.gif" width="25" height="25" />Incluir Paciente + Checkin</a>
 </div>

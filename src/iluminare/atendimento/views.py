@@ -428,7 +428,7 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
     hora_chegada = forms.TimeField(label='Cheg.',required=False, widget=forms.TextInput(attrs={'class':'disabled',\
         'readonly':'readonly', 'size':'6'}))
     confirma = forms.BooleanField(required = False, label= 'Conf.')
-    redireciona = forms.ModelChoiceField(label='Mudança de Trat.',queryset=Tratamento.objects.none(), required=False)
+    redireciona = forms.ModelChoiceField(label='Mudança no dia',queryset=Tratamento.objects.none(), required=False)
 
     def __init__(self, *args, **kwargs):
         super(ConfirmacaoAtendimentoForm, self).__init__(*args, **kwargs)
