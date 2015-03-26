@@ -13,7 +13,10 @@ class Funcao(models.Model):
         return self.descricao
 
 class Voluntario(models.Model):
-    TIPO = (('T', "Trabalhador"),('C',"Colaborador"),('A',"Apoio"))
+    # Retiramos a opcao (C, Colaborador).
+    # A partir de 2014 o perfil colaborador deixou de existir.
+    # A base de dados e algumas telas do sistema continuam com o colaborador para consulta.
+    TIPO = (('T', "Trabalhador"),('A',"Apoio")) 
     DIAS = (
         ('T', 'Terça'),
         ('X', 'Sexta'))
