@@ -374,14 +374,14 @@ def retornaInfo(atendimento):
         at = Atendimento.objects.filter(paciente = atendimento.paciente.acompanhante, \
             instancia_tratamento__data = atendimento.instancia_tratamento.data)
         if dp and at:
-            nome_prioridade = atendimento.paciente.acompanhante.nome[:15]+'...'
+            nome_prioridade = atendimento.paciente.acompanhante.nome
             info_str = info_str + '[Ac. ->: ' + unicode(nome_prioridade) + '] '
     if atendimento.paciente.acompanhante_crianca:
         dp = DetalhePrioridade.objects.filter(paciente = atendimento.paciente.acompanhante_crianca)
         at = Atendimento.objects.filter(paciente = atendimento.paciente.acompanhante_crianca, \
             instancia_tratamento__data = atendimento.instancia_tratamento.data)
         if dp and at:
-            nome_prioridade = atendimento.paciente.acompanhante_crianca.nome[:15]+'...'
+            nome_prioridade = atendimento.paciente.acompanhante_crianca.nome
             info_str = info_str + '[Ac. ->: ' + unicode(nome_prioridade) + '] '
 
     # É ACOMPANHADO POR: ...
@@ -398,7 +398,7 @@ def retornaInfo(atendimento):
             instancia_tratamento__data = atendimento.instancia_tratamento.data)
         # verifica se o paciente de atendimento.paciente é prioridade e se p (o seu acompanhante) fez checkin no dia.
         if dp and at:
-            nome_acompanhante = p.nome[:15]+'...'
+            nome_acompanhante = p.nome
             info_str = info_str + '[Ac. <-: ' + unicode(nome_acompanhante) + '] '
 
     # NOTIFICAÇÕES:
