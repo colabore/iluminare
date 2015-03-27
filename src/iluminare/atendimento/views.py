@@ -815,6 +815,7 @@ def exibir_listagem(request, pagina = None):
             tratamento_in = form_listagem.cleaned_data['tratamento']
             prioridade_in = form_listagem.cleaned_data['prioridade']
             voluntario_in = form_listagem.cleaned_data['voluntario']
+
             tratamento = Tratamento.objects.get(id=tratamento_in)
 
             try:
@@ -945,7 +946,7 @@ def exibir_listagem_criancas(request, pagina = None):
         else:
             mensagem_erro = 'Formulário inválido';
 
-    paginacao = Paginator(retorno,25)
+    paginacao = Paginator(retorno,20)
     if pagina == None:
         num_pagina = 1
     else:
