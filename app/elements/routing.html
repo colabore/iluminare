@@ -19,17 +19,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       app.route = 'home';
     });
 
-    page('/users', function () {
-      app.route = 'users';
+    page('/paciente', function () {
+      app.route = 'paciente';
     });
 
-    page('/users/:name', function (data) {
+    /*page('/users/:name', function (data) {
       app.route = 'user-info';
       app.params = data.params;
+    });*/
+
+    page('/atendimento', function () {
+      app.route = 'atendimento';
     });
 
-    page('/contact', function () {
-      app.route = 'contact';
+    page('/voluntario', function () {
+      app.route = 'voluntario';
+    });
+
+    page('/relatorio', function () {
+      app.route = 'relatorio';
     });
 
     // add #! before urls

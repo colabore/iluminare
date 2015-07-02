@@ -1,0 +1,90 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<dom-module id="ie-menu">
+  <style>
+  paper-menu iron-icon {
+    margin-right: 33px;
+    opacity: 0.54;
+  }
+
+  .paper-menu > .iron-selected {
+    color: var(--default-primary-color);
+  }
+
+  paper-menu a {
+    text-decoration: none;
+    color: var(--menu-link-color);
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -ms-flex-direction: row;
+    -webkit-flex-direction: row;
+    flex-direction: row;
+    -ms-flex-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+    font-family: 'Roboto', 'Noto', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 24px;
+    min-height: 48px;
+    padding: 0 16px;
+  }
+  </style>
+  <template>
+    <!-- Drawer Content -->
+      <paper-menu class="list" attr-for-selected="data-route" selected="{{route}}" on-iron-select="onMenuSelect">
+          <a data-route="home" href="/">
+            <iron-icon icon="home"></iron-icon>
+            <span>Home</span>
+          </a>
+
+          <a data-route="paciente" href="/paciente">
+            <iron-icon icon="info"></iron-icon>
+            <span>Pacientes</span>
+          </a>
+
+          <a data-route="atendimento" href="/atendimento">
+            <iron-icon icon="mail"></iron-icon>
+            <span>Atendimentos</span>
+          </a>
+
+          <a data-route="voluntario" href="/voluntario">
+            <iron-icon icon="mail"></iron-icon>
+            <span>Voluntários</span>
+          </a>
+
+          <a data-route="relatorio" href="/relatorio">
+            <iron-icon icon="mail"></iron-icon>
+            <span>Relatório</span>
+          </a>
+      </paper-menu>
+  </template>
+
+  <script>
+    (function() {
+      Polymer({
+        is: 'ie-menu',
+
+        properties: {
+          greeting: {
+            type: String,
+            value: 'Welcome!',
+            notify: true
+          }
+        }
+      });
+    })();
+  </script>
+
+</dom-module>
