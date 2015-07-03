@@ -1,0 +1,67 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<dom-module id="paciente-search">
+  <style>
+  </style>
+  <template>
+    <iron-ajax id="service"
+      auto
+      handle-as="json"
+      headers='{"Accept": "application/json"}'
+      on-response="onPacientesResponse"
+      debounce-duration="400"></iron-ajax>
+
+      <paper-input id="q-paciente" name="name" label="nome do paciente" value="{{paciente}}" on-keyup="onKeyPressed"></paper-input>
+
+    <ul>
+      <template is="dom-repeat" items="{{pacientes}}">
+        <li><span class="paper-font-body1">{{item.nome}}</span></li>
+      </template>
+    </ul>
+  </template>
+
+  <script>
+    (function() {
+      Polymer({
+        is: 'paciente-search',
+
+        properties: {
+          pacientes: {
+            type: Array,
+            notify: true
+          },
+          paciente: {
+            type: String,
+            notify: true
+          }
+        },
+        onKeyPressed: function(key)
+        {
+          this.$.service.url = 'http://localhost:8000/paciente/json/search/' + encodeURIComponent(this.paciente);
+        },
+        onPacientesResponse: function(response)
+        {
+          if (response.detail.response === null)
+            return;
+
+          var parsedResponse = response.detail.response.result;
+          var pacientes = [];
+          for (var i=0; i<parsedResponse.length; i++) {
+            pacientes.push(parsedResponse[i].fields);
+          }
+
+          this.pacientes = pacientes;
+        }
+      });
+    })();
+  </script>
+
+</dom-module>
