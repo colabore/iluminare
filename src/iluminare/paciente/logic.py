@@ -1,13 +1,13 @@
 # coding: utf-8
+import re, datetime
 from iluminare.paciente.models import *
 from iluminare.tratamento.models import *
 from iluminare.voluntario.models import *
-import re, datetime
 
 class PacienteException(Exception):
     def __init__(self, msg):
         self.message = msg
-    
+
     def __str__(self):
         return repr(self.message)
 
@@ -16,7 +16,7 @@ def inserir_detalhe_prioridade(detalhe_prioridade):
         recebe um objeto do tipo detalhe prioridade e salva na base
             - se é uma grávida ou lactante, é bom que possua o dado data_inicio
     """
-    
+
     if detalhe_prioridade is None:
         raise PacienteException("Objeto detalhe_prioridade inconsistente.")
 
@@ -37,10 +37,10 @@ def consultar_paciente(codigo):
         raise PacienteException("Erro: código do paciente inválido: " + codigo)
 
     dic = {}
-    
+
     try:
         paciente = Paciente.objects.get(id=codigo)
-        
+
         # garante que só venham tratamentos_paciente com data_fim vazias. Isso significa que se tratam de tratamentos ativos para o paciente.
         tratamentos_paciente = TratamentoPaciente.objects.filter(paciente=codigo, data_fim = None)
         tratamentos = []
@@ -56,16 +56,16 @@ def consultar_paciente(codigo):
         voluntario = None
         if len(voluntarios) > 0:
             voluntario = voluntarios[0]
-        
+
         dic = {'paciente': paciente,
                'tratamentos': tratamentos,
                'detalhe_prioridade': detalhe_prioridade,
                'voluntario': voluntario
-                } 
+                }
 
     except Paciente.DoesNotExist:
         dic = {}
-        
+
     return dic
 
 def search(nome):
@@ -80,7 +80,7 @@ def search(nome):
         pacientes = Paciente.objects.filter(data_nascimento__startswith=data_nascimento).order_by('nome')
     else:
         pacientes = Paciente.objects.filter(nome__icontains=nome).order_by('nome')[:30]
-    
+
     return pacientes
 
 
@@ -122,9 +122,9 @@ def format_table(pacientes):
                 jtc = True
         except:
             it_jtc = ''
-            
+
         voluntario = Voluntario.objects.filter(paciente = paciente, ativo=True)
-        
+
         eh_vol = False
         if voluntario:
             eh_vol = True
@@ -142,4 +142,3 @@ def format_table(pacientes):
         lista.append(dic)
 
     return lista
- 

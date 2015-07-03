@@ -1,38 +1,32 @@
 # -*- coding: utf-8 -*-
-from    iluminare.tratamento.models     import Tratamento, InstanciaTratamento, TratamentoPaciente, AgendaTratamento
-from    iluminare.atendimento.models    import Atendimento, Notificacao, AgendaAtendimento
-from    iluminare.voluntario.models     import Voluntario, Trabalho
-
-from    iluminare.paciente.models       import DetalhePrioridade, Paciente
-import  iluminare.atendimento.logic     as logic_atendimento
-import  iluminare.tratamento.logic      as tratamento_logic
-import  iluminare.voluntario.logic      as voluntario_logic
-
-from    django                          import forms
-from    django.shortcuts                import render_to_response, get_object_or_404
-from    django.forms.models             import modelformset_factory, BaseModelFormSet
-from    django.core.paginator           import Paginator
-from    django.http                     import HttpResponse
-from    django.db.models                import Q
-from    django.db                       import transaction
-from    django.db.models                import Count
-from    django.utils.encoding           import smart_str, smart_unicode
-
-from    operator                        import itemgetter
-from    sets                            import Set
-
-from    exceptions                      import Exception
-
 import  csv
 import  sys
 import  datetime
 import  itertools
 import  traceback
+from operator import itemgetter
+from sets import Set
+from exceptions import Exception
 
+from django import forms
+from django.shortcuts import render_to_response, get_object_or_404
+from django.forms.models import modelformset_factory, BaseModelFormSet
+from django.core.paginator import Paginator
+from django.http import HttpResponse
+from django.db.models import Q
+from django.db import transaction
+from django.db.models import Count
+from django.utils.encoding import smart_str, smart_unicode
 
+import iluminare.atendimento.logic as logic_atendimento
+import iluminare.tratamento.logic as tratamento_logic
+import iluminare.voluntario.logic as voluntario_logic
+from iluminare.tratamento.models import Tratamento, InstanciaTratamento, TratamentoPaciente, AgendaTratamento
+from iluminare.atendimento.models import Atendimento, Notificacao, AgendaAtendimento
+from iluminare.voluntario.models import Voluntario, Trabalho
+from iluminare.paciente.models import DetalhePrioridade, Paciente
 
 class CheckinPacienteForm(forms.ModelForm):
-
     PONTO_CHOICES = (
         ('N','------'),
         ('E', 'Entrada'),
@@ -48,11 +42,10 @@ class CheckinPacienteForm(forms.ModelForm):
             'ponto_voluntario', 'forcar_checkin']
 
     def update_tratamentos(self, paciente):
-
         volunt = False
         volunt_entrada = False
         volunt_saida = False
-        
+
         # AJUSTANDO PONTO DO VOLUNTÁRIO
         vs = Voluntario.objects.filter(paciente = paciente, ativo = True)
         if len(vs) >= 1: # indica que o paciente é um voluntário da casa
@@ -69,7 +62,7 @@ class CheckinPacienteForm(forms.ModelForm):
         if datetime.date.today().weekday() == 0:
             lista_trat = Tratamento.objects.filter(dia_semana = 'S')
             self.fields['tratamento'].queryset = lista_trat
-            
+
             # Verifica se o paciente tem algum agendamento para desobsessão no dia.
             # Caso positivo, a desobsessão passa a ser a opção default.
             try:
@@ -86,7 +79,7 @@ class CheckinPacienteForm(forms.ModelForm):
             # Em geral, os voluntários não se tratam nas segundas. Logo, só farão os pontos de entrada e saída.
             # Notar que caso o paciente tenha um agendamento para a desob no dia, mas ainda estiver na manutenção,
             # a opção default na tela será a manutenção.
-            if not volunt: 
+            if not volunt:
                 try:
                     manut = Tratamento.objects.get(id=7)
                     prim = Tratamento.objects.get(id=6)
@@ -104,11 +97,11 @@ class CheckinPacienteForm(forms.ModelForm):
                         self.fields['tratamento'].initial = manut
                 except:
                     pass
-        # AJUSTANDO A TELA PARA AS QUINTAS            
+        # AJUSTANDO A TELA PARA AS QUINTAS
         elif datetime.date.today().weekday() == 3:
             self.fields['tratamento'].queryset = Tratamento.objects.filter(dia_semana = 'N')
-            
-            # só atualiza a opção inicial do campo tratamento na quinta se não for voluntário 
+
+            # só atualiza a opção inicial do campo tratamento na quinta se não for voluntário
             # ou for um voluntário entrando na casa.
             # A ideia é que na saída só haja para o voluntário a opção ponto de saída.
             if not volunt:
@@ -129,14 +122,14 @@ class CheckinPacienteForm(forms.ModelForm):
 @transaction.autocommit
 def ajax_checkin_paciente(request, paciente_id):
     paciente = get_object_or_404(Paciente, pk=paciente_id)
-    
+
     lista_atendimentos = Atendimento.objects.filter(paciente = paciente, status='A').order_by('-instancia_tratamento__data')
-    
+
     voluntarios = Voluntario.objects.filter(paciente = paciente, ativo = True)
     voluntario = None
     if len(voluntarios) > 0:
         voluntario = voluntarios[0]
-    
+
     debug = ''
     if request.method == 'POST':
         checkin_paciente_form = CheckinPacienteForm(request.POST)
@@ -157,19 +150,19 @@ def ajax_checkin_paciente(request, paciente_id):
             if ponto_voluntario == 'S' and tratamento != None:
                 msg_validacao = "Operação não realizada: Para efetuar o ponto de saída do voluntário é necessário que \
                     todos os outros campos estejam vazios"
-            
+
             try:
                 if msg_validacao == None and tratamento:
                     dic_checkin = logic_atendimento.checkin_paciente(paciente, tratamento, \
                         prioridade, observacao_prioridade, forcar_checkin)
-                
+
                 if msg_validacao == None and ponto_voluntario != 'N':
                     dic_ponto = voluntario_logic.ponto_voluntario(paciente, ponto_voluntario)
 
                 return render_to_response('ajax-checkin-paciente-resultado.html', {'paciente':paciente, \
                     'voluntario':voluntario, 'dic_checkin':dic_checkin, 'dic_ponto':dic_ponto, \
                     'msg_validacao':msg_validacao})
-                
+
             except Exception, e:
                 return HttpResponse("Erro: %s" % str(e) +  debug)
         else:
@@ -184,7 +177,7 @@ def ajax_checkin_paciente(request, paciente_id):
         # registra os agendamentos que o paciente faltou.
         agendamentos_falta = []
         for agendamento in agendamentos:
-            # a forma básica de confirmar se o paciente faltou a um agendamento 
+            # a forma básica de confirmar se o paciente faltou a um agendamento
             # é verificar se há algum agendamento com data anterior à data atual que continua com o status 'A' (aberto)
             # É importante notar que há casos em que o agendamento não tem data marcada.
             if agendamento.agenda_tratamento.data and (agendamento.agenda_tratamento.data < datetime.datetime.today().date()):
@@ -235,7 +228,7 @@ def get_notificacoes_validas(paciente, tela_checkin, impressao):
 
 def get_info(paciente):
     info = ""
-    
+
     try:
         prioridade = paciente.detalheprioridade_set.get()
     except DetalhePrioridade.DoesNotExist:
@@ -257,25 +250,24 @@ class FiltroAtendimentosForm(forms.Form):
         self.fields['data'].initial = datetime.date.today()
 
 def retornaInfo(atendimento):
-
     info_str = ''
-    
+
     try:
         tratamento = atendimento.instancia_tratamento.tratamento
-        
+
         if tratamento.descricao_basica[:4] == "Manu":
             data_limite = datetime.datetime.today().date() - datetime.timedelta(days=90)
 
-            
+
             # CONTAGEM DE MANUTENÇÕES
-            # com essa restrição dos 90 dias, estamos garantindo que a contagem de manutenções 
+            # com essa restrição dos 90 dias, estamos garantindo que a contagem de manutenções
             # realizadas se restrinjam aos atendimentos recentes.
-            # Dessa forma, se o paciente há 1 ano fez a primeira vez e as manutenções, 
+            # Dessa forma, se o paciente há 1 ano fez a primeira vez e as manutenções,
             # essa contagem será ignorada.
             cont = len(Atendimento.objects.filter(paciente__id = atendimento.paciente.id, \
                 instancia_tratamento__tratamento = tratamento, status='A', \
                 instancia_tratamento__data__gte=data_limite))
-           
+
             info_str = info_str + '[' + str(cont) + '] '
 
             # LISTA DE TRATAMENTOS
@@ -283,13 +275,13 @@ def retornaInfo(atendimento):
             tratamentos = ''
             for tp in tps:
                 tratamentos = tratamentos + tp.tratamento.descricao_basica + ', '
-            
+
             # retira o ', ' do final
             tratamentos = tratamentos[:-2]
-            
+
             if tratamentos != "":
                 info_str = info_str + '[' + tratamentos + '] '
-            
+
             # [1a VEZ]
             # inclui o [1a vez] se o paciente também está realizando um atendimento de 1a vez no mesmo dia.
             # ATENCAO [1a VEZ] != [1o ATENDIMENTO]
@@ -298,7 +290,7 @@ def retornaInfo(atendimento):
                 instancia_tratamento__data = datetime.datetime.today())
             if len(primeira_vez) == 1:
                 info_str = info_str + '[1a vez] '
-            
+
     except Tratamento.DoesNotExist:
         pass
 
@@ -306,12 +298,12 @@ def retornaInfo(atendimento):
     # 1o QUINTA.
     data_limite = datetime.datetime.today().date() - datetime.timedelta(days=90)
 
-    # manutencoes nos ultimos 90 dias.    
-    manutencao = Atendimento.objects.filter(paciente__id = atendimento.paciente.id, 
+    # manutencoes nos ultimos 90 dias.
+    manutencao = Atendimento.objects.filter(paciente__id = atendimento.paciente.id,
         instancia_tratamento__tratamento__descricao_basica__startswith = "Manu", status='A', \
         instancia_tratamento__data__gte=data_limite)
 
-    atendimentos = Atendimento.objects.filter(paciente__id = atendimento.paciente.id, 
+    atendimentos = Atendimento.objects.filter(paciente__id = atendimento.paciente.id,
         instancia_tratamento__tratamento__descricao_basica__startswith ="Sala", status='A', \
         instancia_tratamento__data__gte=data_limite)
 
@@ -329,7 +321,7 @@ def retornaInfo(atendimento):
     # - o último atendimento foi de manutenção
     # - a quantidade de atendimentos nos últimos 3 meses em algum tratamento nas salas 1 a 5 = 0.
     # - Está fazendo check-in nas salas 1, 2, 3, 4 ou 5.
-    # 
+    #
     if len(list(ats)) > 0 and len(list(atendimentos)) == 0 \
         and atendimento.instancia_tratamento.tratamento.descricao_basica[:4] == "Sala":
         ult_at = ats[0]
@@ -349,7 +341,7 @@ def retornaInfo(atendimento):
                 info_str = info_str + u'[Só tratamento] '
     except Voluntario.DoesNotExist:
         pass
-    
+
     try:
         prioridade =  DetalhePrioridade.objects.filter(paciente__id = atendimento.paciente.id)
         if len(prioridade) > 0:
@@ -359,14 +351,14 @@ def retornaInfo(atendimento):
                 info_str = info_str + '[' + prioridade[0].get_tipo_display() + '] '
     except DetalhePrioridade.DoesNotExist:
         pass
-    
+
     # PRIORIDADE SÓ NO DIA
     if atendimento.prioridade:
         info_str = info_str + '[Prioridade hoje] '
-    
+
     # OBSERVACAO PRIORIDADE
-    if atendimento.observacao_prioridade:   
-        info_str = info_str + '[' + atendimento.observacao_prioridade + '] ' 
+    if atendimento.observacao_prioridade:
+        info_str = info_str + '[' + atendimento.observacao_prioridade + '] '
 
     # ACOMPANHA: ...
     if atendimento.paciente.acompanhante:
@@ -385,9 +377,9 @@ def retornaInfo(atendimento):
             info_str = info_str + '[Ac. ->: ' + unicode(nome_prioridade) + '] '
 
     # É ACOMPANHADO POR: ...
-    # Verifica se o paciente em questão é acompanhado por alguém. Ou seja, se há algum paciente cujo acompanhante seja o 
+    # Verifica se o paciente em questão é acompanhado por alguém. Ou seja, se há algum paciente cujo acompanhante seja o
     # paciente do atendimento em questão.
-    # É importante notar que a semântica dos campos acompanhante e acompanhante_crianca é a seguinte: 
+    # É importante notar que a semântica dos campos acompanhante e acompanhante_crianca é a seguinte:
     # Na tela de cadastro do paciente, estamos chamando esses campos de acompanha 1 e acompanha 2.
     # Isso significa que para no registro do acompanhante, nós podemos incluir 2 acompanhados.
     # A variável ps receberá os pacientes que acompanham o paciente do atendimento (atendimento.paciente).
@@ -414,8 +406,7 @@ def retornaInfo(atendimento):
             info_str = info_str + '[Casal: ' + unicode(atendimento.paciente.casado_com.nome) + '] '
 
     return info_str
-    
-    
+
 class ConfirmacaoAtendimentoForm(forms.ModelForm):
     """
         Esta confirmação é para todos os tratamentos, com exceção da primeira vez.
@@ -434,10 +425,10 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
         super(ConfirmacaoAtendimentoForm, self).__init__(*args, **kwargs)
         self.fields.keyOrder = ['confirma', 'senha', 'nome', 'hora_chegada','observacao', 'redireciona']
         atendimento = kwargs.pop('instance')
-        
+
         tratamento_desc = atendimento.instancia_tratamento.tratamento.descricao_basica
         tratamento = atendimento.instancia_tratamento.tratamento
-        
+
         # CAREREGA O CAMPO REDIRECIONA
         lista_segunda = [7,11,12,13]
         lista_quinta = [1,2,3,4,5,14]
@@ -452,13 +443,13 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
             opcoes = (('X','---------'),) + Paciente.FREQUENCIA
         else:
             self.fields['redireciona'].queryset=Tratamento.objects.none()
-                
+
         # CARREGA O NOME DO PACIENTE
         self.fields['nome'].initial = atendimento.paciente.nome
-        
+
         # CARREGA A SENHA DO DIA DO PACIENTE
         self.fields['senha'].initial = atendimento.senha
-        
+
         # CARREGA STATUS DO ATENDIMENTO
         if atendimento.status == 'A':
             status = True
@@ -497,10 +488,10 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
                                             '[Checkin: ' + \
                                             smart_unicode(atendimento_atual_str) + \
                                             ' / Hoje foi para '+ \
-                                            smart_unicode(str(redireciona_in))+'] ' 
+                                            smart_unicode(str(redireciona_in))+'] '
             if confirma_in:
                 atendimento.status = 'A'
-                
+
                 # verifica se há algum agendamento para esse tratamento que esteja aberto.
                 # em caso positivo, o agendamento será fechado.
                 ag_ats = AgendaAtendimento.objects.filter(paciente = atendimento.paciente, \
@@ -517,14 +508,14 @@ class ConfirmacaoAtendimentoForm(forms.ModelForm):
                 atendimento.status = 'C'
             if commit:
                 atendimento.save()
-            
+
         except:
             traceback.print_exc()
 
     class Meta:
         model = Atendimento
         exclude = ['prioridade', 'instancia_tratamento', 'senha', 'observacao_prioridade', 'paciente', 'hora_atendimento', 'status']
-          
+
 class ConfirmacaoAtendimentoPrimeiraVezForm(forms.ModelForm):
     observacao = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly'}))
     senha = forms.IntegerField(required=False, widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'5'}))
@@ -538,11 +529,11 @@ class ConfirmacaoAtendimentoPrimeiraVezForm(forms.ModelForm):
         super(ConfirmacaoAtendimentoPrimeiraVezForm, self).__init__(*args, **kwargs)
         self.fields.keyOrder = ['confirma', 'senha', 'nome', 'hora_chegada','observacao', 'encaminha', 'frequencia']
         atendimento = kwargs.pop('instance')
-        
+
         tratamento_desc = atendimento.instancia_tratamento.tratamento.descricao_basica
 
         tratamento = atendimento.instancia_tratamento.tratamento
-        
+
         # CAREREGA O CAMPO ENCAMINHA
         if tratamento.id == 6:
             self.fields['encaminha'].queryset=Tratamento.objects.filter(id__in=[1,2,3,4,5,12,11,7]).order_by("descricao_basica")
@@ -550,13 +541,13 @@ class ConfirmacaoAtendimentoPrimeiraVezForm(forms.ModelForm):
             self.fields['frequencia'].choices=opcoes
         else:
             self.fields['encaminha'].queryset=Tratamento.objects.none()
-                
+
         # CARREGA O NOME DO PACIENTE
         self.fields['nome'].initial = atendimento.paciente.nome
-        
+
         # CARREGA A SENHA DO DIA DO PACIENTE
         self.fields['senha'].initial = atendimento.senha
-        
+
         # CARREGA STATUS DO ATENDIMENTO
         if atendimento.status == 'A':
             status = True
@@ -572,28 +563,28 @@ class ConfirmacaoAtendimentoPrimeiraVezForm(forms.ModelForm):
         confirma_in = self.cleaned_data['confirma']
         encaminha_in = self.cleaned_data['encaminha']
         frequencia_in = self.cleaned_data['frequencia']
-             
+
         if encaminha_in:
             tratamento = Tratamento.objects.get(descricao_basica = encaminha_in)
             if tratamento:
                 lista_t = []
                 lista_t.append(tratamento)
                 tratamento_logic.encaminhar_paciente(atendimento.paciente.id, lista_t)
-                obs = atendimento.observacao 
+                obs = atendimento.observacao
                 # tive que usar smart_str evitar o erro de UnicodeDecodeError: 'ascii' codec can't decode byte 0xc3 in position 7:
                 atendimento.observacao = smart_str(obs + '[Encaminhado para ')+ smart_str(str(encaminha_in)) + smart_str(']')
-        
+
         if frequencia_in != 'X':
             # significa que se trata de um atendimento de primeira vez, pois somente estes podem ser alterados.
             atendimento.paciente.frequencia = frequencia_in
             atendimento.paciente.save()
-            obs = atendimento.observacao 
+            obs = atendimento.observacao
             atendimento.observacao = obs + '[Freq: '+str(frequencia_in)+'] '
 
 
         if confirma_in:
             atendimento.status = 'A'
-            
+
             # se o tratamento for primeira vez, aproveitamos para atualizar o campo tem ficha.
             if atendimento.instancia_tratamento.tratamento.descricao_basica[:4] == 'Prim':
                 atendimento.paciente.tem_ficha = True
@@ -618,9 +609,9 @@ ConfirmacaoAtendimentoPrimeiraVezFormSet = modelformset_factory(Atendimento, ext
 def confirmacao(request):
     """
     O que preciso melhorar nesta função?
-    Ela precisa se tornar dinâmica, isto é, o segundo form (lista de atendimentos) precisa ser dependente da escolha 
+    Ela precisa se tornar dinâmica, isto é, o segundo form (lista de atendimentos) precisa ser dependente da escolha
     do atendimento.
-    Os atendimentos de primeira vez terão campos específicos, como o diagnosticador.. 
+    Os atendimentos de primeira vez terão campos específicos, como o diagnosticador..
 
     Consegui torna-la dinâmica, mas com um código não muito otimizado.
     Estou criando dois formsets quase idênticos e utilizando os dois. Em função da confirmação que está sendo feita,
@@ -632,12 +623,12 @@ def confirmacao(request):
         filtro_form = FiltroAtendimentosForm(request.POST)
         atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.none())
         atendimentos_pv = ConfirmacaoAtendimentoPrimeiraVezFormSet(queryset=Atendimento.objects.none())
-        
+
         if 'pesquisar' in request.POST:
             if filtro_form.is_valid():
                 tratamento = filtro_form.cleaned_data['tratamento']
                 data	   = filtro_form.cleaned_data['data']
-                
+
                 if tratamento.descricao_basica[:4] == 'Prim':
                     atendimentos_pv = ConfirmacaoAtendimentoPrimeiraVezFormSet(queryset= \
                         Atendimento.objects.filter(instancia_tratamento__data=data,instancia_tratamento__tratamento=tratamento))
@@ -646,7 +637,7 @@ def confirmacao(request):
                     atendimentos = ConfirmacaoAtendimentoFormSet(queryset= \
                         Atendimento.objects.filter(instancia_tratamento__data=data,instancia_tratamento__tratamento=tratamento))
                     atendimentos_pv = ConfirmacaoAtendimentoPrimeiraVezFormSet(queryset=Atendimento.objects.none())
-                
+
                 if not atendimentos and not atendimentos_pv:
                     mensagem_erro = 'Nenhum atendimento nesta data.'
             else:
@@ -656,7 +647,7 @@ def confirmacao(request):
         elif 'salvar' in request.POST:
             """
                 PRECISA MELHORAR..
-                Imaginei que somente um dos formsets (atendimentos ou atendimentos_pv) 
+                Imaginei que somente um dos formsets (atendimentos ou atendimentos_pv)
                 fossem vir com dados.. Mas os dois estão vindo com dados, e idênticos.
                 O que vou fazer é ver qual o tratamento e forçar o outro formset para nulo.
             """
@@ -689,9 +680,9 @@ def confirmacao(request):
         filtro_form = FiltroAtendimentosForm()
         atendimentos = ConfirmacaoAtendimentoFormSet(queryset=Atendimento.objects.none())
         atendimentos_pv = ConfirmacaoAtendimentoPrimeiraVezFormSet(queryset=Atendimento.objects.none())
-    
-    return render_to_response('confirmacao_atendimentos.html', {'filtro_form':filtro_form, 
-        'atendimentos':atendimentos, 'mensagem':'', 'titulo': 'CONFIRMAR ATENDIMENTOS', 
+
+    return render_to_response('confirmacao_atendimentos.html', {'filtro_form':filtro_form,
+        'atendimentos':atendimentos, 'mensagem':'', 'titulo': 'CONFIRMAR ATENDIMENTOS',
         'mensagem_sucesso': mensagem_sucesso, 'mensagem_erro': mensagem_erro, 'atendimentos_pv':atendimentos_pv
         })
 
@@ -825,12 +816,12 @@ def exibir_listagem(request, pagina = None):
 
             if instancia_tratamento:
                 # lista de atendimentos previstos para o tratamento no dia.
-                atendimentos_previstos = get_lista_atendimentos_previstos(instancia_tratamento,  prioridade_in, 
+                atendimentos_previstos = get_lista_atendimentos_previstos(instancia_tratamento,  prioridade_in,
                     voluntario_in)
-                
+
                 voluntarios = Voluntario.objects.filter(ativo=True)
                 pacientes_voluntarios = [v.paciente for v in voluntarios]
-                    
+
                 for atendimento in atendimentos_previstos:
                     prioridade = False
                     dps = DetalhePrioridade.objects.filter(paciente = atendimento.paciente)
@@ -856,8 +847,8 @@ def exibir_listagem(request, pagina = None):
                         info_str = retornaInfo(atendimento)
                         retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, \
                             'info': info_str, 'prioridade': prioridade, 'senha':atendimento.senha})
-                        
-                            
+
+
             retorno_com_hora = [];
             retorno_sem_hora = [];
 
@@ -875,15 +866,15 @@ def exibir_listagem(request, pagina = None):
         else:
             mensagem_erro = 'Formulário inválido';
 
-    paginacao = Paginator(retorno,20) 
+    paginacao = Paginator(retorno,20)
     if pagina == None:
         num_pagina = 1
     else:
         num_pagina = int(pagina)
     pagina_atual = paginacao.page(num_pagina)
 
-	
-    return render_to_response('listagem-diaria.html', {'form_listagem':form_listagem, 
+
+    return render_to_response('listagem-diaria.html', {'form_listagem':form_listagem,
                             'mensagem': mensagem_erro,
                             'pagina_atual':pagina_atual,
                             'tratamento':tratamento,
@@ -914,7 +905,7 @@ def exibir_listagem_criancas(request, pagina = None):
                 # lista de atendimentos previstos para o tratamento no dia.
                 atendimentos_previstos = []
                 if crianca:
-                    atendimentos_previstos = Atendimento.objects.filter(instancia_tratamento = instancia_tratamento, 
+                    atendimentos_previstos = Atendimento.objects.filter(instancia_tratamento = instancia_tratamento,
                         paciente__detalheprioridade__tipo='C')
                     for atendimento in atendimentos_previstos:
                         info_str = retornaInfo(atendimento)
@@ -928,7 +919,7 @@ def exibir_listagem_criancas(request, pagina = None):
                         info_str = retornaInfo(atendimento)
                         retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, \
                             'info': info_str, 'prioridade': False, 'senha':atendimento.senha})
-      
+
             retorno_com_hora = [];
             retorno_sem_hora = [];
 
@@ -954,7 +945,7 @@ def exibir_listagem_criancas(request, pagina = None):
     pagina_atual = paginacao.page(num_pagina)
 
 
-    return render_to_response('listagem-impressao-criancas.html', {'form_listagem':form_listagem, 
+    return render_to_response('listagem-impressao-criancas.html', {'form_listagem':form_listagem,
                             'mensagem': mensagem_erro,
                             'pagina_atual':pagina_atual,
                             'tratamento':tratamento,
@@ -976,19 +967,19 @@ def exibir_listagem_geral(request):
 
             tratamentos_marcados = InstanciaTratamento.objects.filter(data = data_in)
             atendimentos_previstos = Atendimento.objects.filter(instancia_tratamento__data = data_in).order_by('-hora_chegada')
-            
+
             for atendimento in atendimentos_previstos:
                 info_str = retornaInfo(atendimento)
                 retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 'info': info_str, 'prioridade': False, \
                     'sala': atendimento.instancia_tratamento.tratamento.descricao_basica, 'senha':atendimento.senha})
-                
+
 
             if not retorno:
                 mensagem_erro = 'Não há registros'
         else:
             mensagem_erro = 'Formulário inválido';
 
-    return render_to_response('listagem-diaria-geral.html', {'form_listagem':form_listagem, 
+    return render_to_response('listagem-diaria-geral.html', {'form_listagem':form_listagem,
                             'mensagem': mensagem_erro,
                             'retorno':retorno,
                             'tratamento':tratamento,
@@ -1018,12 +1009,12 @@ def exibir_listagem_geral_fechamento(request):
             else:
                 if paciente_in:
                     atendimentos = Atendimento.objects.filter(instancia_tratamento__data = data_in, \
-                        instancia_tratamento__tratamento__id = tratamento_in, 
+                        instancia_tratamento__tratamento__id = tratamento_in,
                         paciente__nome__icontains=paciente_in).order_by('-hora_chegada')
                 else:
                     atendimentos = Atendimento.objects.filter(instancia_tratamento__data = data_in, \
                         instancia_tratamento__tratamento__id = tratamento_in).order_by('-hora_chegada')
-                
+
             for atendimento in atendimentos:
                 info_str = retornaInfo(atendimento)
                 retorno.append({'nome': atendimento.paciente, 'hora': atendimento.hora_chegada, 'info': info_str, 'prioridade': False, \
@@ -1035,7 +1026,7 @@ def exibir_listagem_geral_fechamento(request):
         else:
             mensagem_erro = 'Formulário inválido';
 
-    return render_to_response('listagem-diaria-geral-fechamento.html', {'form_listagem_fechamento':form_listagem, 
+    return render_to_response('listagem-diaria-geral-fechamento.html', {'form_listagem_fechamento':form_listagem,
                             'mensagem': mensagem_erro,
                             'retorno':retorno,
                             'tratamento':tratamento,
@@ -1202,8 +1193,8 @@ def exibir_atendimentos_paciente(request, paciente_id, pagina = None):
 	mensagem_erro = ''
 	retorno   = [];
 	paciente = Paciente.objects.get(id=paciente_id)
-	
-	
+
+
 	for atendimento in lista_atendimentos:
 		hora_chegada = '-'
 		if atendimento.hora_chegada != None:
@@ -1215,17 +1206,17 @@ def exibir_atendimentos_paciente(request, paciente_id, pagina = None):
 		retorno.append({'data':	atendimento.instancia_tratamento.data, \
 		    'tratamento':  atendimento.instancia_tratamento.tratamento.descricao_basica, \
 		    'hora_chegada': hora_chegada, 'observacao': observacao, 'status':atendimento.status})
-	
+
 	if not retorno:
 		mensagem_erro = 'Não foi possível localizar usuário'
-		
+
 	paginacao = Paginator(retorno,45)
 	if pagina == None:
 		num_pagina = 1
-	else:	
+	else:
 		num_pagina = int(pagina)
-	pagina_atual = paginacao.page(num_pagina)	
-	
+	pagina_atual = paginacao.page(num_pagina)
+
 	return render_to_response('lista-atendimentos.html',{'mensagem': mensagem_erro, \
 	    'pagina_atual': pagina_atual, 'paciente_id': paciente_id, 'nome_paciente': paciente.nome,
 	    'titulo': 'LISTAGEM DE ATENDIMENTOS' })
@@ -1262,10 +1253,10 @@ def relatorio_atendimentos_dia(request):
             # gera uma única lista com os tratamentos
             conjunto = Set(lista_ids_tratamentos)
             lista_ids_tratamentos = list(conjunto)
-            
+
             total_conf = 0
             total_nconf = 0
-            
+
             for tratamento_id in lista_ids_tratamentos:
                 numero_conf = 0
                 numero_nconf = 0
@@ -1283,21 +1274,21 @@ def relatorio_atendimentos_dia(request):
 
                 tratamento = Tratamento.objects.get(id=tratamento_id)
                 numero_total = numero_conf + numero_nconf
-                
+
                 retorno.append({'tratamento': tratamento.descricao_basica, 'numero_conf': numero_conf, \
                     'numero_nconf': numero_nconf, 'numero_total': numero_total})
-            
-            
+
+
             if not retorno:
                 mensagem_erro = 'Não há registros'
             else:
                 retorno.append({'tratamento': 'Total', 'numero_conf': total_conf, \
                     'numero_nconf': total_nconf, 'numero_total': total_conf+total_nconf})
-                
+
         else:
             mensagem_erro = 'Formulário inválido';
 
-    return render_to_response('relatorio-atendimentos-dia.html', {'form':form, 
+    return render_to_response('relatorio-atendimentos-dia.html', {'form':form,
                             'mensagem': mensagem_erro,
                             'retorno':retorno,
                             'titulo': 'RELATÓRIO - ATENDIMENTOS POR DIA'})
@@ -1501,7 +1492,7 @@ class AtualizarPaciente_ConfirmacaoForm(forms.Form):
 
         atendimento.save()
         return (atendimento.paciente, mensagens_list)
-        
+
 class AgendamentoForm(forms.Form):
     fone                            = forms.CharField(max_length=45, required=False)
     agenda_tratamento_acolhimento   = forms.ChoiceField(choices=(),required=False)
@@ -1748,7 +1739,7 @@ def ajax_atualizar_paciente_confirmacao(request, atendimento_id):
         agendamento_form = AgendamentoForm(request.POST)
         notificacao_form = NotificacaoForm(request.POST)
         mensagens = []
-        
+
         if atualizar_paciente_form.is_valid():
             (paciente, mensagens_list) = atualizar_paciente_form.save(atendimento)
             mensagens = mensagens + mensagens_list
@@ -1983,4 +1974,3 @@ def atualizar_agendamento(request, agenda_atendimento_id):
         'mensagem_sucesso':mensagem_sucesso, \
         'mensagem_erro':mensagem_erro, \
         'titulo':'ATUALIZAR AGENDAMENTO'})
-

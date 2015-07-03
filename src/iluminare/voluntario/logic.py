@@ -1,27 +1,25 @@
-
 # coding: utf-8
+
+import re
+from datetime import date
+from datetime import datetime
+from datetime import timedelta
+
+from django.utils.encoding import smart_str
 
 from iluminare.paciente.models import *
 from iluminare.tratamento.models import *
 from iluminare.atendimento.models import *
 from iluminare.voluntario.models import *
-from datetime import date
-from datetime import datetime
-from datetime import timedelta
-import re
-from django.utils.encoding import smart_str
 
 class VoluntarioException(Exception):
     def __init__(self, msg):
         self.message = msg
-    
+
     def __str__(self):
         return self.message
-        
-    
 
 def ponto_voluntario(paciente, ponto_voluntario_char):
-        
     dic_retorno = {'sucesso':False, 'mensagem':''}
     voluntarios = Voluntario.objects.filter(paciente = paciente, ativo = True)
     voluntario = None
@@ -50,7 +48,7 @@ def ponto_voluntario(paciente, ponto_voluntario_char):
         else:
             dic_retorno['mensagem'] = "ATENÇÃO! PONTO DE ENTRADA do voluntário JÁ REALIZADO."
             return dic_retorno
-    
+
     if ponto_voluntario_char == 'S':
         trabalhos = Trabalho.objects.filter(voluntario = voluntario, funcao=funcao, data = date.today())
         if len(trabalhos) == 0:
@@ -68,5 +66,3 @@ def ponto_voluntario(paciente, ponto_voluntario_char):
             else:
                 dic_retorno['mensagem'] = "ATENÇÃO! PONTO DE SAÍDA do voluntário JÁ REALIZADO."
                 return dic_retorno
-    
-

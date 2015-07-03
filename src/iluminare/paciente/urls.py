@@ -1,6 +1,7 @@
 from django.conf.urls import *
-from iluminare.paciente.views import cadastro_rapido_paciente
+
 import iluminare.paciente.rest as rest
+from iluminare.paciente.views import cadastro_rapido_paciente
 
 urlpatterns = patterns('iluminare.paciente.views',
     (r'^$', 'index'),

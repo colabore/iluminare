@@ -1,25 +1,21 @@
-
 # coding: utf-8
-
-from    iluminare.paciente.models       import *
-from    iluminare.tratamento.models     import *
-from    iluminare.atendimento.models    import *
-from    iluminare.voluntario.models     import *
-from    datetime                        import date, datetime, timedelta
-from    django.utils.encoding           import smart_str
-from    iluminare.util.logic            import get_data_limite
-
 import  re
+from datetime import date, datetime, timedelta
+from django.utils.encoding import smart_str
+from iluminare.atendimento.models import *
+from iluminare.paciente.models import *
+from iluminare.tratamento.models import *
+from iluminare.voluntario.models import *
+from iluminare.util.logic import get_data_limite
 
 class AtendimentoException(Exception):
     def __init__(self, msg):
         self.message = msg
-    
+
     def __str__(self):
         return self.message
-            
+
 def horario_autorizado(tratamento):
-    
     if tratamento.horario_limite != None:
         if datetime.now().time() > tratamento.horario_limite:
             return False
@@ -28,9 +24,7 @@ def horario_autorizado(tratamento):
     else:
         return True
 
-
 def regras_gerais_atendidas(paciente, tratamento):
-    
     ats = Atendimento.objects.filter(paciente = paciente, status='A').order_by('-instancia_tratamento__data')
     dic_retorno = {'sucesso':False, 'mensagem':None}
 
@@ -70,7 +64,7 @@ def regras_gerais_atendidas(paciente, tratamento):
                 if len(manuts) < 4:
                    dic_retorno['mensagem']='Paciente ainda não finalizou as manutenções da segunda-feira.'
                    return dic_retorno
-    
+
     # caso feliz :)
     dic_retorno['sucesso']=True
     return dic_retorno
@@ -80,7 +74,7 @@ def proxima_senha(tratamento):
     """
         Retorna um inteiro que representa a próxima senha a ser cadastrada.
         Para um mesmo dia, teremos uma contagem para cada tratamento em andamento..
-        
+
     """
     senha = 0
     ult_at = Atendimento.objects.filter(instancia_tratamento__data = datetime.today().date(), \
@@ -93,14 +87,13 @@ def proxima_senha(tratamento):
 
 def checkin_paciente(paciente, tratamento, prioridade_bool, \
         observacao_prioridade_str, forcar_checkin):
-
     dic_retorno = {'sucesso':False,'mensagem':None, 'senha':0}
-    
+
     if tratamento != None:
         tratamento_smart = smart_str(tratamento.descricao_basica)
         hoje = date.today()
         its = InstanciaTratamento.objects.filter(tratamento = tratamento, data = hoje)
-        
+
         if len(its) == 0:
             it =  InstanciaTratamento(tratamento=tratamento, data=hoje)
             it.save()
@@ -109,10 +102,10 @@ def checkin_paciente(paciente, tratamento, prioridade_bool, \
         else:
             dic_retorno['mensagem']="Inconsistência: Mais de um tratamento aberto para a mesma sala no mesmo dia. \
                 (Mais de uma InstanciaTratamento para o mesmo tratamento-data)"
-            return dic_retorno 
-        
+            return dic_retorno
+
         ats = Atendimento.objects.filter(instancia_tratamento = it, paciente = paciente)
-        
+
         if len(ats) == 0:
             dic_regras = regras_gerais_atendidas(paciente, tratamento)
             if dic_regras['sucesso'] or forcar_checkin:
@@ -120,7 +113,7 @@ def checkin_paciente(paciente, tratamento, prioridade_bool, \
                     senha = proxima_senha(tratamento)
 
                     # Verifica se o paciente já é prioridade.
-                    # se ele já for prioridade e tiver sido marcada prioridade no dia, 
+                    # se ele já for prioridade e tiver sido marcada prioridade no dia,
                     # a prioridade no dia é ignorada.
                     if prioridade_bool:
                         dp = DetalhePrioridade.objects.filter(paciente = paciente)
@@ -136,11 +129,11 @@ def checkin_paciente(paciente, tratamento, prioridade_bool, \
                     dic_retorno['sucesso'] = True
                     dic_retorno['senha'] = senha
                 else:
-                    
+
                     dic_retorno['mensagem'] = smart_str("ATENÇÃO! CHECK-IN NÃO REALIZADO (%s): Horário limite de \
                         entrada não atendido." % tratamento_smart)
             else:
-                dic_retorno['mensagem'] = smart_str("ATENÇÃO! CHECK-IN NÃO REALIZADO (%s): %s." % 
+                dic_retorno['mensagem'] = smart_str("ATENÇÃO! CHECK-IN NÃO REALIZADO (%s): %s." %
                     (tratamento_smart, dic_regras['mensagem']))
         else:
             dic_retorno['mensagem'] = smart_str("ATENÇÃO! Check-in do paciente JÁ REALIZADO (%s)." % tratamento_smart)
@@ -148,4 +141,3 @@ def checkin_paciente(paciente, tratamento, prioridade_bool, \
         dic_retorno['mensagem'] = smart_str("CHECK-IN não realizado. Tratamento não informado.")
 
     return dic_retorno
-

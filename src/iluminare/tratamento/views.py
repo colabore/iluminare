@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-from    django                          import forms
-from    iluminare.tratamento.models     import AgendaTratamento, Tratamento
-from    django.shortcuts                import render_to_response
+# coding: utf-8
 import  traceback
-
-
+from django import forms
+from django.shortcuts import render_to_response
+from iluminare.tratamento.models import AgendaTratamento, Tratamento
 
 class AgendaTratamentoForm(forms.ModelForm):
     class Meta:

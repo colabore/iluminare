@@ -1,26 +1,22 @@
-# -*- coding: utf-8 -*-
+# coding: utf-8
+import datetime
+
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
 #from django.forms import ModelForm, CharField, Select, DateField
 from django import forms
-from iluminare.paciente.models import *
-from iluminare.atendimento.models import *
-from iluminare.tratamento.models import *
-from iluminare.voluntario.models import *
-from iluminare.util.logic import get_data_limite
-
-
 from django.db.models import Q
+from django.utils.encoding import smart_str
 
 import iluminare.paciente.logic as paciente_logic
 import iluminare.tratamento.logic as tratamento_logic
 import iluminare.atendimento.logic as logic_atendimento
 import iluminare.atendimento.views as view_atendimento
-
-import datetime
-
-from django.utils.encoding import smart_str
-
+from iluminare.paciente.models import *
+from iluminare.atendimento.models import *
+from iluminare.tratamento.models import *
+from iluminare.voluntario.models import *
+from iluminare.util.logic import get_data_limite
 
 PRIORIDADE_CHOICES = (
     ('G', 'Grávida'),
@@ -99,7 +95,7 @@ class TratamentoCadastroRapido(forms.Form):
         for tratamento in Tratamento.objects.filter(id__in=[6,7])]
     TRATAMENTOS_CHOICES = [(tratamento.id, tratamento.descricao_basica) \
         for tratamento in Tratamento.objects.filter(id__in=[5,6,7])]
-    
+
     tratamentos = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple, required=False)
 
     def __init__(self, *args, **kwargs):
@@ -115,10 +111,10 @@ class TratamentoCadastroRapido(forms.Form):
 
     def save(self, paciente):
         ts = self.cleaned_data["tratamentos"]
-        
+
         if paciente == None:
             return []
-        
+
         lista_dic = []
         for t in self.TRATAMENTOS_CHOICES:
             if str(t[0]) in ts:
@@ -130,7 +126,6 @@ class TratamentoCadastroRapido(forms.Form):
         return lista_dic
 
 class FiltroConsultaPacientesForm(forms.Form):
-
     ATIVO = (
         ('S', 'Sim'),
         ('N', 'Não'),
@@ -148,7 +143,7 @@ class FiltroConsultaPacientesForm(forms.Form):
 
 def atualizar(request, paciente_id):
     paciente = Paciente.objects.get(pk=paciente_id)
-    
+
     try:
         detalhe_prioridade = DetalhePrioridade.objects.get(paciente=paciente)
     except:
@@ -181,11 +176,9 @@ def atualizar(request, paciente_id):
 
     return render_to_response('crud-paciente.html', {'form_paciente':form_paciente, 'form_detalhe_prioridade':form_detalhe_prioridade, \
         'form_tratamento_paciente':form_tratamento_paciente, 'mensagem':msg, 'titulo': 'ATUALIZAR PACIENTE'})
-    
+
 
 def incluir_paciente(request):
-
-    
     if request.method == "POST":
         form_paciente = PacienteForm(request.POST)
         form_detalhe_prioridade = DetalhePrioridadeForm(request.POST)
@@ -208,7 +201,7 @@ def incluir_paciente(request):
         form_detalhe_prioridade = DetalhePrioridadeForm()
         form_tratamento_paciente = TratamentoPacienteForm()
         msg = ""
-        
+
 
     return render_to_response('crud-paciente.html', {'form_paciente':form_paciente, 'form_detalhe_prioridade':form_detalhe_prioridade, \
         'form_tratamento_paciente':form_tratamento_paciente, 'mensagem':msg, 'titulo':'INCLUIR PACIENTE'})
@@ -226,17 +219,18 @@ def ajaxlistarpessoas (request, nome):
 
     if request.method == 'GET' and nome != '':
         pacientes = paciente_logic.search(nome)
-        
+
     if not pacientes:
         pacientes = []
 
     lista = paciente_logic.format_table(pacientes)
-
-    return render_to_response ('ajax-listar-pessoas.html', {'lista':lista})
+    response = render_to_response ('ajax-listar-pessoas.html', {'lista':lista})
+    response['Access-Control-Allow-Origin'] = "*"
+    return response
 
 def dialog_detalhe(request, paciente_id, tratamento_id):
     lista = TratamentoPaciente.objects.filter(tratamento__id=tratamento_id, paciente__id=paciente_id)
-    
+
     if not lista:
         return HttpResponse ("O tratamento do paciente não está cadastrado")
 
@@ -247,9 +241,9 @@ def dialog_detalhe(request, paciente_id, tratamento_id):
     tratamentos = Tratamento.objects.all()
     salas = []
     for tratamento in tratamentos:
-        display = "%s (%s)" % (tratamento.sala, tratamento.get_dia_display()) 
+        display = "%s (%s)" % (tratamento.sala, tratamento.get_dia_display())
         salas.append({'id':tratamento.id, 'display':display})
-    
+
     dic = {
         'nome': nome,
         'sala': sala,
@@ -269,19 +263,19 @@ def cadastro_rapido_paciente(request):
         if form.is_valid() and trat_form.is_valid():
             try:
                 paciente = form.save()
-                
+
                 dic_paciente = None
                 if paciente:
                     dic_paciente = {'sucesso':True, 'mensagem':'Paciente cadastrado com sucesso.'}
                 else:
                     dic_paciente = {'sucesso':False, 'mensagem':'Erro no cadastro do paciente.'}
-                
+
                 lista.append(dic_paciente)
                 lista_dics_atends = trat_form.save(paciente)
-                lista = lista + lista_dics_atends 
+                lista = lista + lista_dics_atends
 
                 return render_to_response ('cadastro-rapido-paciente-resultado.html', {'paciente': paciente, 'lista_dics':lista})
-    
+
             except Exception, e:
                 dic_paciente = {'sucesso':False, 'mensagem':'Erro: '+e}
                 lista.append(dic_paciente)
@@ -297,7 +291,7 @@ def cadastro_rapido_paciente(request):
     else:
         form = PacienteForm()
         trat_form = TratamentoCadastroRapido()
-        
+
     return render_to_response ('cadastro-rapido-paciente.html', {'form': form, 'trat_form': trat_form})
 
 def relatorio_pacientes_geral(ativo, tratamento):
@@ -338,8 +332,6 @@ def relatorio_pacientes_geral(ativo, tratamento):
     return pacientes, mensagem
 
 def relatorio_pacientes(request):
-    """
-    """
     form = FiltroConsultaPacientesForm()
     mensagem = ''
     pacientes = []
@@ -358,4 +350,3 @@ def relatorio_pacientes(request):
 
     return render_to_response('relatorio-pacientes.html', {'form':form, 'mensagem': mensagem, \
         'pacientes':pacientes, 'titulo': 'RELATÓRIO PACIENTES ATIVOS'})
-

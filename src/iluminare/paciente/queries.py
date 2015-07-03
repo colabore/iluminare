@@ -9,13 +9,13 @@ def detailed_search(pacientes):
         is_voluntario = paciente.is_voluntario()
 
         dic = {
-			'tratamentos': tratamentos or None,
-			'paciente': paciente.nome,
+            'tratamentos': tratamentos or None,
+            'paciente': paciente.nome,
             'atendimento': atendimento or None,
             'salas': None,
-			'hoje': None,
-			'jtc': jtc,
-			'eh_vol': is_voluntario
+            'hoje': None,
+            'jtc': jtc,
+            'eh_vol': is_voluntario
         }
 
         lista.append(dic)

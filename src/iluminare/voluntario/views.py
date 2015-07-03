@@ -1,20 +1,17 @@
 # -*- coding: utf-8 -*-
-from django.shortcuts import render_to_response
-from django import forms
-from iluminare.voluntario.models import *
-from django.forms.models import modelformset_factory, BaseModelFormSet
-
-from django.utils.functional import curry, wraps
-
 import datetime
-from datetime import date
 import csv
-from django.http import HttpResponse
+from datetime import date
 
+from django import forms
+from django.shortcuts import render_to_response
+from django.forms.models import modelformset_factory, BaseModelFormSet
+from django.utils.functional import curry, wraps
+from django.http import HttpResponse
 from django.utils.encoding import smart_str
 
+from iluminare.voluntario.models import *
 from iluminare.voluntario.models import Trabalho
-
 
 class VoluntarioForm(forms.ModelForm):
     class Meta:
@@ -50,7 +47,6 @@ def index(request):
 	return render_to_response('index.html')
 
 class FiltroPontoForm(forms.Form):
-
     def __init__(self, *args, **kwargs):
         	super(FiltroPontoForm, self).__init__(*args, **kwargs)
 
@@ -64,21 +60,18 @@ class FiltroPontoForm(forms.Form):
     dia_estudo  = dia_estudo = forms.ChoiceField(required=False, choices=DIA_ESTUDO, initial='O')
 
 class FiltroPontoConsultaForm(forms.Form):
-
     def __init__(self, *args, **kwargs):
         	super(FiltroPontoConsultaForm, self).__init__(*args, **kwargs)
 
     data = forms.DateField(initial = datetime.date.today)
 
 class FiltroRelatiorioTrabalhosForm(forms.Form):
-
     DIA_SEMANA = (
         ('2', 'Segunda'),
         ('3', 'Terça'),
         ('5', 'Quinta'),
         ('6', 'Sexta'),
     )
-
 
     def __init__(self, *args, **kwargs):
         	super(FiltroRelatiorioTrabalhosForm, self).__init__(*args, **kwargs)
@@ -89,7 +82,6 @@ class FiltroRelatiorioTrabalhosForm(forms.Form):
     dia_semana =  forms.ChoiceField(required=False, choices=DIA_SEMANA, initial='3')
 
 class FiltroConsultaVoluntariosForm(forms.Form):
-
     TIPO = (
         ('T', 'Trabalhador'),
         ('C', 'Colaborador'),
@@ -119,8 +111,6 @@ class FiltroConsultaVoluntariosForm(forms.Form):
 
 
 FiltroRelatiorioTrabalhosForm
-
-
 class FiltroRelatiorioTercasForm(forms.Form):
 
     TIPO = (
@@ -146,7 +136,7 @@ class PontoForm(forms.ModelForm):
     info_voluntario = forms.CharField(required=False, label='Info', widget=forms.TextInput(attrs={'class':'disabled', 'readonly':'readonly', 'size':'18'}))
     data_registro_ponto = None
     dia_estudo = None
-    
+
     class Meta:
         model = Voluntario
         exclude = ['paciente', 'data_inicio', 'data_fim', 'ativo','observacao', 'tipo', 'dia_estudo']
@@ -155,7 +145,7 @@ class PontoForm(forms.ModelForm):
         super(PontoForm, self).__init__(*args, **kwargs)
         self.fields.keyOrder = ['nome', 'tipo_vol', 'info_voluntario','pf','hora_inicio', 'hora_final']
         voluntario = kwargs.pop('instance')
-        
+
         self.fields['nome'].initial = voluntario.paciente.nome
         tipo_str = ''
         if voluntario.tipo == 'T':
@@ -164,12 +154,12 @@ class PontoForm(forms.ModelForm):
             tipo_str = 'Colaborador'
         elif voluntario.tipo == 'A':
             tipo_str = 'Apoio'
-        
+
         self.fields['tipo_vol'].initial = tipo_str
         self.fields['info_voluntario'].initial = voluntario.observacao
-        
+
         trabalho = Trabalho.objects.filter(voluntario = voluntario, data=self.data_registro_ponto)
-        
+
         if len(trabalho) == 1:
             if trabalho[0].status:
                 self.fields['pf'].initial = trabalho[0].status
@@ -200,11 +190,9 @@ class PontoForm(forms.ModelForm):
         if trabalho.data == self.data_registro_ponto:
             trabalho.save()
 
-        
+
 PontoFormSet = modelformset_factory(Voluntario, extra=0, form=PontoForm)
-
 def registra_ponto(request):
-
     debug = ''
     mensagem_sucesso = ''
     mensagem_erro = ''
@@ -219,7 +207,7 @@ def registra_ponto(request):
                     voluntarios = PontoFormSet(queryset=Voluntario.objects.filter(ativo=True, dia_estudo=PontoForm.dia_estudo))
                 else:
                     voluntarios = PontoFormSet(queryset=Voluntario.objects.filter(ativo=True))
-                
+
         if 'salvar' in request.POST:
             try:
                 voluntarios = PontoFormSet(request.POST)
@@ -238,11 +226,11 @@ def registra_ponto(request):
     else:
         filtro_form = FiltroPontoForm()
         voluntarios = None
-    
+
     return render_to_response('registra_ponto.html', {'filtro_form':filtro_form, 'voluntarios':voluntarios,\
-        'mensagem': mensagem, 'debug': debug, 'titulo': 'REGISTRAR PONTOS', 
+        'mensagem': mensagem, 'debug': debug, 'titulo': 'REGISTRAR PONTOS',
         'mensagem_sucesso':mensagem_sucesso, 'mensagem_erro':mensagem_erro})
-    
+
 
 def consulta_ponto(request):
 
@@ -255,30 +243,30 @@ def consulta_ponto(request):
 
         if form.is_valid():
             data = form.cleaned_data['data']
-            
+
             voluntarios = Voluntario.objects.filter(ativo = True)
-            
+
             for v in voluntarios:
                 trabalho = Trabalho.objects.filter(voluntario = v, data=data)
                 hc = '-'
                 hs = '-'
                 if len(trabalho) == 1:
-                    
+
                     if trabalho[0].hora_inicio:
                         hc = trabalho[0].hora_inicio
                     if trabalho[0].hora_final:
                         hs = trabalho[0].hora_final
-                    
+
                     retorno.append({'nome': v.paciente.nome, 'tipo': v.tipo, 'presente': 'P', \
                         'hora_chegada': hc, 'hora_saida': hs})
                 else:
                     retorno.append({'nome': v.paciente.nome, 'tipo': v.tipo, 'presente': 'F', \
                         'hora_chegada': hc, 'hora_saida': hs})
-            
+
         else:
             mensagem_erro = 'Formulário inválido'
 
-    
+
     return render_to_response('consulta_ponto.html', {'form':form, 'retorno':retorno,'mensagem': mensagem_erro,
                                 'titulo':'CONSULTAR PONTOS'})
 
@@ -304,8 +292,8 @@ def atualizar(request, voluntario_id):
         form_voluntario = VoluntarioForm(instance=voluntario)
         mensagem = ''
 
-    return render_to_response('crud-voluntario.html', {'form_voluntario':form_voluntario, 'mensagem':mensagem, 
-        'nome_paciente':nome_paciente, 'titulo': 'ATUALIZAR VOLUNTÁRIO', 'mensagem_sucesso': mensagem_sucesso, 
+    return render_to_response('crud-voluntario.html', {'form_voluntario':form_voluntario, 'mensagem':mensagem,
+        'nome_paciente':nome_paciente, 'titulo': 'ATUALIZAR VOLUNTÁRIO', 'mensagem_sucesso': mensagem_sucesso,
         'mensagem_erro':mensagem_erro})
 
 def incluir_voluntario(request):
@@ -344,13 +332,13 @@ def relatorio_trabalhos_geral(data_inicial_ordinal, data_final_ordinal, dia_sema
     lista_totais = []
 
     voluntarios = Voluntario.objects.filter(ativo = True)
-    
+
     lista_geral = []
     lista_datas = []
-    
+
     data_inicial = datetime.date.fromordinal(int(data_inicial_ordinal))
     data_final = datetime.date.fromordinal(int(data_final_ordinal))
-    
+
     for v in voluntarios:
         if dia_semana_int != 9:
             trabalhos = Trabalho.objects.filter(voluntario = v, data__gte=data_inicial, \
@@ -365,22 +353,22 @@ def relatorio_trabalhos_geral(data_inicial_ordinal, data_final_ordinal, dia_sema
             dict_voluntario[trabalho.data] = trabalho
             if trabalho.data not in lista_datas:
                 lista_datas.append(trabalho.data)
-        
+
         lista_geral.append(dict_voluntario)
-    
+
     # inicializando a lista de totais inferior.
     lista_totais = [0]*(len(lista_datas)+1)
-    
+
     #ordenando as datas e preparando rótulos
     lista_datas.sort()
-    
+
     # preparando a lista de rótulos
     lista_rotulos.append("Voluntário")
     lista_rotulos.append("Tipo")
     for data in lista_datas:
         lista_rotulos.append(str(data))
     lista_rotulos.append("Total")
-    
+
     for item in lista_geral:
         linha = []
         linha.append(smart_str(item['voluntario'].paciente.nome))
@@ -397,19 +385,19 @@ def relatorio_trabalhos_geral(data_inicial_ordinal, data_final_ordinal, dia_sema
             else:
                 linha.append("FA")
             i+=1
-        
+
         linha.append(str(cont))
         lista_dados.append(linha)
-        
+
     lista_totais = ["Total","-"] + lista_totais
     lista_dados.append(lista_totais)
 
     return lista_rotulos, lista_dados, mensagem
 
-  
+
 def relatorio_trabalhos(request):
     """
-        
+
     """
     form = FiltroRelatiorioTrabalhosForm()
     mensagem = ''
@@ -459,8 +447,6 @@ def relatorio_trabalhos_csv(request, data_inicial_ordinal, data_final_ordinal, d
 
 def relatorio_voluntarios_geral(tipo, ativo, dia_estudo):
     mensagem = ''
-
-
     voluntarios = Voluntario.objects.all()
     if tipo != 'O':
         voluntarios = voluntarios.filter(tipo = tipo)
@@ -473,11 +459,8 @@ def relatorio_voluntarios_geral(tipo, ativo, dia_estudo):
         voluntarios = voluntarios.filter(dia_estudo = dia_estudo)
     return voluntarios, mensagem
 
-    
+
 def relatorio_voluntarios(request):
-    """
-        
-    """
     form = FiltroConsultaVoluntariosForm()
     mensagem = ''
     voluntarios = []
@@ -518,8 +501,8 @@ def relatorio_tercas_geral(tipo):
     """
     O único parâmetro é o perfil do voluntário.
     Nesse caso, só teremos Trabalhadores ou Colaboradores.
-    
-    O objetivo é gerar um relatório de presenças nas terças para o mês atual, 
+
+    O objetivo é gerar um relatório de presenças nas terças para o mês atual,
     o mês anterior e o mês retrasado.
 
     """
@@ -529,15 +512,15 @@ def relatorio_tercas_geral(tipo):
     lista_totais = []
 
     voluntarios = Voluntario.objects.filter(ativo = True, tipo = tipo)
-    
+
     lista_geral = []
     lista_datas = []
-    
+
     ### identificando os meses #####
     hoje = datetime.datetime.today()
     mes_atual = hoje.month
     ano_atual = hoje.year
-    
+
     mes_ant = mes_atual-1
     ano_ant = ano_atual
     if mes_ant == 0:
@@ -555,7 +538,7 @@ def relatorio_tercas_geral(tipo):
         ano_ret = ano_atual -1
 
     ################################
-    
+
     data_inicial = datetime.datetime(ano_ret, mes_ret, 1)
     data_final = hoje
     for v in voluntarios:
@@ -567,12 +550,12 @@ def relatorio_tercas_geral(tipo):
             dic_voluntario[trabalho.data] = trabalho
             if trabalho.data not in lista_datas:
                 lista_datas.append(trabalho.data)
-        
+
         lista_geral.append(dic_voluntario)
-    
+
     # Cria uma lista com zeros. Exemplo: [0,0,0,0]
     lista_totais = [0]*(len(lista_datas)+1)
-    
+
     ### ordenando as datas e preparando rótulos ######
     lista_datas.sort()
     lista_rotulos.append("Voluntário")
@@ -581,7 +564,7 @@ def relatorio_tercas_geral(tipo):
     if lista_datas:
         data1 = lista_datas[0]
         mes1 = data1.month
-        
+
     for data in lista_datas:
         if data.month != mes1:
             lista_rotulos.append("Relatório do mês "+str(mes1)+" [P, FA, F]")
@@ -591,11 +574,11 @@ def relatorio_tercas_geral(tipo):
     if lista_datas:
         mes = lista_datas[-1].month
         lista_rotulos.append("Relatório do mês "+str(mes)+"[P, FA, F]")
-    
+
     lista_rotulos.append("Relatório")
-    
+
     ##################################################
-    
+
     for dic_vol in lista_geral:
         linha = []
         linha.append(smart_str(dic_vol['voluntario'].paciente.nome))
@@ -608,7 +591,7 @@ def relatorio_tercas_geral(tipo):
         if lista_datas:
             data1 = lista_datas[0]
             mes1 = data1.month
-        
+
         for data in lista_datas:
             if data.month != mes1:
                 linha.append("["+str(cont_presencas)+", "+str(cont_faltas_abonadas)+", "+str(cont_faltas)+"]")
@@ -616,7 +599,7 @@ def relatorio_tercas_geral(tipo):
                 cont_presencas = 0
                 cont_faltas_abonadas = 0
                 cont_faltas = 0
-        
+
             if data in dic_vol.keys():
                 trabalho = dic_vol[data]
                 if trabalho.status == None or trabalho.status == 'PR':
@@ -631,18 +614,15 @@ def relatorio_tercas_geral(tipo):
             else:
                 linha.append("F")
                 cont_faltas += 1
-        
+
         linha.append("["+str(cont_presencas)+", "+str(cont_faltas_abonadas)+", "+str(cont_faltas)+"]")
         linha.append("Relatório..")
-        
+
         lista_dados.append(linha)
-    
+
     return lista_rotulos, lista_dados, mensagem
 
 def relatorio_tercas(request):
-    """
-        
-    """
     form = FiltroRelatiorioTercasForm()
     mensagem = ''
     lista_rotulos = []
@@ -675,5 +655,3 @@ def relatorio_tercas_csv(request, tipo_voluntario):
         writer.writerow(element)
 
     return response
-
-

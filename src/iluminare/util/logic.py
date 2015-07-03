@@ -1,7 +1,6 @@
-
 # coding: utf-8
 
-from    datetime                        import date, datetime, timedelta
+from datetime import date, datetime, timedelta
 
 def get_data_limite():
     """
@@ -17,5 +16,3 @@ def get_data_limite():
         return data_base - timedelta(days=NUMERO_DIAS)
     else:
         return inicio_recesso - timedelta(days=NUMERO_DIAS-diferenca_depois.days)
-
-

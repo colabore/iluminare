@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding: utf-8
 
 from django.db import models
@@ -6,12 +5,11 @@ from iluminare.paciente.models import Paciente
 from iluminare.tratamento.models import InstanciaTratamento, AgendaTratamento
 
 class Atendimento(models.Model):
-    
     STATUS = (
-        ('C','CHECK-IN'), 
-        ('I','IMPRESSO'), 
-        ('X','CHAMADO'), 
-        ('A','ATENDIDO'), 
+        ('C','CHECK-IN'),
+        ('I','IMPRESSO'),
+        ('X','CHAMADO'),
+        ('A','ATENDIDO'),
         ('N','NAO-ATENDIDO'))
 
     paciente                = models.ForeignKey(Paciente, null = False, blank = False)
@@ -21,12 +19,14 @@ class Atendimento(models.Model):
     status                  = models.CharField(max_length=1, choices=STATUS, null= True, blank = True)
     prioridade              = models.BooleanField(blank=True, default=False)
     observacao_prioridade   = models.CharField(max_length = 100, blank = True, null = True)
-    observacao              = models.TextField(null = True, blank = True)    
+    observacao              = models.TextField(null = True, blank = True)
     senha                   = models.IntegerField(null = True, blank=True)
 
     def __unicode__(self):
-        return "%s - %s - %s - %s" % (self.paciente.nome, self.hora_chegada, str(self.instancia_tratamento.data), \
+        return "%s - %s - %s - %s" % (self.paciente.nome, self.hora_chegada,
+            str(self.instancia_tratamento.data),
             self.instancia_tratamento.tratamento.descricao_basica)
+
 class AgendaAtendimento(models.Model):
     STATUS = (
         ('A','Aberto'),
@@ -45,7 +45,7 @@ class AgendaAtendimento(models.Model):
     status                  = models.CharField(max_length=1, choices=STATUS, null = True, blank = True)
 
     # No caso inicialmente pensado, a data da criação do agendamento estava embutida no atendimento_origem.
-    # Como agora temos a possibildiade de criar um agendamento sem que este esteja pendurado em algum atendimento, 
+    # Como agora temos a possibildiade de criar um agendamento sem que este esteja pendurado em algum atendimento,
     # precisamos de uma data.
     # Na prática, essa data passará a ser a data oficial de criação do agendamento.
     data_criacao            = models.DateField(blank = True, null = True)
@@ -74,4 +74,3 @@ class Notificacao(models.Model):
 
     def __unicode__(self):
         return "(Ativo: %s) %s - %s" % (self.ativo, self.paciente.nome, self.descricao)
-

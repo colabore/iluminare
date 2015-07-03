@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding: utf-8
 
 from django.db import models
@@ -7,7 +6,7 @@ from iluminare.tratamento.models import Tratamento
 
 class Funcao(models.Model):
     descricao       = models.TextField(null = False, blank = False)
-    tratamento      = models.ForeignKey(Tratamento, null = True, blank = True)    
+    tratamento      = models.ForeignKey(Tratamento, null = True, blank = True)
 
     def __unicode__(self):
         return self.descricao
@@ -16,7 +15,7 @@ class Voluntario(models.Model):
     # Retiramos a opcao (C, Colaborador).
     # A partir de 2014 o perfil colaborador deixou de existir.
     # A base de dados e algumas telas do sistema continuam com o colaborador para consulta.
-    TIPO = (('T', "Trabalhador"),('A',"Apoio")) 
+    TIPO = (('T', "Trabalhador"),('A',"Apoio"))
     DIAS = (
         ('T', 'Terça'),
         ('X', 'Sexta'))
@@ -27,19 +26,16 @@ class Voluntario(models.Model):
     data_fim        = models.DateField(null = True, blank = True)
     ativo           = models.BooleanField(blank = True, default=True)
     observacao      = models.TextField(null = True, blank = True)
-    dia_estudo      = models.CharField(max_length=1, choices = DIAS, null = True, blank = True)	
+    dia_estudo      = models.CharField(max_length=1, choices = DIAS, null = True, blank = True)
 
     class Meta:
         ordering = ['paciente__nome']
-    
-    
+
+
     def __unicode__(self):
-        return "%s status: %s" % (self.paciente.nome, self.tipo) 
-
-
+        return "%s status: %s" % (self.paciente.nome, self.tipo)
 
 class Trabalho(models.Model):
-    
     STATUS = (
         ('PR', "Presente"),
         ('FA', "Falta"),
@@ -72,10 +68,9 @@ class FuncaoVoluntario(models.Model):
 
 class AgendaTrabalho(models.Model):
     voluntario      = models.ForeignKey(Voluntario, null = False, blank = False)
-    data            = models.DateField(null = False, blank = False)    
+    data            = models.DateField(null = False, blank = False)
     hora_chegada    = models.TimeField(null = True, blank = True)
     hora_saida      = models.TimeField(null = True, blank = True)
 
     def __unicode__(self):
         return "%s - data: %s" % (self.voluntario.paciente.nome, self.data)
-
