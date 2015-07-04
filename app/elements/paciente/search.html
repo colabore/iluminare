@@ -10,6 +10,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <dom-module id="paciente-search">
   <style>
+    .list-item div {float: left;}
+    .list-item-name {width: 200px}
   </style>
   <template>
     <iron-ajax id="service"
@@ -21,11 +23,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       <paper-input id="q-paciente" name="name" label="nome do paciente" value="{{paciente}}" on-keyup="onKeyPressed"></paper-input>
 
-    <ul>
-      <template is="dom-repeat" items="{{pacientes}}">
-        <li><span class="paper-font-body1">{{item.nome}}</span></li>
+      <template is="dom-if" if="{{showList}}">
+        <p>Selecione o paciente que você deseja fazer o check-in</p>
+        <ul>
+          <template is="dom-repeat" items="{{pacientes}}">
+            <paper-item role="menuitem" class="list-item">
+              <paper-item-body one-line>
+                <a data-route="checkin-paciente" on-click="onItemSelected">
+                  <div class='list-item-name'>{{item.fields.nome}}</div>
+                  <div class='list-item-icon' secondary>
+                    <template is="dom-if" if="{{item.fields.data_nascimento}}">
+                       nascido em <span>{{item.fields.data_nascimento}}<span>
+                    </template>
+                  </div>
+                </a>
+              </paper-item-body>
+            </paper-item>
+          </template>
+        </ul>
       </template>
-    </ul>
   </template>
 
   <script>
@@ -41,24 +57,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           paciente: {
             type: String,
             notify: true
+          },
+          showList: {
+            type: Boolean,
+            value: false,
+            notify: true
           }
         },
+
         onKeyPressed: function(key)
         {
           this.$.service.url = 'http://localhost:8000/paciente/json/search/' + encodeURIComponent(this.paciente);
         },
+
         onPacientesResponse: function(response)
         {
-          if (response.detail.response === null)
+          if (response.detail.response === null) {
+            this.showList = false;
             return;
-
-          var parsedResponse = response.detail.response.result;
-          var pacientes = [];
-          for (var i=0; i<parsedResponse.length; i++) {
-            pacientes.push(parsedResponse[i].fields);
           }
+          this.pacientes = response.detail.response.result;
+          this.showList = this.pacientes.length > 0;
+        },
 
-          this.pacientes = pacientes;
+        onItemSelected: function(a)
+        {
+          app.route = 'paciente-checkin';
+          app.params = a.model.item;
         }
       });
     })();
