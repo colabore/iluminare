@@ -129,8 +129,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <section data-route="paciente">
               <paper-material elevation="1">
                 <h2 class="paper-font-display2">Pacientes</h2>
-
                 <paciente-search></paciente-search>
+              </paper-material>
+            </section>
+
+            <section data-route="paciente-checkin">
+              <paper-material elevation="1">
+                <h2 class="paper-font-display2">Checkin de <span>{{params.fields.nome}}</span></h2>
+                <paciente-checkin paciente={{params}}></paciente-checkin>
               </paper-material>
             </section>
 
@@ -140,7 +146,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 <h2 class="paper-font-display2">
                 User:<span>{{params.name}}</span>
                 </h2>
-                <div>This is <span>{{params.name}}</span>'s section</div>
+                <div>This is <span>{{params.nome}}</span>'s section</div>
               </paper-material>
             </section>
 
