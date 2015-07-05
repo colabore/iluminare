@@ -57,7 +57,43 @@
           <span class="paper-font-title">Menu</span>
         </paper-toolbar>
 
-        <ie-menu></ie-menu>
+        <!-- Drawer Content -->
+        <paper-menu class="list" attr-for-selected="data-route" selected="{{route}}">
+          <paper-item data-route="home">
+            <a href="/">
+              <iron-icon icon="home"></iron-icon>
+              <span>Home</span>
+            </a>
+          </paper-item>
+
+          <paper-item data-route="paciente">
+            <a href="/paciente">
+              <iron-icon icon="face"></iron-icon>
+              <span>Pacientes</span>
+            </a>
+          </paper-item>
+
+          <paper-item data-route="atendimento">
+            <a href="/atendimento">
+              <iron-icon icon="accessibility"></iron-icon>
+              <span>Atendimentos</span>
+            </a>
+          </paper-item>
+
+          <paper-item data-route="voluntario">
+            <a href="/voluntario">
+              <iron-icon icon="work"></iron-icon>
+              <span>Voluntários</span>
+            </a>
+          </paper-item>
+
+          <paper-item data-route="relatorio">
+            <a href="/relatorio">
+              <iron-icon icon="assessment"></iron-icon>
+              <span>Relatórios</span>
+            </a>
+          </paper-item>
+        </paper-menu>
       </div>
       <paper-header-panel main mode="waterfall-tall">
 
@@ -84,10 +120,7 @@
 
             <section data-route="home">
               <paper-material elevation="1">
-                Projeto Iluminare
-              </paper-material>
-
-              <paper-material elevation="1">
+                <h2 class="paper-font-display2">Home</h2>
                 <p class="paper-font-body2">This is another card.</p>
               </paper-material>
             </section>
@@ -95,32 +128,32 @@
             <section data-route="paciente">
               <paper-material elevation="1">
                 <h2 class="paper-font-display2">Pacientes</h2>
-                <paciente-search></paciente-search>
+                <paciente-search paciente="{{paciente_checkin}}"></paciente-search>
               </paper-material>
             </section>
 
             <section data-route="paciente-checkin">
               <paper-material elevation="1">
-                <h2 class="paper-font-display2">Checkin de <span>{{params.fields.nome}}</span></h2>
-                <paciente-checkin paciente={{params}}></paciente-checkin>
+                <h2 class="paper-font-display2">Paciente <span>{{paciente_checkin.fields.nome}}</span></h2>
+                <paciente-checkin paciente={{paciente_checkin}}></paciente-checkin>
               </paper-material>
             </section>
 
             <section data-route="atendimento">
               <paper-material elevation="1">
-                <h1>Atendimentos</h1>
+                <h2 class="paper-font-display2">Atendimentos</h2>
               </paper-material>
             </section>
 
             <section data-route="voluntario">
               <paper-material elevation="1">
-                <h2 class="paper-font-display2">Voluntário</h2>
+                <h2 class="paper-font-display2">Voluntários</h2>
               </paper-material>
             </section>
 
             <section data-route="relatorio">
               <paper-material elevation="1">
-                <h2 class="paper-font-display2">Relatório</h2>
+                <h2 class="paper-font-display2">Relatórios</h2>
               </paper-material>
             </section>
 
