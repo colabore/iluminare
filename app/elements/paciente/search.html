@@ -8,13 +8,12 @@
   </style>
   <template>
     <service-paciente-search
-      nome="{{paciente}}"
+      nome="{{_nome}}"
       pacientes="{{pacientes}}"></service-paciente-search>
     <paper-input
       label="nome do paciente"
-      value="{{paciente}}"></paper-input>
+      value="{{_nome}}"></paper-input>
 
-    <p>Selecione o paciente que você deseja fazer o check-in</p>
     <ul>
       <template is="dom-repeat" items="{{pacientes}}">
         <paper-item role="menuitem" class="list-item">
@@ -44,14 +43,20 @@
             notify: true
           },
           paciente: {
+            type: Object,
+            notify: true
+          },
+          _nome: {
             type: String,
             notify: true
           }
         },
-        onItemSelected: function(a)
+        onItemSelected: function(listItem)
         {
           app.route = 'paciente-checkin';
-          app.params = a.model.item;
+          app.params = listItem.model.item;
+
+          this.paciente = listItem.model.item;
         }
       });
     })();
