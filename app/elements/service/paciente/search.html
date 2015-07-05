@@ -1,0 +1,60 @@
+
+<dom-module id="service-paciente-search">
+  <template>
+    <iron-ajax id="service"
+      auto
+      handle-as="json"
+      headers='{"Accept": "application/json"}'
+      on-response="_onPacientesResponse"
+      url="{{url}}"
+      debounce-duration="400"></iron-ajax>
+  </template>
+  <script>
+    (function() {
+      Polymer({
+        is: 'service-paciente-search',
+
+        properties: {
+          server: {
+            type: String,
+            value: "http://localhost:8000",
+            notify: true
+          },
+          path: {
+            type: String,
+            value: "/paciente/json/search/",
+            notify: true
+          },
+          nome: {
+            type: String,
+            notify: true
+          },
+          url: {
+            type: String,
+            computed: '_serviceUrl(server, path, nome)'
+          },
+          pacientes: {
+            type: Array,
+            notify: true,
+            value: function() {
+              return [];
+            }
+          }
+        },
+        _serviceUrl: function(server, path, nome)
+        {
+          return server + path + encodeURIComponent(nome);
+        },
+        _onPacientesResponse: function(response)
+        {
+          if (response.detail.response === null) {
+            this.pacientes = [];
+          } else {
+            this.pacientes = response.detail.response.result;
+          }
+        },
+      });
+    })();
+  </script>
+
+</dom-module>
