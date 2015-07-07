@@ -21,23 +21,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     page('/paciente', function () {
       app.route = 'paciente';
+      app.params = {'path': 'Pacientes'}
     });
 
-    page('/paciente/:id/checkin', function (data) {
-      app.route = 'paciente-checkin';
-      app.params = data.params
+    page('/paciente/:id/details', function (data) {
+      app.route = 'paciente-details';
+      app.params = {'path': 'Pacientes / detalhe paciente'};
+    });
+
+    page('/paciente/details', function (data) {
+      app.route = 'paciente-details';
+      app.params = {'path': 'Pacientes / detalhe paciente'};
     });
 
     page('/atendimento', function () {
       app.route = 'atendimento';
+      app.params = {'path': 'Atendimentos'};
     });
 
     page('/voluntario', function () {
       app.route = 'voluntario';
+      app.params = {'path': 'Voluntários'};
     });
 
     page('/relatorio', function () {
       app.route = 'relatorio';
+      app.params = {'path': 'Relatórios'};
     });
 
     // add #! before urls
