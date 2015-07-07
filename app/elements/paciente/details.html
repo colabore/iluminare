@@ -3,7 +3,14 @@
   <style>
   </style>
   <template>
-      <span>{{params.fields.nome}}</span>
+    <ul>
+      <li>Nome: <span>{{paciente.fields.nome}}</span></li>
+      <li>Data de nascimento: <span>{{paciente.fields.data_nascimento}}</span></li>
+      <li>Local de nascimento: <span>{{paciente.fields.local_nascimento}}</span></li>
+      <li>Tem ficha: <span>{{paciente.fields.tem_ficha}}</span></li>
+      <li>Estado: <span>{{paciente.fields.estado}}</span></li>
+      <li>Observação: <span>{{paciente.fields.observacao}}</span></li>
+    </ul>
   </template>
   <script>
     (function() {
