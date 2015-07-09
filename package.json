@@ -51,7 +51,7 @@
   "scripts": {
     "jsx": "jsx app/scripts/jsx/ tmp/ -w",
     "bundle": "mkdir -p tmp && watchify -o app/scripts/bundle.js -v -d tmp/iluminare.js",
-    "build": "browserify . -t [envify --NODE_ENV production] | uglifyjs -cm > app/js/bundle.min.js",
+    "build": "browserify tmp/iluminare.js -t [envify --NODE_ENV production] | uglifyjs -cm > app/scripts/bundle.min.js",
     "test": "jest"
   },
   "browserify": {
