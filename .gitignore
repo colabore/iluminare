@@ -4,7 +4,8 @@
 *.bak
 src/database.db
 *.swp
-
+tmp
+app/scripts/bundle*
 #polymer
 node_modules
 dist
