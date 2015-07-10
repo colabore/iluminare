@@ -15,7 +15,6 @@ var PacienteInfo = React.createClass({
     this.setState(PacienteInfoStore.get());
   },
   render: function() {
-    // TODO
     return (
       <ul></ul>
     )

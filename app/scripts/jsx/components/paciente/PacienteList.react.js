@@ -28,6 +28,7 @@ var PacienteList = React.createClass({
   },
   _onTouchTap: function(e) {
     PacienteActions.info(e.currentTarget.id);
+    document.location = document.location.origin + '/#/paciente/details/' + e.currentTarget.id;
   },
   getMessageListItem: function(message) {
     return (

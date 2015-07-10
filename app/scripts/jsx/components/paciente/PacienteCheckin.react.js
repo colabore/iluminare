@@ -6,6 +6,7 @@ var PacienteCheckin = React.createClass({
   render: function() {
     return (
       <div>
+        <h2 className="paper-font-display2">Paciente</h2>
         <PacienteSearch />
         <PacienteList />
       </div>
