@@ -14,6 +14,12 @@ class AtendimentoViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.DjangoFilterBackend,)
     filter_fields = ('status', 'instancia_tratamento__data', 'instancia_tratamento__tratamento__id')
 
+class InstanciaTratamentoViewSet(viewsets.ModelViewSet):
+    queryset = InstanciaTratamento.objects.all()
+    serializer_class = InstanciaTratamentoSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_fields = ('data', )
+
 class TratamentoViewSet(viewsets.ModelViewSet):
     queryset = Tratamento.objects.all()
     serializer_class = TratamentoSerializer

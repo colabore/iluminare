@@ -1,22 +1,18 @@
 var React = require('react');
 var Router = require('react-router'),
   RouteHandler = Router.RouteHandler;
-var MaterialUI = require('material-ui'),
-  ThemeManager = new MaterialUI.Styles.ThemeManager(),
-  Card = MaterialUI.Card,
-  CardTitle = MaterialUI.CardTitle,
-  CardText = MaterialUI.CardText,
-  CardActions = MaterialUI.CardActions,
-  IconButton = MaterialUI.IconButton,
-  CardMedia = MaterialUI.CardMedia;
+var InstanciaTratatamentoPanel = require('../tratamento/InstanciaTratamentoPanel.react');
+var TratamentoActions = require('../../actions/TratamentoActions');
 
 var Atendimento = React.createClass({
-  childContextTypes: {muiTheme: React.PropTypes.object},
-  getChildContext: function() {return {muiTheme: ThemeManager.getCurrentTheme()}},
+  componentDidMount: function() {
+    TratamentoActions.instanciatratamento();
+  },
   render: function () {
     return (
       <div>
-        <h1>Atendimento</h1>
+        <h2 className="paper-font-display2">Atendimentos</h2>
+        <InstanciaTratatamentoPanel />
         <RouteHandler />
       </div>
     )

@@ -42,11 +42,12 @@ class TratamentoPacienteSerializer(serializers.HyperlinkedModelSerializer):
         model = TratamentoPaciente
 
 class InstanciaTratamentoSerializer(serializers.HyperlinkedModelSerializer):
+    id = serializers.ReadOnlyField()
     tratamento = TratamentoSerializer()
 
     class Meta:
         model = InstanciaTratamento
-        fields = ('tratamento', 'data', 'medico_espiritual', 'coletivo', 'observacoes')
+        fields = ('id', 'tratamento', 'data', 'medico_espiritual', 'coletivo', 'observacoes')
 
 class AgendaTratamentoSerializer(serializers.HyperlinkedModelSerializer):
     tratamento = TratamentoSerializer()
