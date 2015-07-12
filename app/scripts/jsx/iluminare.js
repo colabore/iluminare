@@ -7,17 +7,7 @@ var Router = require('react-router'),
 
 var PacienteCheckin = require('./components/paciente/PacienteCheckin.react');
 var PacienteDetails = require('./components/paciente/PacienteDetails.react');
-
-var Atendimento = React.createClass({
-  render: function () {
-    return (
-      <div elevation="1">
-        <h2 className="paper-font-display2">Atendimento</h2>
-        <RouteHandler />
-      </div>
-    )
-  }
-});
+var Atendimento = require('./components/atendimento/Index.react');
 
 var App = React.createClass({
   render () {
