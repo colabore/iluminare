@@ -9,17 +9,6 @@ var PacienteCheckin = require('./components/paciente/PacienteCheckin.react');
 var PacienteDetails = require('./components/paciente/PacienteDetails.react');
 var Atendimento = require('./components/atendimento/Index.react');
 
-var App = React.createClass({
-  render () {
-    return (
-      <div>
-        <h1>home</h1>
-        <a href="#/paciente">Paciente</a>
-      </div>
-    )
-  }
-});
-
 var routes = (
   <Route>
     <Route path="paciente" handler={PacienteCheckin} />
