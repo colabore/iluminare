@@ -5,7 +5,7 @@ var assign = require('object-assign');
 var jquery = require('jquery');
 
 var CHANGE_EVENT = 'change';
-var pacientes = {'result': []};
+var pacientes = {'results': []};
 
 var PacienteSearchStore = assign({}, EventEmitter.prototype, {
   get: function() {
@@ -21,7 +21,7 @@ var PacienteSearchStore = assign({}, EventEmitter.prototype, {
     this.removeListener(CHANGE_EVENT, callback);
   },
   search: function(nome) {
-    jquery.getJSON( "http://localhost:8000/paciente/json/search/" + nome,
+    jquery.getJSON( "http://localhost:8000/api/paciente/.json?search=" + nome,
       function(data) {
         pacientes = data;
         PacienteSearchStore.emitChange();

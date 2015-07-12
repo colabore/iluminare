@@ -13,6 +13,7 @@ class PacienteSimpleSerializer(serializers.HyperlinkedModelSerializer):
         model = Paciente
 
 class PacienteSerializer(serializers.HyperlinkedModelSerializer):
+    id = serializers.ReadOnlyField()
     acompanhante = PacienteSimpleSerializer()
     acompanhante_crianca = PacienteSimpleSerializer()
     casado_com = PacienteSimpleSerializer()

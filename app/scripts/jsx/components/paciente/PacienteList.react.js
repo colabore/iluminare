@@ -30,19 +30,19 @@ var PacienteList = React.createClass({
     PacienteActions.info(e.currentTarget.id);
     document.location = document.location.origin + '/#/paciente/details/' + e.currentTarget.id;
   },
-  getMessageListItem: function(message) {
+  getMessageListItem: function(data) {
     return (
       <ListItem
-        id={message.pk}
-        key={message.pk}
-        secondaryText={message.fields.data_nascimento}
+        id={data.id}
+        key={data.id}
+        secondaryText={data.data_nascimento}
         onTouchTap={this._onTouchTap}>
-        {message.fields.nome}
+        {data.nome}
       </ListItem>
     );
   },
   render: function() {
-    var messageListItems = this.state.result.map(this.getMessageListItem);
+    var messageListItems = this.state.results.map(this.getMessageListItem);
     return (
       <List>
         {messageListItems}
