@@ -8,12 +8,14 @@ var Router = require('react-router'),
 var PacienteCheckin = require('./components/paciente/PacienteCheckin.react');
 var PacienteDetails = require('./components/paciente/PacienteDetails.react');
 var Atendimento = require('./components/atendimento/Index.react');
+var AtendimentosList = require('./components/atendimento/AtendimentosList.react');
 
 var routes = (
   <Route>
     <Route path="paciente" handler={PacienteCheckin} />
     <Route path="paciente/details/:id" handler={PacienteDetails} />
     <Route path="atendimento" handler={Atendimento}/>
+    <Route path="atendimentos/:id" handler={AtendimentosList}/>
     <Route path="voluntario" handler={PacienteCheckin}/>
     <Route path="relatorio" handler={PacienteCheckin}/>
   </Route>
