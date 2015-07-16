@@ -2,7 +2,7 @@
 var React = require('react');
 var PacienteSearchStore = require('../../stores/PacienteSearchStore');
 var PacienteActions = require('../../actions/PacienteActions');
-injectTapEventPlugin = require("react-tap-event-plugin");
+var injectTapEventPlugin = require("react-tap-event-plugin");
 injectTapEventPlugin();
 
 var MaterialUI = require('material-ui'),
