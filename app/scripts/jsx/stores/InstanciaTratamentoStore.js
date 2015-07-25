@@ -2,12 +2,9 @@
 var AppDispatcher = require('../dispatcher/AppDispatcher');
 var EventEmitter = require('events').EventEmitter;
 var AppConstants = require('../constants/AppConstants');
-var ConfigurationConstants = require('../constants/ConfigurationConstants');
+var urls = require('../utils/ApiUrls');
 var assign = require('object-assign');
 var jquery = require('jquery');
-
-var SERVER = ConfigurationConstants.Server;
-var API = "/api/instanciatratamento/.json";
 
 var CHANGE_EVENT = 'change';
 var data = {'results': []};
@@ -26,8 +23,10 @@ var InstanciaTratamentoStore = assign({}, EventEmitter.prototype, {
     this.removeListener(CHANGE_EVENT, callback);
   },
   searchByDate: function(year, month, day) {
-    var date = year + '-' + month + '-' + day;
-    jquery.getJSON(SERVER + API + "?data=" + date,
+    let params = {
+      'data': year + '-' + month + '-' + day
+    };
+    jquery.getJSON(urls.instanciatratamento(params),
       function(response) {
         data = response;
         InstanciaTratamentoStore.emitChange();

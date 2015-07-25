@@ -1,11 +1,9 @@
 var AppDispatcher = require('../dispatcher/AppDispatcher');
 var EventEmitter = require('events').EventEmitter;
 var AppConstants = require('../constants/AppConstants');
-var ConfigurationConstants = require('../constants/ConfigurationConstants');
+var urls = require('../utils/ApiUrls');
 var assign = require('object-assign');
 var jquery = require('jquery');
-
-var SERVER = ConfigurationConstants.Server;
 
 var CHANGE_EVENT = 'change';
 var pacientes = {'results': []};
@@ -24,7 +22,10 @@ var PacienteSearchStore = assign({}, EventEmitter.prototype, {
     this.removeListener(CHANGE_EVENT, callback);
   },
   search: function(nome) {
-    jquery.getJSON(SERVER + "/api/paciente/.json?search=" + nome,
+    let params = {
+      'search': nome
+    }
+    jquery.getJSON(urls.paciente(params),
       function(data) {
         pacientes = data;
         PacienteSearchStore.emitChange();

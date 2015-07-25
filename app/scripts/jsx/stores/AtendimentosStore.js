@@ -1,12 +1,9 @@
 var AppDispatcher = require('../dispatcher/AppDispatcher');
 var EventEmitter = require('events').EventEmitter;
 var AppConstants = require('../constants/AppConstants');
-var ConfigurationConstants = require('../constants/ConfigurationConstants');
+var urls = require('../utils/ApiUrls');
 var assign = require('object-assign');
 var jquery = require('jquery');
-
-var SERVER = ConfigurationConstants.Server;
-var API = '/api/atendimento/.json'
 
 var CHANGE_EVENT = 'change';
 var data = {'results': []};
@@ -25,7 +22,11 @@ var AtendimentosStore = assign({}, EventEmitter.prototype, {
     this.removeListener(CHANGE_EVENT, callback);
   },
   search: function(id) {
-    jquery.getJSON(SERVER + API + '?status=C&instancia_tratamento__id=' + id,
+    let params = {
+      'status': 'C',
+      'instancia_tratamento__id': id
+    };
+    jquery.getJSON(urls.atendimento(params),
       function(result) {
         data = result;
         AtendimentosStore.emitChange();
