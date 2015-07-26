@@ -1,10 +1,10 @@
 var React = require('react');
-var AtendimentoActions = require('../../actions/AtendimentoActions');
-var AtendimentosStore = require('../../stores/AtendimentosStore');
 var MaterialUI = require('material-ui'),
   ThemeManager = new MaterialUI.Styles.ThemeManager(),
   ListItem = MaterialUI.ListItem,
   List = MaterialUI.List;
+
+var subscription;
 
 var AtendimentosList = React.createClass({
   childContextTypes: {
@@ -14,14 +14,13 @@ var AtendimentosList = React.createClass({
     return { muiTheme: ThemeManager.getCurrentTheme() }
   },
   getInitialState: function() {
-    return AtendimentosStore.get();
+    return {results: []};
   },
   componentDidMount: function() {
-    AtendimentosStore.addChangeListener(this._onData);
-    AtendimentoActions.search(this.props.params.id);
+    subscription = this.props.atendimentosStore.subscribe(this.setState.bind(this));
   },
   componentWillUnmount: function() {
-    AtendimentosStore.removeChangeListener(this._onData);
+    subscription.dispose();
   },
   _transform: function(row) {
     return (
@@ -33,9 +32,6 @@ var AtendimentosList = React.createClass({
         Senha {row.senha}{row.status}: {row.paciente.nome}
       </ListItem>
     )
-  },
-  _onData: function() {
-    this.setState(AtendimentosStore.get());
   },
   render: function () {
     var items = this.state.results.map(this._transform);

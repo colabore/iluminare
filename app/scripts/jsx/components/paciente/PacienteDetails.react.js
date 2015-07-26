@@ -1,14 +1,33 @@
 var React = require('react');
-var PacienteInfo = require('./PacienteInfo.react');
 var MaterialUI = require('material-ui'),
   ThemeManager = new MaterialUI.Styles.ThemeManager(),
   Tabs = MaterialUI.Tabs,
-  Tab = MaterialUI.Tab;
+  Tab = MaterialUI.Tab,
+  List = MaterialUI.List,
+  ListItem = MaterialUI.ListItem,
+  TextField = MaterialUI.TextField;
+
+var subscription;
 
 var PacienteDetails = React.createClass({
-  childContextTypes: {muiTheme: React.PropTypes.object},
-  getChildContext: function() {return {muiTheme: ThemeManager.getCurrentTheme()}},
+  childContextTypes: {
+    muiTheme: React.PropTypes.object
+  },
+  getChildContext: function() {
+    return {
+      muiTheme: ThemeManager.getCurrentTheme()
+    };
+  },
+  getInitialState: function() {
+    return {
+      'nome': 'Nome do paciente'
+    }
+  },
   componentDidMount: function() {
+    subscription = this.props.infoStore.subscribe(this.setState.bind(this));
+  },
+  componentWillUnmount: function() {
+    subscription.dispose();
   },
   render: function() {
     return (
@@ -16,13 +35,15 @@ var PacienteDetails = React.createClass({
         <h2 className="paper-font-display2">Paciente</h2>
         <Tabs>
           <Tab label="Informações">
-            <PacienteInfo />
+            <List>
+              <ListItem>Nome: {this.state.nome}</ListItem>
+            </List>
           </Tab>
           <Tab label="Tratamentos">
-            <PacienteInfo />
+            <p>Informação não disponível</p>
           </Tab>
           <Tab label="Atendimentos">
-            <PacienteInfo />
+            <p>Informação não disponível</p>
           </Tab>
         </Tabs>
       </div>

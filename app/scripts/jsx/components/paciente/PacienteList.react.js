@@ -1,33 +1,22 @@
 
 var React = require('react');
-var PacienteSearchStore = require('../../stores/PacienteSearchStore');
-var PacienteActions = require('../../actions/PacienteActions');
-var injectTapEventPlugin = require("react-tap-event-plugin");
-injectTapEventPlugin();
-
 var MaterialUI = require('material-ui'),
-  ThemeManager = new MaterialUI.Styles.ThemeManager(),
   List = MaterialUI.List,
   ListItem = MaterialUI.ListItem;
 
-var PacienteList = React.createClass({
-  childContextTypes: {muiTheme: React.PropTypes.object},
-  getChildContext: function() {return {muiTheme: ThemeManager.getCurrentTheme()}},
+var subscription;
 
+var PacienteList = React.createClass({
   getInitialState: function() {
-   return PacienteSearchStore.get();
+   return {'results': []};
   },
   componentDidMount: function() {
-    PacienteSearchStore.addChangeListener(this._onData);
+    subscription = this.props.searchByNameStore.subscribe(this.setState.bind(this));
   },
   componentWillUnmount: function() {
-    PacienteSearchStore.removeChangeListener(this._onData);
-  },
-  _onData: function() {
-    this.setState(PacienteSearchStore.get());
+    subscription.dispose();
   },
   _onTouchTap: function(e) {
-    PacienteActions.info(e.currentTarget.id);
     document.location = document.location.origin + '/#/paciente/details/' + e.currentTarget.id;
   },
   getMessageListItem: function(data) {

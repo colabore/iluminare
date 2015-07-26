@@ -1,23 +1,16 @@
 
 var React = require('react');
-var PacienteActions = require('../../actions/PacienteActions');
-var MaterialUI = require('material-ui'),
-  ThemeManager = new MaterialUI.Styles.ThemeManager(),
-  TextField = MaterialUI.TextField;
+var TextField = require('material-ui').TextField;
 
 var ENTER_KEY_CODE = 13;
 
 var PacienteSearch = React.createClass({
-  childContextTypes: {muiTheme: React.PropTypes.object},
-  getChildContext: function() {return {muiTheme: ThemeManager.getCurrentTheme()}},
-
   handleChange: function($event) {
     if ($event.keyCode == ENTER_KEY_CODE)
       $event.preventDefault();
 
-    PacienteActions.search($event.target.value);
+    this.props.searchByNameAction.onNext($event.target.value);
   },
-
   render: function() {
     return (
       <TextField
