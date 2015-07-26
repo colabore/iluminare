@@ -5,8 +5,9 @@ from api.serializers import *
 class PacienteViewSet(viewsets.ModelViewSet):
     queryset = Paciente.objects.all()
     serializer_class = PacienteSerializer
-    filter_backends = (filters.SearchFilter,)
+    filter_backends = (filters.SearchFilter,filters.DjangoFilterBackend)
     search_fields = ('nome', )
+    filter_fields = ('id',)
 
 class AtendimentoViewSet(viewsets.ModelViewSet):
     queryset = Atendimento.objects.all()
