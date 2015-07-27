@@ -37,7 +37,7 @@ var AtendimentosList = React.createClass({
     var items = this.state.results.map(this._transform);
 
     var description = (items.length > 0)
-      ? <p>Atendimentos não confirmados do tratamento
+      ? <p>{this.state.count} atendimento(s) não confirmado(s) do tratamento
         <strong> {this.state.results[0].instancia_tratamento.tratamento.descricao_basica} </strong>
         para a data {this.state.results[0].instancia_tratamento.data}</p>
       : <p>Ninguém fez o checkin para o tratamento ainda</p>;
