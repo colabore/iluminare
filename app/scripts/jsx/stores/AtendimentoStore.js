@@ -8,7 +8,8 @@ function byId(action, store) {
 
       let params = {
         'status': 'C',
-        'instancia_tratamento__id': id
+        'instancia_tratamento__id': id,
+        'page_size': 100
       };
 
       jquery.getJSON(urls.atendimento(params), x => store.onNext(x));
