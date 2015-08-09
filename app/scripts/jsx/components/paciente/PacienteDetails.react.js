@@ -7,6 +7,7 @@ var MaterialUI = require('material-ui'),
   ListItem = MaterialUI.ListItem,
   TextField = MaterialUI.TextField;
 
+var model;
 var subscription;
 
 var PacienteDetails = React.createClass({
@@ -24,7 +25,8 @@ var PacienteDetails = React.createClass({
     }
   },
   componentDidMount: function() {
-    subscription = this.props.infoStore.subscribe(this.setState.bind(this));
+    model.infoAction.onNext(this.props.params.id);
+    subscription = model.infoStore.subscribe(this.setState.bind(this));
   },
   componentWillUnmount: function() {
     subscription.dispose();
@@ -51,4 +53,15 @@ var PacienteDetails = React.createClass({
   }
 });
 
-module.exports = PacienteDetails;
+
+function create(options) {
+  if (!options.infoStore)
+    throw new Error('infoStore is required');
+
+  if (!options.infoAction)
+    throw new Error('infoAction is required');
+
+  model = options;
+  return PacienteDetails;
+}
+module.exports = create;

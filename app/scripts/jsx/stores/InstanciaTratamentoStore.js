@@ -1,5 +1,6 @@
 var urls = require('../utils/ApiUrls');
 var jquery = require('jquery');
+var Rx = require('rx');
 
 function byDate(action, store) {
   return action.subscribe(
@@ -26,10 +27,13 @@ function create(options) {
   if (!options.byDateAction)
     throw new Error('byDateAction is required');
 
-  if (!options.byDateStore)
-    throw new Error('byDateStore is required');
-
-  byDate(options.byDateAction, options.byDateStore);
+  var model = {
+    byDateStore: new Rx.ReplaySubject()
+  };
+  jquery.extend(model, options);
+  
+  byDate(model.byDateAction, model.byDateStore);
+  return model;
 }
 
 module.exports = create;

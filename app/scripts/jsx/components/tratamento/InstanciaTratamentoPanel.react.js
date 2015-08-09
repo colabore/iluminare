@@ -19,7 +19,6 @@ var InstanciaTratamentoPanel = React.createClass({
    return {results: []};
   },
   componentDidMount: function() {
-    console.log(this.props);
     subscription = this.props.todayStore.subscribe(this.setState.bind(this));
   },
   componentWillUnmount: function() {

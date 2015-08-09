@@ -7,6 +7,7 @@ var MaterialUI = require('material-ui'),
 var injectTapEventPlugin = require("react-tap-event-plugin");
 injectTapEventPlugin();
 
+var model;
 var subscription;
 
 var AtendimentosList = React.createClass({
@@ -20,7 +21,8 @@ var AtendimentosList = React.createClass({
     return {results: []};
   },
   componentDidMount: function() {
-    subscription = this.props.atendimentosStore.subscribe(this.setState.bind(this));
+    model.byInstanciaTratamentoIdAction.onNext(this.props.params.id);
+    subscription = model.byInstanciaTratamentoIdStore.subscribe(this.setState.bind(this));
   },
   componentWillUnmount: function() {
     subscription.dispose();
@@ -61,4 +63,15 @@ var AtendimentosList = React.createClass({
   }
 });
 
-module.exports = AtendimentosList;
+function create(options) {
+  if (!options.byInstanciaTratamentoIdAction)
+    throw new Error('byInstanciaTratamentoIdAction is required');
+
+  if (!options.byInstanciaTratamentoIdStore)
+    throw new Error('byInstanciaTratamentoIdStore is required');
+
+  model = options;
+  return AtendimentosList;
+}
+
+module.exports = create;

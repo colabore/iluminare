@@ -1,5 +1,6 @@
 var urls = require('../utils/ApiUrls');
 var jquery = require('jquery');
+var Rx = require('rx');
 
 function searchByName(action, store) {
   var source = action.debounce(400);
@@ -33,19 +34,20 @@ function info(action, store) {
 
 function create(options) {
   if (!options.searchByNameAction)
-    throw new Error('PacientesSearchByNameAction is required');
-
-  if (!options.searchByNameStore)
-    throw new Error('PacientesSearchByNameStore is required');
+    throw new Error('searchByNameAction is required');
 
   if (!options.infoAction)
-    throw new Error('PacienteInfoAction is required');
+    throw new Error('infoAction is required');
 
-  if (!options.infoStore)
-    throw new Error('PacienteInfoStore is required');
+  var model = {
+    searchByNameStore: new Rx.Subject(),
+    infoStore: new Rx.Subject()
+  };
+  jquery.extend(model, options);
 
-  searchByName(options.searchByNameAction, options.searchByNameStore);
-  info(options.infoAction, options.infoStore);
+  searchByName(model.searchByNameAction, model.searchByNameStore);
+  info(model.infoAction, model.infoStore);
+  return model;
 }
 
 module.exports = create;

@@ -1,4 +1,5 @@
 var urls = require('../utils/ApiUrls');
+var Rx = require('rx');
 var jquery = require('jquery');
 
 function byInstanciaTratamentoId(action, store) {
@@ -35,18 +36,19 @@ function create(options) {
   if (!options.byInstanciaTratamentoIdAction)
     throw new Error('byInstanciaTratamentoIdAction is required');
 
-  if (!options.byInstanciaTratamentoIdStore)
-    throw new Error('byInstanciaTratamentoIdStore is required');
-
   if (!options.byIdAction)
     throw new Error('byIdAction is required');
 
-  if (!options.byIdStore)
-    throw new Error('byIdStore is required');
+  var model = {
+    byInstanciaTratamentoIdStore: new Rx.ReplaySubject(),
+    byIdStore: new Rx.Subject()
+  };
+  jquery.extend(model, options)
 
-  byInstanciaTratamentoId(options.byInstanciaTratamentoIdAction,
-                          options.byInstanciaTratamentoIdStore);
-  byId(options.byIdAction, options.byIdStore);
+  byId(model.byIdAction, model.byIdStore);
+  byInstanciaTratamentoId(model.byInstanciaTratamentoIdAction,
+                          model.byInstanciaTratamentoIdStore);
+  return model;
 }
 
 module.exports = create;

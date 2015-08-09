@@ -4,6 +4,7 @@ var MaterialUI = require('material-ui'),
   SelectField = MaterialUI.SelectField,
   RaisedButton = MaterialUI.RaisedButton;
 
+var model;
 var subscription1;
 
 var AtendimentoConfirm = React.createClass({
@@ -17,7 +18,8 @@ var AtendimentoConfirm = React.createClass({
     return {}
   },
   componentDidMount: function() {
-    var source = this.props.atendimentoStore.flatMap(x => x.results);
+    model.byIdAction.onNext(this.props.params.id);
+    var source = model.byIdStore.flatMap(x => x.results);
     subscription1 = source.subscribe(this.setState.bind(this));
   },
   componentWillUnmount: function() {
@@ -62,4 +64,15 @@ var AtendimentoConfirm = React.createClass({
   }
 });
 
-module.exports = AtendimentoConfirm;
+function create(options) {
+  if (!options.byIdAction)
+    throw new Error('byIdAction is required');
+
+  if (!options.byIdStore)
+    throw new Error('byIdStore is required');
+
+  model = options;
+  return AtendimentoConfirm;
+}
+
+module.exports = create;
