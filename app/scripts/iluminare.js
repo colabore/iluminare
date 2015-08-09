@@ -6,15 +6,15 @@ var Router = require('react-router'),
   Link = Router.Link;
 
 let pacienteIntent = require('./intent/Paciente');
-let pacienteModel = require('./stores/PacienteStore')(pacienteIntent);
+let pacienteModel = require('./model/Paciente')(pacienteIntent);
 let PacienteCheckin = require('./components/paciente/PacienteCheckin.react')(pacienteModel);
 let PacienteDetails = require('./components/paciente/PacienteDetails.react')(pacienteModel);
 
 let instanciaTratamentoIntent = require('./intent/InstanciaTratamento');
-let instanciaTratamentoModel = require('./stores/InstanciaTratamentoStore')(instanciaTratamentoIntent);
+let instanciaTratamentoModel = require('./model/InstanciaTratamento')(instanciaTratamentoIntent);
 
 let atendimentoIntent = require('./intent/Atendimento');
-let atendimentoModel = require('./stores/AtendimentoStore')(atendimentoIntent);
+let atendimentoModel = require('./model/Atendimento')(atendimentoIntent);
 let Atendimento = require('./components/atendimento/Atendimento.react')(instanciaTratamentoModel);
 let AtendimentosList = require('./components/atendimento/AtendimentosList.react')(atendimentoModel);
 let AtendimentoConfirm = require('./components/atendimento/AtendimentoConfirm.react')(atendimentoModel);
