@@ -7,17 +7,17 @@ var Router = require('react-router'),
 
 let pacienteIntent = require('./intent/Paciente');
 let pacienteModel = require('./model/Paciente')(pacienteIntent);
-let PacienteCheckin = require('./components/paciente/PacienteCheckin.react')(pacienteModel);
-let PacienteDetails = require('./components/paciente/PacienteDetails.react')(pacienteModel);
+let PacienteCheckin = require('./view/paciente/PacienteCheckin.react')(pacienteModel);
+let PacienteDetails = require('./view/paciente/PacienteDetails.react')(pacienteModel);
 
 let instanciaTratamentoIntent = require('./intent/InstanciaTratamento');
 let instanciaTratamentoModel = require('./model/InstanciaTratamento')(instanciaTratamentoIntent);
 
 let atendimentoIntent = require('./intent/Atendimento');
 let atendimentoModel = require('./model/Atendimento')(atendimentoIntent);
-let Atendimento = require('./components/atendimento/Atendimento.react')(instanciaTratamentoModel);
-let AtendimentosList = require('./components/atendimento/AtendimentosList.react')(atendimentoModel);
-let AtendimentoConfirm = require('./components/atendimento/AtendimentoConfirm.react')(atendimentoModel);
+let Atendimento = require('./view/atendimento/Atendimento.react')(instanciaTratamentoModel);
+let AtendimentosList = require('./view/atendimento/AtendimentosList.react')(atendimentoModel);
+let AtendimentoConfirm = require('./view/atendimento/AtendimentoConfirm.react')(atendimentoModel);
 
 var routes = (
   <Route>
