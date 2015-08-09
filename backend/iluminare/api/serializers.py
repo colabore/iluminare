@@ -58,6 +58,7 @@ class AgendaTratamentoSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class AtendimentoSerializer(serializers.HyperlinkedModelSerializer):
+    id = serializers.ReadOnlyField()
     paciente = PacienteSerializer()
     instancia_tratamento = InstanciaTratamentoSerializer()
 

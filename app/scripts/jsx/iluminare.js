@@ -12,10 +12,12 @@ var PacienteInfoAction = new Rx.Subject();
 var PacienteInfoStore = new Rx.Subject();
 
 var InstanciaTratamentosByDateAction = new Rx.Subject();
-var InstanciaTratamentosByDateStore = new Rx.Subject();
+var InstanciaTratamentosByDateStore = new Rx.ReplaySubject();
 
-var AtendimentosByIdAction = new Rx.Subject();
-var AtendimentosByIdStore = new Rx.Subject();
+var AtendimentosByInstanciaTratamentoIdAction = new Rx.Subject();
+var AtendimentosStore = new Rx.ReplaySubject();
+var AtendimentoByIdAction = new Rx.Subject();
+var AtendimentoByIdStore = new Rx.Subject();
 
 var PacienteStore = require('./stores/PacienteStore')({
   searchByNameAction: PacientesSearchByNameAction,
@@ -30,8 +32,10 @@ var InstanciaTratamentoStore = require('./stores/InstanciaTratamentoStore')({
 });
 
 var AtendimentoStore = require('./stores/AtendimentoStore')({
-  byIdAction: AtendimentosByIdAction,
-  byIdStore: AtendimentosByIdStore
+  byInstanciaTratamentoIdAction: AtendimentosByInstanciaTratamentoIdAction,
+  byInstanciaTratamentoIdStore: AtendimentosStore,
+  byIdAction: AtendimentoByIdAction,
+  byIdStore: AtendimentoByIdStore
 });
 
 var PacienteCheckin = require('./components/paciente/PacienteCheckin.react');
@@ -67,10 +71,21 @@ var AtendimentoHander = React.createClass({
 var AtendimentosList = require('./components/atendimento/AtendimentosList.react');
 var AtendimentosListHandler = React.createClass({
   componentDidMount: function() {
-    AtendimentosByIdAction.onNext(this.props.params.id);
+    AtendimentosByInstanciaTratamentoIdAction.onNext(this.props.params.id);
   },
   render() {
-    return <AtendimentosList atendimentosStore={AtendimentosByIdStore} />
+    return <AtendimentosList
+      atendimentosStore={AtendimentosStore} />
+  }
+});
+
+var AtendimentoConfirm = require('./components/atendimento/AtendimentoConfirm.react');
+var AtendimentoConfirmHandler = React.createClass({
+  componentDidMount: function() {
+    AtendimentoByIdAction.onNext(this.props.params.id);
+  },
+  render() {
+    return <AtendimentoConfirm atendimentoStore={AtendimentoByIdStore} />
   }
 });
 
@@ -79,6 +94,7 @@ var routes = (
     <Route path="paciente" handler={PacienteCheckinHander} />
     <Route path="paciente/details/:id" handler={PacienteDetailsHandler} />
     <Route path="atendimento" handler={AtendimentoHander} />
+    <Route path="atendimento/confirm/:id" handler={AtendimentoConfirmHandler} />
     <Route path="atendimentos/:id" handler={AtendimentosListHandler} />
     <Route path="voluntario" handler={AtendimentoHander} />
     <Route path="relatorio" handler={AtendimentoHander} />
