@@ -28,6 +28,7 @@
     "serve1": "node doc/browser-sync.js",
     "serve2": "watchify -v -t babelify app/scripts/jsx/iluminare.js -o app/scripts/bundle.js",
     "serve3": "source ../env/bin/activate && cd backend/iluminare && python manage.py runserver",
+    "serve4": "source ../env/bin/activate && cd src/ && python manage.py runserver 8080",
     "build": "browserify app/scripts/jsx/iluminare.js -t [ babelify --blacklist regenerator ] -t [envify --NODE_ENV production] | uglifyjs -cm > app/scripts/bundle.min.js",
     "test": "jest"
   }

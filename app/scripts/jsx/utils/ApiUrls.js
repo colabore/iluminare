@@ -1,5 +1,5 @@
 
-let server = 'http://192.168.25.3:8000';
+let server = 'http://localhost:8000';
 let atendimentoApi = '/api/atendimento/.json'
 let instanciatratamentoApi = "/api/instanciatratamento/.json";
 let pacienteApi = "/api/paciente/.json";
