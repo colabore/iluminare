@@ -1,11 +1,14 @@
 var React = require('react');
+var jquery = require('jquery');
+var Rx = require('rx');
 var MaterialUI = require('material-ui'),
   ThemeManager = new MaterialUI.Styles.ThemeManager(),
   SelectField = MaterialUI.SelectField,
   RaisedButton = MaterialUI.RaisedButton;
 
-var model;
+var model = {};
 var subscription1;
+var subscription2;
 
 var AtendimentoConfirm = React.createClass({
   childContextTypes: {
@@ -15,23 +18,49 @@ var AtendimentoConfirm = React.createClass({
     return { muiTheme: ThemeManager.getCurrentTheme() }
   },
   getInitialState: function() {
-    return {}
+    return {
+      'tratamentos': [],
+      'redirecionamento': null,
+      'frequencia': null,
+      'errorFrequencia': ''
+    };
   },
   componentDidMount: function() {
     model.byIdAction.onNext(this.props.params.id);
-    var source = model.byIdStore.flatMap(x => x.results);
-    subscription1 = source.subscribe(this.setState.bind(this));
+
+    var atendimentos = model.byIdStore.flatMap(x => x.results);
+    subscription1 = atendimentos.subscribe(this.setState.bind(this));
+
+    subscription2 = Rx.Observable.combineLatest(
+      model.tratamentos,
+      atendimentos,
+      function(t,a) {
+        var tr = t.results;
+        return {'tratamentos': tr.filter(z =>
+            z.dia_semana === a.instancia_tratamento.tratamento.dia_semana
+            && z.id != a.instancia_tratamento.tratamento.id)};
+      }
+    ).subscribe(this.setState.bind(this));
   },
   componentWillUnmount: function() {
     subscription1.dispose();
+    subscription2.dispose();
+  },
+  _onChange: function(key, e) {
+    this.setState({[key]: e.target.value});
+  },
+  _onTouchTap: function(e) {
+    let error = this.state.redirecionamento !== null && this.state.frequencia === null;
+    this.setState({errorFrequencia: error ? 'Selecione uma frequencia' : ''});
+
+    console.log(this.state);
   },
   render: function () {
     let menuItems = [
-       { payload: '1', text: 'Never' },
-       { payload: '2', text: 'Every Night' },
-       { payload: '3', text: 'Weeknights' },
-       { payload: '4', text: 'Weekends' },
-       { payload: '5', text: 'Weekly' },
+       { payload: 'S', text: 'Semanal' },
+       { payload: 'Q', text: 'Quinzenal' },
+       { payload: 'M', text: 'Mensal' },
+       { payload: 'O', text: 'Outro' },
     ];
     if (this.state.paciente) {
       return (
@@ -41,17 +70,26 @@ var AtendimentoConfirm = React.createClass({
           <SelectField
             fullWidth={true}
             floatingLabelText="Encaminhar para o tratamento"
-            valueMember="payload"
-            displayMember="text"
-            menuItems={menuItems} />
+            valueMember="id"
+            displayMember="descricao_basica"
+            value={this.state.redirecionamento}
+            onChange={this._onChange.bind(this, 'redirecionamento')}
+            menuItems={this.state.tratamentos} />
           <SelectField
             fullWidth={true}
             hintText="Frequencia"
             floatingLabelText="Frequencia"
             valueMember="payload"
             displayMember="text"
+            errorText={this.state.errorFrequencia}
+            value={this.state.frequencia}
+            onChange={this._onChange.bind(this, 'frequencia')}
             menuItems={menuItems} />
-          <RaisedButton label="Confirmar atendimento" primary={true} />
+          <RaisedButton
+            label="Confirmar atendimento"
+            primary={true}
+            style={{'marginTop': '20px'}}
+            onTouchTap={this._onTouchTap} />
         </div>
       )
     } else {
@@ -64,14 +102,17 @@ var AtendimentoConfirm = React.createClass({
   }
 });
 
-function create(options) {
-  if (!options.byIdAction)
+function create(atendimentoModel, tratamentoModel) {
+  if (!atendimentoModel.byIdAction)
     throw new Error('byIdAction is required');
 
-  if (!options.byIdStore)
+  if (!atendimentoModel.byIdStore)
     throw new Error('byIdStore is required');
 
-  model = options;
+  if (!tratamentoModel.tratamentos)
+    throw new Error('tratamentoModel.tratamentos is required');
+
+  jquery.extend(model, atendimentoModel, tratamentoModel);
   return AtendimentoConfirm;
 }
 

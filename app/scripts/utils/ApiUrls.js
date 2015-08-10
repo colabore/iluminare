@@ -3,6 +3,7 @@ let server = 'http://localhost:8000';
 let atendimentoApi = '/api/atendimento/.json'
 let instanciatratamentoApi = "/api/instanciatratamento/.json";
 let pacienteApi = "/api/paciente/.json";
+let tratamentoApi = "/api/tratamento/.json";
 
 var ApiUrls = {
   atendimento: function(params) {
@@ -13,6 +14,9 @@ var ApiUrls = {
   },
   paciente: function(params) {
     return server + pacienteApi + toString(params);
+  },
+  tratamento: function(params) {
+    return server + tratamentoApi + toString(params);
   }
 };
 

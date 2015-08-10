@@ -13,11 +13,14 @@ let PacienteDetails = require('./view/paciente/PacienteDetails.react')(pacienteM
 let instanciaTratamentoIntent = require('./intent/InstanciaTratamento');
 let instanciaTratamentoModel = require('./model/InstanciaTratamento')(instanciaTratamentoIntent);
 
+let tratamentoModel = require('./model/Tratamento')();
+
 let atendimentoIntent = require('./intent/Atendimento');
 let atendimentoModel = require('./model/Atendimento')(atendimentoIntent);
 let Atendimento = require('./view/atendimento/Atendimento.react')(instanciaTratamentoModel);
 let AtendimentosList = require('./view/atendimento/AtendimentosList.react')(atendimentoModel);
-let AtendimentoConfirm = require('./view/atendimento/AtendimentoConfirm.react')(atendimentoModel);
+let AtendimentoConfirm = require('./view/atendimento/AtendimentoConfirm.react')(
+                                 atendimentoModel, tratamentoModel);
 
 var routes = (
   <Route>

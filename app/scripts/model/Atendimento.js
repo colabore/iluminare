@@ -41,7 +41,7 @@ function create(options) {
 
   var model = {
     byInstanciaTratamentoIdStore: new Rx.ReplaySubject(),
-    byIdStore: new Rx.Subject()
+    byIdStore: new Rx.ReplaySubject()
   };
   jquery.extend(model, options)
 
