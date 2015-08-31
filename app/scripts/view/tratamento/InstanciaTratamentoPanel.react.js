@@ -41,10 +41,15 @@ var InstanciaTratamentoPanel = React.createClass({
   },
   render: function() {
     var items = this.state.results.map(this._getListItem);
+    var descricao = items.length > 0 ? "" : <p>Nenhum tratamento foi aberto hoje.</p>;
     return (
-      <List>
-        {items}
-      </List>
+      <div>
+        <h4>Tratamentos em progresso</h4>
+        {descricao}
+        <List>
+          {items}
+        </List>
+      </div>
     )
   }
 });
