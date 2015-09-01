@@ -1,20 +1,11 @@
 var React = require('react');
 var MaterialUI = require('material-ui'),
-  ThemeManager = new MaterialUI.Styles.ThemeManager(),
   List = MaterialUI.List,
   ListItem = MaterialUI.ListItem;
 
 var subscription;
 
 var InstanciaTratamentoPanel = React.createClass({
-  childContextTypes: {
-    muiTheme: React.PropTypes.object
-  },
-  getChildContext: function() {
-    return {
-      muiTheme: ThemeManager.getCurrentTheme()
-    }
-  },
   getInitialState: function() {
    return {results: []};
   },
@@ -41,7 +32,9 @@ var InstanciaTratamentoPanel = React.createClass({
   },
   render: function() {
     var items = this.state.results.map(this._getListItem);
-    var descricao = items.length > 0 ? "" : <p>Nenhum tratamento foi aberto hoje.</p>;
+    var descricao = items.length > 0 ? "" : <span>
+      <p>Nenhum tratamento foi aberto hoje.</p>
+      <p><a href="/#/tratamento">Inicie as atividades</a> de pelo menos um tratamento</p></span>;
     return (
       <div>
         <h4>Tratamentos em progresso</h4>

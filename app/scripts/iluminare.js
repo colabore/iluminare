@@ -1,4 +1,3 @@
-
 var React = require('react');
 var Router = require('react-router'),
   Route = Router.Route,
@@ -14,6 +13,9 @@ let instanciaTratamentoIntent = require('./intent/InstanciaTratamento');
 let instanciaTratamentoModel = require('./model/InstanciaTratamento')(instanciaTratamentoIntent);
 
 let tratamentoModel = require('./model/Tratamento')();
+let Tratamento = require('./view/tratamento/Tratamento.react')(tratamentoModel);
+let TratamentoDetails = require('./view/tratamento/TratamentoDetails.react')(
+  {tratamento: tratamentoModel, instanciatratamento: instanciaTratamentoModel});
 
 let atendimentoIntent = require('./intent/Atendimento');
 let atendimentoModel = require('./model/Atendimento')(atendimentoIntent);
@@ -26,6 +28,8 @@ var routes = (
   <Route>
     <Route path="paciente" handler={PacienteCheckin} />
     <Route path="paciente/details/:id" handler={PacienteDetails} />
+    <Route path="tratamento" handler={Tratamento} />
+    <Route path="tratamento/details/:id" handler={TratamentoDetails} />
     <Route path="atendimento" handler={Atendimento} />
     <Route path="atendimento/confirm/:id" handler={AtendimentoConfirm} />
     <Route path="atendimentos/:id" handler={AtendimentosList} />
