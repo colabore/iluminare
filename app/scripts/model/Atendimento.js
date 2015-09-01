@@ -32,6 +32,28 @@ function byId(action, store) {
   );
 };
 
+function updateRequest(update) {
+  update.subscribe(
+    function (state){
+      console.log('Atendimento model')
+      console.log(state);
+      jquery.ajax({
+        url: '//localhost:8000/api/atendimento/',
+        type: 'POST',
+        contentType: "application/json",
+        dataType: 'text',
+        data: JSON.stringify({
+          "id": 'http//localhost:8000/api/atendimento/' + state.id,
+          "status": "A"
+        }),
+        success: (function(d){
+          console.log(d);
+        })
+      })
+    }
+  )
+}
+
 function create(options) {
   if (!options.byInstanciaTratamentoIdAction)
     throw new Error('byInstanciaTratamentoIdAction is required');
@@ -48,6 +70,8 @@ function create(options) {
   byId(model.byIdAction, model.byIdStore);
   byInstanciaTratamentoId(model.byInstanciaTratamentoIdAction,
                           model.byInstanciaTratamentoIdStore);
+
+  updateRequest(model.update);
   return model;
 }
 

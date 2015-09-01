@@ -14,9 +14,9 @@ class PacienteSimpleSerializer(serializers.HyperlinkedModelSerializer):
 
 class PacienteSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.ReadOnlyField()
-    acompanhante = PacienteSimpleSerializer()
-    acompanhante_crianca = PacienteSimpleSerializer()
-    casado_com = PacienteSimpleSerializer()
+    acompanhante = PacienteSimpleSerializer(read_only=True)
+    acompanhante_crianca = PacienteSimpleSerializer(read_only=True)
+    casado_com = PacienteSimpleSerializer(read_only=True)
 
     class Meta:
         model = Paciente
@@ -59,8 +59,8 @@ class AgendaTratamentoSerializer(serializers.HyperlinkedModelSerializer):
 
 class AtendimentoSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.ReadOnlyField()
-    paciente = PacienteSerializer()
-    instancia_tratamento = InstanciaTratamentoSerializer()
+    paciente = PacienteSerializer(read_only=True)
+    instancia_tratamento = InstanciaTratamentoSerializer(read_only=True)
 
     class Meta:
         model = Atendimento

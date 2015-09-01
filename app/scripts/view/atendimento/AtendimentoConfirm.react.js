@@ -53,7 +53,7 @@ var AtendimentoConfirm = React.createClass({
     let error = this.state.redirecionamento !== null && this.state.frequencia === null;
     this.setState({errorFrequencia: error ? 'Selecione uma frequencia' : ''});
 
-    console.log(this.state);
+    model.update.onNext(this.state);
   },
   render: function () {
     let menuItems = [
