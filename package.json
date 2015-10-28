@@ -22,7 +22,7 @@
     "react": "^0.13.3",
     "react-router": "^0.13.3",
     "react-tap-event-plugin": "^0.1.7",
-    "rx": "^2.5.3"
+    "rx": "^4.0.0"
   },
   "scripts": {
     "serve1": "node doc/browser-sync.js",
