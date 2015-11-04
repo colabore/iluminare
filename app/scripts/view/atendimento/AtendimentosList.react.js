@@ -1,6 +1,5 @@
 var React = require('react');
 var MaterialUI = require('material-ui'),
-  ThemeManager = new MaterialUI.Styles.ThemeManager(),
   ListItem = MaterialUI.ListItem,
   List = MaterialUI.List,
   DropDownMenu = MaterialUI.DropDownMenu;
@@ -11,12 +10,6 @@ var model;
 var subscription;
 
 var AtendimentosList = React.createClass({
-  childContextTypes: {
-    muiTheme: React.PropTypes.object
-  },
-  getChildContext: function() {
-    return { muiTheme: ThemeManager.getCurrentTheme() }
-  },
   getInitialState: function() {
     return {results: []};
   },

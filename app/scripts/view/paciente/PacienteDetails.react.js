@@ -1,6 +1,5 @@
 var React = require('react');
 var MaterialUI = require('material-ui'),
-  ThemeManager = new MaterialUI.Styles.ThemeManager(),
   Tabs = MaterialUI.Tabs,
   Tab = MaterialUI.Tab,
   List = MaterialUI.List,
@@ -11,14 +10,6 @@ var model;
 var subscription;
 
 var PacienteDetails = React.createClass({
-  childContextTypes: {
-    muiTheme: React.PropTypes.object
-  },
-  getChildContext: function() {
-    return {
-      muiTheme: ThemeManager.getCurrentTheme()
-    };
-  },
   getInitialState: function() {
     return {
       'nome': 'Nome do paciente'

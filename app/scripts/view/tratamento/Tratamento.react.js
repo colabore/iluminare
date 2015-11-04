@@ -1,19 +1,10 @@
 var React = require('react');
-var MaterialUI = require('material-ui'),
-  ThemeManager = new MaterialUI.Styles.ThemeManager();
+var MaterialUI = require('material-ui');
 var TratamentoList = require('../tratamento/TratamentoList.react');
 
 var model;
 
 var Tratamento = React.createClass({
-  childContextTypes: {
-    muiTheme: React.PropTypes.object
-  },
-  getChildContext: function() {
-    return {
-      muiTheme: ThemeManager.getCurrentTheme()
-    }
-  },
   render: function () {
     return (
       <div>

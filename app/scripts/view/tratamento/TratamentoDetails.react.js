@@ -2,7 +2,6 @@ var jquery = require('jquery');
 var React = require('react');
 var Rx = require('rx');
 var MaterialUI = require('material-ui'),
-  ThemeManager = new MaterialUI.Styles.ThemeManager(),
   RaisedButton = MaterialUI.RaisedButton,
   Tab = MaterialUI.Tab,
   Tabs = MaterialUI.Tabs,
@@ -24,14 +23,6 @@ var subscription2;
 var model = {};
 
 var TratamentoDetails = React.createClass({
-  childContextTypes: {
-    muiTheme: React.PropTypes.object
-  },
-  getChildContext: function() {
-    return {
-      muiTheme: ThemeManager.getCurrentTheme()
-    }
-  },
   getInitialState: function() {
     return {
       tratamento: {

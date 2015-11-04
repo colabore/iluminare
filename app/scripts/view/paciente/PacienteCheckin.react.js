@@ -2,7 +2,6 @@ var React = require('react');
 var PacienteSearch = require('./PacienteSearch.react');
 var PacienteList = require('./PacienteList.react');
 var MaterialUI = require('material-ui'),
-  ThemeManager = new MaterialUI.Styles.ThemeManager(),
   TextField = MaterialUI.TextField;
 var injectTapEventPlugin = require("react-tap-event-plugin");
   injectTapEventPlugin();
@@ -11,14 +10,6 @@ var searchByNameAction;
 var searchByNameStore;
 
 var PacienteCheckin = React.createClass({
-  childContextTypes: {
-    muiTheme: React.PropTypes.object
-  },
-  getChildContext: function() {
-    return {
-      muiTheme: ThemeManager.getCurrentTheme()
-    };
-  },
   render: function() {
     return (
       <div>

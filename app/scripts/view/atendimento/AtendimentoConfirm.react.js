@@ -2,7 +2,6 @@ var React = require('react');
 var jquery = require('jquery');
 var Rx = require('rx');
 var MaterialUI = require('material-ui'),
-  ThemeManager = new MaterialUI.Styles.ThemeManager(),
   SelectField = MaterialUI.SelectField,
   RaisedButton = MaterialUI.RaisedButton;
 
@@ -11,12 +10,6 @@ var subscription1;
 var subscription2;
 
 var AtendimentoConfirm = React.createClass({
-  childContextTypes: {
-    muiTheme: React.PropTypes.object
-  },
-  getChildContext: function() {
-    return { muiTheme: ThemeManager.getCurrentTheme() }
-  },
   getInitialState: function() {
     return {
       'tratamentos': [],
