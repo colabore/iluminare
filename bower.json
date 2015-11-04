@@ -7,6 +7,5 @@
     "material-design-lite": "~1.0.0"
   },
   "devDependencies": {
-    "web-component-tester": "*"
   }
 }
