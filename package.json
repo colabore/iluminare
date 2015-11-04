@@ -22,7 +22,7 @@
     "rx": "^4.0.0"
   },
   "scripts": {
-    "serve1": "/node_modules/webpack-dev-server/bin/webpack-dev-server.js  --port 3000  --content-base ./app --inline --hot",
+    "serve1": "./node_modules/webpack-dev-server/bin/webpack-dev-server.js  --port 3000  --content-base ./app --inline --hot",
     "serve2": "source ../env/bin/activate && cd backend/iluminare && python manage.py runserver",
     "serve3": "source ../env/bin/activate && cd src/ && python manage.py runserver 8080",
     "build": "webpack -p",
