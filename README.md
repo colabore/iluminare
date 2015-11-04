@@ -11,19 +11,16 @@ npm install -g bower && npm install && bower install
 
 ```sh
 npm run serve1
-npm run serve2
 cd backend/iluminare && python manage.py makemigrations && python manage.py migrate && cd ../../
+npm run serve2
 npm run serve3
-npm run serve4
 ```
 
 ```npm run serve1```: web server for the ```app/``` static resources at localhost:3000.
 
-```npm run serve2```: compiles the javascript/React code.
+```npm run serve2```: api server at localhost:8000.
 
-```npm run serve3```: api server at localhost:8000.
-
-```npm run serve4```: legacy version of iluminare at localhost:8080.
+```npm run serve3```: legacy version of iluminare at localhost:8080.
 
 ## Contributing
 
