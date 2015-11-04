@@ -19,10 +19,25 @@ let TratamentoDetails = require('./view/tratamento/TratamentoDetails.react')(
 
 let atendimentoIntent = require('./intent/Atendimento');
 let atendimentoModel = require('./model/Atendimento')(atendimentoIntent);
-let Atendimento = require('./view/atendimento/Atendimento.react')(instanciaTratamentoModel);
 let AtendimentosList = require('./view/atendimento/AtendimentosList.react')(atendimentoModel);
 let AtendimentoConfirm = require('./view/atendimento/AtendimentoConfirm.react')(
                                  atendimentoModel, tratamentoModel);
+
+const atendimento$ = require('./components/Atendimento/Atendimento');
+
+const Html = React.createClass({
+  getInitialState: function() {
+   return { html: <h1>loading...</h1> };
+  },
+  componentDidMount: function() {
+    this.props.html.subscribe(x => this.setState({ html: x }));
+  },
+  render: function() {
+    return this.state.html;
+  }
+});
+
+const Atendimento = (props) => { return ( <Html html={atendimento$} /> ); }
 
 ReactDOM.render(<Router>
   <Route path="paciente" component={PacienteCheckin} />
