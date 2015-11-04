@@ -2,8 +2,7 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 var ReactRouter = require('react-router'),
   Route = ReactRouter.Route,
-  Router = ReactRouter.Router,
-  Link = ReactRouter.Link;
+  Router = ReactRouter.Router;
 
 let pacienteIntent = require('./intent/Paciente');
 let pacienteModel = require('./model/Paciente')(pacienteIntent);
