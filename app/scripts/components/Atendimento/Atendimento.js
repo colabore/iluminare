@@ -24,38 +24,28 @@ function toListItem(instanciatratamento) {
   );
 };
 
-function list(items) {
-  if (items.length == 0) {
-    return (
-      <span>
-        <p>Nenhum tratamento foi aberto hoje.</p>
-        <p><a href="/#/tratamento">Inicie as atividades</a> de pelo menos um tratamento</p>
-      </span>
-    )
-  }
-
+function toHtml(data) {
+  const items = data.instanciatratamento;
   const listItems = items.map(toListItem);
-  return (
-    <List>
-      {listItems}
-    </List>
-  )
-};
-
-function html(data) {
-  const items = list(data.instanciatratamento);
+  const isEmpty = items.length == 0;
   return (
     <div>
       <h4>Tratamentos em progresso</h4>
-      {items}
+      <span style={{'display': isEmpty ? 'block' : 'none'}}>
+        <p>Nenhum tratamento foi aberto hoje.</p>
+        <p><a href="/#/tratamento">Inicie as atividades</a> de pelo menos um tratamento</p>
+      </span>
+      <List>
+        {listItems}
+      </List>
     </div>
   )
 };
 
-const selected$ = events.eventFromClass('click', BUTTON).map(x => x.id);
-const html$ = requests.requestInstanciaTratamento(new Date()).map(html);
+const clicked$ = events.eventFromClass('click', BUTTON).map(x => x.id);
+const html$ = requests.requestInstanciaTratamento(new Date()).map(toHtml);
 
-selected$.subscribe(function (id) {
+clicked$.subscribe(function (id) {
   document.location = document.location.origin + '/app/#/atendimentos/' + id;
 });
 
