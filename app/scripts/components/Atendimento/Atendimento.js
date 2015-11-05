@@ -1,6 +1,8 @@
 const Rx = require('rx');
 const Observable = Rx.Observable;
 const React = require('react');
+const Router = require('react-router');
+const Link = Router.Link;
 const MaterialUI = require('material-ui');
 const List = MaterialUI.List;
 const ListItem = MaterialUI.ListItem;
@@ -8,6 +10,7 @@ const injectTapEventPlugin = require("react-tap-event-plugin");
 injectTapEventPlugin();
 
 const events = require('../../utils/events');
+const routes = require('../../utils/routes');
 const requests = require('../../requests');
 
 const BUTTON = 'it-button';
@@ -33,7 +36,7 @@ function toHtml(data) {
       <h4>Tratamentos em progresso</h4>
       <span style={{'display': isEmpty ? 'block' : 'none'}}>
         <p>Nenhum tratamento foi aberto hoje.</p>
-        <p><a href="/#/tratamento">Inicie as atividades</a> de pelo menos um tratamento</p>
+        <p><Link to='/tratamento'>Inicie as atividades</Link> de pelo menos um tratamento</p>
       </span>
       <List>
         {listItems}
@@ -46,7 +49,7 @@ const clicked$ = events.eventFromClass('click', BUTTON).map(x => x.id);
 const html$ = requests.requestInstanciaTratamento(new Date()).map(toHtml);
 
 clicked$.subscribe(function (id) {
-  document.location = document.location.origin + '/app/#/atendimentos/' + id;
+  routes.goTo('/atendimentos/' + id);
 });
 
 module.exports = html$;
