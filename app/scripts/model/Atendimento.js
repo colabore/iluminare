@@ -2,22 +2,6 @@ var urls = require('../utils/ApiUrls');
 var Rx = require('rx');
 var jquery = require('jquery');
 
-function byInstanciaTratamentoId(action, store) {
-  return action.subscribe(
-    function (id) {
-      console.log('Atendimentos by InstanciaTratamentoId ' + id);
-
-      let params = {
-        'status': 'C',
-        'instancia_tratamento__id': id,
-        'page_size': 100
-      };
-
-      jquery.getJSON(urls.atendimento(params), x => store.onNext(x));
-    }
-  );
-};
-
 function byId(action, store) {
   return action.subscribe(
     function (id) {
@@ -55,9 +39,6 @@ function updateRequest(update) {
 }
 
 function create(options) {
-  if (!options.byInstanciaTratamentoIdAction)
-    throw new Error('byInstanciaTratamentoIdAction is required');
-
   if (!options.byIdAction)
     throw new Error('byIdAction is required');
 
@@ -68,8 +49,6 @@ function create(options) {
   jquery.extend(model, options)
 
   byId(model.byIdAction, model.byIdStore);
-  byInstanciaTratamentoId(model.byInstanciaTratamentoIdAction,
-                          model.byInstanciaTratamentoIdStore);
 
   updateRequest(model.update);
   return model;

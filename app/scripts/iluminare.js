@@ -19,11 +19,11 @@ let TratamentoDetails = require('./view/tratamento/TratamentoDetails.react')(
 
 let atendimentoIntent = require('./intent/Atendimento');
 let atendimentoModel = require('./model/Atendimento')(atendimentoIntent);
-let AtendimentosList = require('./view/atendimento/AtendimentosList.react')(atendimentoModel);
 let AtendimentoConfirm = require('./view/atendimento/AtendimentoConfirm.react')(
                                  atendimentoModel, tratamentoModel);
 
 const atendimento$ = require('./components/Atendimento/Atendimento');
+const Atendimentos = require('./components/Atendimentos/Atendimentos');
 
 const Html = React.createClass({
   getInitialState: function() {
@@ -46,7 +46,7 @@ ReactDOM.render(<Router>
   <Route path="tratamento/details/:id" component={TratamentoDetails} />
   <Route path="atendimento" component={Atendimento} />
   <Route path="atendimento/confirm/:id" component={AtendimentoConfirm} />
-  <Route path="atendimentos/:id" component={AtendimentosList} />
+  <Route path="atendimentos/:id" component={Atendimentos} />
   <Route path="voluntario" component={Atendimento} />
   <Route path="relatorio" component={Atendimento} />
 </Router>, document.getElementById('react-content'));
